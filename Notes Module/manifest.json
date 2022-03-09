@@ -1,0 +1,20 @@
+{
+  "name": "Commander's Quire",
+  "version": "0.3.9",
+  "namespace": "Nekres.Notes",
+  "package": "Notes.dll",
+  "manifest_version": 1,
+  "description": "Take notes. Create pages. Bind your book.\nImmortalize your legacy through immersive journaling.",
+  "dependencies": {
+    "bh.blishhud": ">=0.11.5-ci.43"
+  },
+  "url": "https://github.com/agaertner/Blish-HUD-Modules-Releases",
+  "enabled_without_gw2": false,
+  "directories": [ "notes" ],
+  "contributors": [
+    {
+      "name": "TypoTiger",
+      "username": "TypoTiger.8352"
+    }
+  ]
+}
