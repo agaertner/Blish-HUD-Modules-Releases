@@ -57,9 +57,16 @@ namespace Nekres.Notes
                 Priority = Name.GetHashCode()
             };
             moduleCornerIcon.Click += ModuleCornerIconClicked;
-            BuildContextMenu();
 
-            _bookFactory = new BookFactory();
+            _bookFactory = new BookFactory(DirectoriesManager.GetFullDirectoryPath("notes"));
+            _bookFactory.OnIndexChanged += OnBookIndexChanged;
+
+            BuildContextMenu();
+        }
+
+        private void OnBookIndexChanged(object o, ValueEventArgs<Guid> e)
+        {
+            this.BuildContextMenu();
         }
 
         private void ModuleCornerIconClicked(object o, MouseEventArgs e)
@@ -87,18 +94,15 @@ namespace Nekres.Notes
                 Enabled = false,
                 Parent = moduleContextMenu,
             };
-            var moduleDirectory = DirectoriesManager.GetFullDirectoryPath("notes");
-            var allNotes = Directory.GetFiles(moduleDirectory, "*.json");
 
-            foreach (var filePath in allNotes)
+            foreach (var fileRef in _bookFactory.Index)
             {
-                var noteEntry = new ContextMenuStripItem
+                var noteEntry = new ContextMenuStripItemWithId(fileRef.Key)
                 {
-                    Text = Path.GetFileNameWithoutExtension(filePath),
-                    BasicTooltipText = filePath,
+                    Text = fileRef.Value,
                     Parent = moduleContextMenu
                 };
-                noteEntry.Click += (o, _) => _bookFactory.FromFile(((Control)o).BasicTooltipText);
+                noteEntry.Click += (o, _) => _bookFactory.FromCache(((ContextMenuStripItemWithId)o).Id);
             }
 
             if (!prevVisible.GetValueOrDefault()) return;
@@ -127,6 +131,7 @@ namespace Nekres.Notes
 
         /// <inheritdoc />
         protected override void Unload() {
+            _bookFactory.OnIndexChanged -= OnBookIndexChanged;
             _bookFactory.Dispose();
             moduleCornerIcon.Click -= ModuleCornerIconClicked;
             moduleCornerIcon.Dispose();

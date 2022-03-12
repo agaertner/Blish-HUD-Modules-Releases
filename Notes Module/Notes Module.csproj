@@ -144,6 +144,7 @@
     <Compile Include="UI\Controls\Book\EditableBook.cs" />
     <Compile Include="UI\Controls\Book\OnlineBook.cs" />
     <Compile Include="UI\Controls\Book\ReadOnlyBook.cs" />
+    <Compile Include="UI\Controls\ContextMenuStripItemWithId.cs" />
     <Compile Include="UI\Models\Book\BookModel.cs" />
     <Compile Include="UI\Models\CustomSettingsModel.cs" />
     <Compile Include="UI\Models\Book\OnlineBookModel.cs" />

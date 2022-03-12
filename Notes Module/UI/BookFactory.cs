@@ -13,6 +13,8 @@ namespace Nekres.Notes.UI.Controls
 {
     internal class BookFactory : IDisposable
     {
+        public event EventHandler<ValueEventArgs<Guid>> OnIndexChanged;
+
         private IList<BookBase> _displayedBooks;
 
         private IList<BookModel> _fetchedBooks;
@@ -20,11 +22,67 @@ namespace Nekres.Notes.UI.Controls
         private readonly int AutoSaveInternalSeconds = 30;
         private DateTime _prevAutoSaveTime = DateTime.UtcNow;
 
-        public BookFactory()
+        private Dictionary<Guid, string> _index;
+
+        public Dictionary<Guid, string> Index => new (_index);
+
+        public string CacheDir { get; private set; }
+
+        private readonly string _indexFileName;
+        public BookFactory(string cacheDir)
         {
+            _indexFileName = "index.json";
             _displayedBooks = new List<BookBase>();
             _fetchedBooks = new List<BookModel>();
+            _index = new Dictionary<Guid, string>();
+            this.CacheDir = cacheDir;
+            this.LoadIndex();
         }
+
+        private async void LoadIndex()
+        {
+            var filePath = Path.Combine(this.CacheDir, _indexFileName);
+            if (!File.Exists(filePath))
+            {
+                this.SaveIndex();
+                return;
+            }
+
+            try
+            {
+                using var str = new StreamReader(Path.Combine(this.CacheDir, _indexFileName));
+                var content = await str.ReadToEndAsync();
+                _index = JsonConvert.DeserializeObject<Dictionary<Guid, string>>(content);
+                if (_index == null)
+                    throw new JsonException("No data after deserialization. Possibly corrupted Json.");
+            }
+            catch (Exception ex) when (ex is IOException or InvalidOperationException or JsonException)
+            {
+                ScreenNotification.ShowNotification("There was an error loading your library.", ScreenNotification.NotificationType.Error);
+                NotesModule.Logger.Error(ex, ex.Message);
+            }
+        }
+
+        private void AddOrUpdateIndex(Guid key, string newTitle)
+        {
+            if (_index.ContainsKey(key)) 
+                _index[key] = newTitle;
+            else
+                _index.Add(key, newTitle);
+
+            OnIndexChanged?.Invoke(this, new ValueEventArgs<Guid>(key));
+            this.SaveIndex();
+        }
+
+        private void RemoveFromIndex(Guid key)
+        {
+            if (_index.ContainsKey(key)) 
+                _index.Remove(key);
+
+            OnIndexChanged?.Invoke(this, new ValueEventArgs<Guid>(key));
+            this.SaveIndex();
+        }
+
         public void Dispose()
         {
             foreach (var displayedBook in _displayedBooks) 
@@ -69,8 +127,9 @@ namespace Nekres.Notes.UI.Controls
             throw new NotImplementedException();
         }
 
-        public async void FromFile(string filePath)
+        public async void FromCache(Guid id)
         {
+            var filePath = Path.Combine(this.CacheDir, $"{id}.json");
             BookModel bookModel;
             try
             {
@@ -104,34 +163,33 @@ namespace Nekres.Notes.UI.Controls
 
         private void OnBookDelete(object o, EventArgs e)
         {
-            this.Delete((BookBase)o);
+            var book = (BookBase)o;
+            this.Delete(book.Guid);
+            book.Dispose();
         }
 
         private void OnBookChanged(object o, EventArgs e)
         {
-            this.Save((BookBase)o);
+            this.Save(BookModel.FromControl((BookBase)o));
         }
 
         internal void Update(Action onSaveCallback)
         {
-            if (DateTime.UtcNow.Subtract(_prevAutoSaveTime).TotalSeconds > this.AutoSaveInternalSeconds)
+            if (DateTime.UtcNow.Subtract(_prevAutoSaveTime).TotalSeconds <= this.AutoSaveInternalSeconds) return;
+
+            _prevAutoSaveTime = DateTime.UtcNow;
+            foreach (var activeBook in _displayedBooks)
             {
-                _prevAutoSaveTime = DateTime.UtcNow;
-                foreach (var activeBook in _displayedBooks)
-                {
-                    this.Save(activeBook);
-                }
-                onSaveCallback();
+                this.Save(BookModel.FromControl(activeBook));
             }
+            onSaveCallback();
         }
 
-        public async void Save(BookBase book)
+        public async void Save(BookModel book)
         {
-            var bookModel = new BookModel(book);
+            var fileContents = Encoding.Default.GetBytes(JsonConvert.SerializeObject(book, Formatting.Indented));
 
-            var fileContents = Encoding.Default.GetBytes(JsonConvert.SerializeObject(bookModel, Formatting.Indented));
-
-            var fileName = $"{NotesModule.ModuleInstance.DirectoriesManager.GetFullDirectoryPath("notes")}/{book.Title}.json";
+            var fileName = GetFilePath(book.Id);
 
             try
             {
@@ -148,21 +206,40 @@ namespace Nekres.Notes.UI.Controls
                 NotesModule.Logger.Error(ex, ex.Message);
             }
 
-            NotesModule.ModuleInstance.BuildContextMenu();
+            AddOrUpdateIndex(book.Id, book.Title);
         }
 
-        public void Delete(BookBase book)
+        private async void SaveIndex()
         {
-            if (!FileUtil.TryDelete(this.GetFilePath(book))) return;
+            var fileContents = Encoding.Default.GetBytes(JsonConvert.SerializeObject(_index, Formatting.Indented));
 
-            book.Dispose();
+            var fileName = Path.Combine(this.CacheDir, _indexFileName);
 
-            NotesModule.ModuleInstance.BuildContextMenu();
+            try
+            {
+                using var sourceStream = new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, bufferSize: 4096, useAsync: true);
+                await sourceStream.WriteAsync(fileContents, 0, fileContents.Length);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ScreenNotification.ShowNotification($"Saving index file failed. Access denied.", ScreenNotification.NotificationType.Error);
+            }
+            catch (IOException ex)
+            {
+                NotesModule.Logger.Error(ex, ex.Message);
+            }
         }
 
-        private string GetFilePath(BookBase book)
+        public void Delete(Guid id)
         {
-            return $"{NotesModule.ModuleInstance.DirectoriesManager.GetFullDirectoryPath("notes")}/{book.Title}.json";
+            if (!FileUtil.TryDelete(this.GetFilePath(id))) return;
+
+            this.RemoveFromIndex(id);
+        }
+
+        private string GetFilePath(Guid id)
+        {
+            return Path.Combine(this.CacheDir, $"{id}.json");
         }
     }
 }
