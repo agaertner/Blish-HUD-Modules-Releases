@@ -47,7 +47,7 @@ namespace Nekres.Notes.UI.Controls
             _displayedBooks.Add(book);
         }
 
-        private void Create(Guid id, string title, IEnumerable<(string, string)> pages)
+        private void Create(Guid id, string title, IList<(string, string)> pages)
         {
             var book = new EditableBook(id, title, pages)
             {
@@ -94,7 +94,7 @@ namespace Nekres.Notes.UI.Controls
                 return;
             }
 
-            this.Create(bookModel.Id, bookModel.Title, bookModel.Pages.Select(p => (p.Title, p.Content)));
+            this.Create(bookModel.Id, bookModel.Title, bookModel.Pages.Select(p => (p.Title, p.Content)).ToList());
         }
 
         private void OnBookDisposed(object o, EventArgs e)

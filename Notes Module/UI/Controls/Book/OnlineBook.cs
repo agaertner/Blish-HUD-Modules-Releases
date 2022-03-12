@@ -21,7 +21,7 @@ namespace Nekres.Notes.UI.Controls
         private Rectangle _negativeRateButtonBounds;
         private bool _mouseOverNegativeRate;
 
-        public OnlineBook(Guid id, string author, Guid authorId, int positiveRatings, int negativeRatings, string title, IEnumerable<(string, string)> pages) : base(id, title, pages)
+        public OnlineBook(Guid id, string author, Guid authorId, int positiveRatings, int negativeRatings, string title, IList<(string, string)> pages) : base(id, title, pages)
         {
             Author = author;
             AuthorId = authorId;

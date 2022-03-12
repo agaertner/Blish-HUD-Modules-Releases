@@ -47,7 +47,7 @@ namespace Nekres.Notes.UI.Controls
         // Content Input
         private MultilineTextBox _editContentTextBox;
 
-        public EditableBook(Guid id, string title, IEnumerable<(string, string)> pages) : base(id, title, pages)
+        public EditableBook(Guid id, string title, IList<(string, string)> pages) : base(id, title, pages)
         {
         }
 

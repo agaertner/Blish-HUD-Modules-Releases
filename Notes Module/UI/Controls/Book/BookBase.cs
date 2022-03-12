@@ -77,16 +77,14 @@ namespace Nekres.Notes.UI.Controls
         /// <param name="id">Identifier that is used to differentiate this book from others.</param>
         /// <param name="title">Title used for the window name.</param>
         /// <param name="pages">Array of tuples in which each element is a pair of title and content.</param>
-        protected BookBase(Guid id, string title, IEnumerable<(string, string)> pages)
+        protected BookBase(Guid id, string title, IList<(string, string)> pages)
         {
             this.Guid = id;
 
-            pages = pages.ToList();
+            this.Title = string.IsNullOrEmpty(title) ? "Empty Book" : title;
 
             this.Pages = pages.IsNullOrEmpty() ? new ObservableCollection<(string, string)> { (this.Title, string.Empty) } : pages.ToObservableCollection();
             this.PagesTotal = Pages.Count;
-
-            this.Title = string.IsNullOrEmpty(title) ? "Empty Book" : title;
 
             this.Pages.CollectionChanged += OnPagesChanged;
 

@@ -9,7 +9,7 @@ namespace Nekres.Notes.UI.Controls
 {
     internal class ReadOnlyBook : BookBase
     {
-        public ReadOnlyBook(Guid id, string title, IEnumerable<(string, string)> pages) : base(id, title, pages)
+        public ReadOnlyBook(Guid id, string title, IList<(string, string)> pages) : base(id, title, pages)
         {
         }
 
