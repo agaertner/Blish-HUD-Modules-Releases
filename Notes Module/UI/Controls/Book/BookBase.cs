@@ -9,13 +9,13 @@ using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.BitmapFonts;
+using Nekres.Notes.Properties;
 
 namespace Nekres.Notes.UI.Controls
 {
     internal abstract class BookBase : WindowBase2
     {
         public event EventHandler<EventArgs> OnDelete;
-        public event EventHandler<ValueEventArgs<int>> OnTurnPage;
 
         private const int PADDING_LEFT = 20;
         private const int PADDING_TOP = 75;
@@ -31,7 +31,7 @@ namespace Nekres.Notes.UI.Controls
         private static readonly Texture2D TitleHighlightTexture = NotesModule.ModuleInstance.ContentsManager.GetTexture("716658.png");
 
         // Sheet
-        protected static readonly BitmapFont TextFont = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size14, ContentService.FontStyle.Regular);
+        protected static readonly BitmapFont TextFont = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size16, ContentService.FontStyle.Regular);
         private static readonly Texture2D SheetTexture = Content.GetTexture("1909316");
         private static readonly BitmapFont PageNumberFont = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size18, ContentService.FontStyle.Regular);
 
@@ -81,9 +81,9 @@ namespace Nekres.Notes.UI.Controls
         {
             this.Guid = id;
 
-            this.Title = string.IsNullOrEmpty(title) ? "Empty Book" : title;
+            this.Title = title ?? string.Empty;
 
-            this.Pages = pages.IsNullOrEmpty() ? new ObservableCollection<(string, string)> { (this.Title, string.Empty) } : pages.ToObservableCollection();
+            this.Pages = pages.IsNullOrEmpty() ? new ObservableCollection<(string, string)> { (Resources.Empty_Page, string.Empty) } : pages.ToObservableCollection();
             this.PagesTotal = Pages.Count;
 
             this.Pages.CollectionChanged += OnPagesChanged;
@@ -94,6 +94,8 @@ namespace Nekres.Notes.UI.Controls
             };
 
             ConstructWindow(NotesModule.ModuleInstance.ContentsManager.GetTexture("1909321.png").Duplicate().GetRegion(30, 9, 625, 785), new Rectangle(0, 20, 625, 760), new Rectangle(0, 0, 625, 800));
+
+            GameService.Content.PlaySoundEffectByName("page-open-" + RandomUtil.GetRandom(1, 3));
         }
 
         /// <summary>
@@ -102,7 +104,7 @@ namespace Nekres.Notes.UI.Controls
         /// <param name="id">Identifier that is used to differentiate this book from others.</param>
         /// <param name="title">Title used for the window name.</param>
         /// <param name="contentPages">Array of string in which each element represents an additional page of text.</param>
-        protected BookBase(Guid id, string title, IEnumerable<string> contentPages) : this(id, title, contentPages.Select((p, i) => i == 0 ? (title, p) : (string.Empty, p)).ToArray()) { }
+        protected BookBase(Guid id, string title, IEnumerable<string> contentPages) : this(id, title, contentPages.Select((p, i) => i == 0 ? (Resources.Empty_Page, p) : (string.Empty, p)).ToArray()) { }
 
         /// <summary>
         /// Creates a book window similar to that seen when interacting with books in Guild Wars 2.
@@ -110,7 +112,7 @@ namespace Nekres.Notes.UI.Controls
         /// <param name="id">Identifier that is used to differentiate this book from others.</param>
         /// <param name="title">Title used for the window name.</param>
         /// <param name="content">Text of the first page.</param>
-        protected BookBase(Guid id, string title, string content) : this(id, title, new[] { (title, content) }) { }
+        protected BookBase(Guid id, string title, string content) : this(id, title, new[] { (Resources.Empty_Page, content) }) { }
 
         /// <summary>
         /// Creates an empty book window similar to that seen when interacting with books in Guild Wars 2.
@@ -144,6 +146,10 @@ namespace Nekres.Notes.UI.Controls
             _mouseOverTurnPageLeft = LeftTurnButtonBounds.Contains(relPos);
             _mouseOverTurnPageRight = RightTurnButtonBounds.Contains(relPos);
             _mouseOverDeleteBook = _deleteBookButtonBounds.Contains(relPos);
+
+            if (_mouseOverDeleteBook)
+                this.BasicTooltipText = Resources.Destroy_Book;
+
             base.OnMouseMoved(e);
         }
 
@@ -165,7 +171,6 @@ namespace Nekres.Notes.UI.Controls
             if (index < 0 || index >= PagesTotal) return;
             GameService.Content.PlaySoundEffectByName("page-open-" + RandomUtil.GetRandom(1, 3));
             this.CurrentPageIndex = index;
-            this.OnTurnPage?.Invoke(this, new ValueEventArgs<int>(index));
         }
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)

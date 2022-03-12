@@ -59,13 +59,12 @@ namespace Nekres.Notes.UI.Controls
                     Parent = this,
                     Text = _confirmButtonText,
                     Size = _confirmButtonBounds.Size,
-                    Location = _confirmButtonBounds.Location
+                    Location = _confirmButtonBounds.Location,
+                    Enabled = string.IsNullOrEmpty(_challengeText)
                 };
                 _confirmButton.Click += (_, _) =>
                 {
-                    if (!string.IsNullOrEmpty(_challengeText) && !_challengeTextBox.Text.Equals(_challengeText))
-                        return;
-
+                    GameService.Content.PlaySoundEffectByName("button-click");
                     _callback(true);
                     this.Dispose();
                 };
@@ -82,6 +81,7 @@ namespace Nekres.Notes.UI.Controls
                 };
                 _cancelButton.Click += (_, _) =>
                 {
+                    GameService.Content.PlaySoundEffectByName("button-click");
                     _callback(false);
                     this.Dispose();
                 };
@@ -98,6 +98,10 @@ namespace Nekres.Notes.UI.Controls
                 Location = _challengeTextBoxBounds.Location,
                 Font = _font
             };
+            _challengeTextBox.TextChanged += (o, _) =>
+            {
+                _confirmButton.Enabled = ((TextBox)o).Text.Equals(_challengeText);
+            };
         }
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
@@ -109,21 +113,21 @@ namespace Nekres.Notes.UI.Controls
             spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, bounds, Color.Black * 0.8f);
 
             // Calculate background bounds
-            var bgTextureSize = new Point((int)textSize.Width + 100, (int)textSize.Height + 125);
+            var bgTextureSize = new Point((int)textSize.Width + 12, (int)textSize.Height + (!string.IsNullOrEmpty(_challengeText) ? 125 : 60));
             var bgTexturePos = new Point((bounds.Width - bgTextureSize.X) / 2, (bounds.Height - bgTextureSize.Y) / 2);
             var bgBounds = new Rectangle(bgTexturePos, bgTextureSize);
 
             // Draw border
-            spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(bgBounds.X - 1, bgBounds.Y - 1, bgBounds.Width, 1), Color.Black);
-            spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(bgBounds.X - 1, bgBounds.Y - 1, 1, bgBounds.Height), Color.Black);
-            spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(bgBounds.X + bgBounds.Width, bgBounds.Y, 1, bgBounds.Height), Color.Black);
+            spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(bgBounds.X - 1, bgBounds.Y - 1, bgBounds.Width + 1, 1), Color.Black);
+            spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(bgBounds.X - 1, bgBounds.Y - 1, 1, bgBounds.Height + 1), Color.Black);
+            spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(bgBounds.X + bgBounds.Width, bgBounds.Y, 1, bgBounds.Height + 1), Color.Black);
             spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(bgBounds.X, bgBounds.Y + bgBounds.Height, bgBounds.Width, 1), Color.Black);
 
             // Draw Background
             spriteBatch.DrawOnCtrl(this, _bgTexture, bgBounds, Color.White);
 
-            //Draw text
-            spriteBatch.DrawStringOnCtrl(this, _text, _font, new Rectangle(bgBounds.X + 5, bgBounds.Y + 5, bgBounds.Width - 10, bgBounds.Height), Color.White, true, HorizontalAlignment.Left, VerticalAlignment.Top);
+            // Draw text
+            spriteBatch.DrawStringOnCtrl(this, _text, _font, new Rectangle(bgBounds.X + 6, bgBounds.Y + 5, bgBounds.Width - 11, bgBounds.Height), Color.White, true, HorizontalAlignment.Left, VerticalAlignment.Top);
 
             // Set button bounds
             _confirmButtonBounds = new Rectangle(bgBounds.Left + 5, bgBounds.Bottom - 50, 100, 45);

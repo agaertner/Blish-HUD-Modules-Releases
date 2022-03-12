@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Nekres.Notes.Properties;
 
 namespace Nekres.Notes.UI.Controls
 {
@@ -173,7 +174,8 @@ namespace Nekres.Notes.UI.Controls
                 
                 this.Delete(book.Guid);
                 book.Dispose();
-            }, $"Are you sure you want to delete \"{book.Title}\"?\nConfirm this action by typing the title:", "Yes", "Cancel", book.Title);
+            }, string.Format(Resources.You_are_about_to_permanently_destroy__0__, $"\u201c{book.Title}\u201d") + '\n' + Resources.Enter_the_book_s_title_below_to_confirm_before_destroying_, 
+                Resources.Yes, Resources.Cancel, book.Title);
         }
 
         private void OnBookChanged(object o, EventArgs e)

@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using Nekres.Notes.Properties;
 
 namespace Nekres.Notes.UI.Controls
 {
@@ -68,6 +69,14 @@ namespace Nekres.Notes.UI.Controls
             base.TurnPage(index);
             this._editTitleTextBox.Text = this.Pages[this.CurrentPageIndex].Item1;
             this._editContentTextBox.Text = this.Pages[this.CurrentPageIndex].Item2;
+            for (var i = this.CurrentPageIndex - 1; i >= 0; i--)
+            {
+                var mostRecentTitle = this.Pages[i].Item1;
+                if (string.IsNullOrEmpty(mostRecentTitle))
+                    continue;
+                this._editTitleTextBox.PlaceholderText = mostRecentTitle;
+                break;
+            }
         }
 
         public void AddPage(int index, string content = "", string title = "")
@@ -83,14 +92,20 @@ namespace Nekres.Notes.UI.Controls
 
         public void RemovePage(int index)
         {
-            if (PagesTotal == 1) return;
-            if (index < 0)
-                index = 0;
-            else if (index >= PagesTotal)
-                index = PagesTotal - 1;
-            this.Pages.RemoveAt(index);
-            this.TurnPage(index >= PagesTotal ? PagesTotal - 1 : index);
-            this.OnChanged?.Invoke(this, EventArgs.Empty);
+            if (this.PagesTotal == 1) return;
+            var pageTitle = this.Pages[this.CurrentPageIndex].Item1;
+            ConfirmationPrompt.ShowPrompt(confirmed =>
+            {
+                if (!confirmed) return;
+                if (index < 0)
+                    index = 0;
+                else if (index >= PagesTotal)
+                    index = PagesTotal - 1;
+                this.Pages.RemoveAt(index);
+                this.TurnPage(index >= PagesTotal ? PagesTotal - 1 : index);
+                this.OnChanged?.Invoke(this, EventArgs.Empty);
+            }, string.Format(Resources.You_are_about_to_permanently_destroy__0__, $"\u201c{(string.IsNullOrEmpty(pageTitle) ? Resources.Empty_Page : pageTitle)}\u201d") + '\n' + Resources.Are_you_sure_,
+                Resources.Yes, Resources.Cancel);
         }
 
         private void EditTitle(int index, string newTitle)
@@ -115,6 +130,18 @@ namespace Nekres.Notes.UI.Controls
             _mouseOverLeftAddPageButton = _leftAddPageButtonBounds.Contains(relPos);
             _mouseOverRemovePageButton = _removePageButtonBounds.Contains(relPos);
             _mouseOverEditBookTitle = _editTitleButtonBounds.Contains(relPos);
+
+            if (_mouseOverRightAddPageButton)
+                this.BasicTooltipText = Resources.Add_new_page_right;
+            else if (_mouseOverLeftAddPageButton)
+                this.BasicTooltipText = Resources.Add_new_page_left;
+            else if (_mouseOverRemovePageButton)
+                this.BasicTooltipText = Resources.Remove_current_page;
+            else if (_mouseOverEditBookTitle)
+                this.BasicTooltipText = Resources.Edit_book_title;
+            else
+                this.BasicTooltipText = string.Empty;
+
             base.OnMouseMoved(e);
         }
 
@@ -125,7 +152,7 @@ namespace Nekres.Notes.UI.Controls
                 _editTitleTextBox = new TextBox
                 {
                     Parent = this,
-                    Text = this.Pages[this.CurrentPageIndex].Item1,
+                    Text = this.Pages[0].Item1,
                     MaxLength = MaxCharacterCountTitle,
                     Size = new Point(400, TitleRegion.Height),
                     Location = new Point((ContentRegion.Width - 400) / 2, TitleRegion.Y - TitleRegion.Height),
@@ -133,9 +160,10 @@ namespace Nekres.Notes.UI.Controls
                     ForeColor = Color.White,
                     Visible = true,
                     Enabled = true,
+                    BasicTooltipText = Resources.Edit_page_title,
                     HideBackground = true,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    PlaceholderText = Pages[0].Item1,
+                    PlaceholderText = this.Pages[0].Item1,
                 };
                 _editTitleTextBox.InputFocusChanged += (o, e) =>
                 {
@@ -159,7 +187,8 @@ namespace Nekres.Notes.UI.Controls
                     ForeColor = Color.Black,
                     Visible = true,
                     Enabled = true,
-                    HideBackground = true
+                    HideBackground = true,
+                    PlaceholderText = Resources.Write_something___
                 };
                 _editContentTextBox.InputFocusChanged += (o, e) =>
                 {
@@ -214,9 +243,11 @@ namespace Nekres.Notes.UI.Controls
                     _editingBookTitle = false;
                     this.OnChanged?.Invoke(this, EventArgs.Empty);
                 };
+                GameService.Content.PlaySoundEffectByName("button-click");
             }
             else if (_mouseOverEditBookTitle)
             {
+                GameService.Content.PlaySoundEffectByName("button-click");
                 // Hide file renaming overlay. Enable other inputs.
                 _editContentTextBox.Enabled = true;
                 _editTitleTextBox.Show();

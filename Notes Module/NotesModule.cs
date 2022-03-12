@@ -12,7 +12,10 @@ using Nekres.Notes.UI.Models;
 using Nekres.Notes.UI.Views;
 using System;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Threading.Tasks;
+using Nekres.Notes.Properties;
+
 namespace Nekres.Notes
 {
 
@@ -59,6 +62,12 @@ namespace Nekres.Notes
 
             _bookFactory = new BookFactory(DirectoriesManager.GetFullDirectoryPath("notes"));
             _bookFactory.OnIndexChanged += OnBookIndexChanged;
+            GameService.Overlay.UserLocaleChanged += OnUserLocaleChanged;
+        }
+
+        private void OnUserLocaleChanged(object o, ValueEventArgs<CultureInfo> e)
+        {
+            this.BuildContextMenu();
         }
 
         private void OnBookIndexChanged(object o, ValueEventArgs<Guid> e)
@@ -80,10 +89,11 @@ namespace Nekres.Notes
 
             var newItem = new ContextMenuStripItem
             {
-                Text = "New",
+                Text = Resources.New_Book,
+                BasicTooltipText = Resources.Create_a_brand_new_book,
                 Parent = moduleContextMenu,
             };
-            newItem.Click += (o, e) => _bookFactory.Create("Empty Book");
+            newItem.Click += (o, e) => _bookFactory.Create(Resources.Empty_Book);
 
             var separatorItem = new ContextMenuStripItemSeparator
             {
@@ -127,7 +137,9 @@ namespace Nekres.Notes
         }
 
         /// <inheritdoc />
-        protected override void Unload() {
+        protected override void Unload()
+        {
+            GameService.Overlay.UserLocaleChanged -= OnUserLocaleChanged;
             _bookFactory.OnIndexChanged -= OnBookIndexChanged;
             _bookFactory.Dispose();
             moduleCornerIcon.Click -= ModuleCornerIconClicked;
