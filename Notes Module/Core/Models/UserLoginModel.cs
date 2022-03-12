@@ -1,11 +1,16 @@
-﻿using System;
-using Gw2Sharp.WebApi.V2.Models;
+﻿using Gw2Sharp.WebApi.V2.Models;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 using Newtonsoft.Json.Converters;
-
+using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 namespace Nekres.Notes.Core.Models
 {
+    public enum Gw2AuthAttribute {
+        [EnumMember(Value = "verified")]
+        Verified
+    }
+
     internal class UserLoginModel
     {
         /// <summary>
@@ -27,6 +32,9 @@ namespace Nekres.Notes.Core.Models
 
         [JsonProperty(PropertyName = "permissions", ItemConverterType = typeof(StringEnumConverter))]
         public IEnumerable<TokenPermission> Permissions { get; set; }
+
+        [JsonProperty(PropertyName = "attributes", ItemConverterType = typeof(StringEnumConverter))]
+        public IEnumerable<Gw2AuthAttribute> Attributes { get; set; }
 
         [JsonProperty("token_type")]
         public string TokenType { get; set; }

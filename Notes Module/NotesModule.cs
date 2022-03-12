@@ -26,7 +26,7 @@ namespace Nekres.Notes
     public class NotesModule : Module
     {
 
-        internal static readonly Logger Logger = Logger.GetLogger(typeof(NotesModule));
+        internal static Logger Logger = Logger.GetLogger(typeof(NotesModule));
 
         internal static NotesModule ModuleInstance;
 
@@ -45,18 +45,15 @@ namespace Nekres.Notes
             
         }
 
-        private const int AutoSaveInternalSeconds = 30;
-
         private Texture2D _icon64;
         //private Texture2D _icon128;
 
         private CornerIcon moduleCornerIcon;
         private ContextMenuStrip moduleContextMenu;
 
-        private List<Book> _activeBooks;
+        private BookFactory _bookFactory;
         protected override void Initialize()
         {
-            _activeBooks = new List<Book>();
             LoadTextures();
             moduleCornerIcon = new CornerIcon
             {
@@ -66,6 +63,8 @@ namespace Nekres.Notes
             };
             moduleCornerIcon.Click += ModuleCornerIconClicked;
             BuildContextMenu();
+
+            _bookFactory = new BookFactory();
         }
 
         private void ModuleCornerIconClicked(object o, MouseEventArgs e)
@@ -85,7 +84,7 @@ namespace Nekres.Notes
                 Text = "New",
                 Parent = moduleContextMenu,
             };
-            newItem.Click += (o, e) => CreateNewBook();
+            newItem.Click += (o, e) => _bookFactory.Create("Empty Book");
 
             var separatorItem = new ContextMenuStripItemSeparator
             {
@@ -104,69 +103,12 @@ namespace Nekres.Notes
                     BasicTooltipText = filePath,
                     Parent = moduleContextMenu
                 };
-                noteEntry.Click += LoadNote;
+                noteEntry.Click += (o, _) => _bookFactory.LoadNote(((Control)o).BasicTooltipText);
             }
 
             if (!prevVisible.GetValueOrDefault()) return;
             moduleContextMenu.Location = prevLocation.GetValueOrDefault();
             moduleContextMenu.Show();
-        }
-
-        private async void LoadNote(object o, MouseEventArgs e)
-        {
-            var path = ((Control)o).BasicTooltipText;
-
-            BookModel bookEntity;
-            try
-            {
-                using var str = new StreamReader(path);
-                var content = await str.ReadToEndAsync();
-                bookEntity = JsonConvert.DeserializeObject<BookModel>(content);
-                if (bookEntity == null)
-                    throw new JsonException("No data after deserialization. Possibly corrupted Json.");
-            }
-            catch (Exception ex) when (ex is IOException or InvalidOperationException or JsonException)
-            {
-                ScreenNotification.ShowNotification("There was an error loading your book.", ScreenNotification.NotificationType.Error);
-                Logger.Error(ex, ex.Message);
-                return;
-            }
-
-            Book prevBook;
-            if ((prevBook = _activeBooks.FirstOrDefault(b => b.Guid.Equals(bookEntity.Guid))) != null)
-            {
-                prevBook.Location = new Point((GameService.Graphics.SpriteScreen.Width - prevBook.Width) / 2, (GameService.Graphics.SpriteScreen.Height - prevBook.Height) / 2);
-                return;
-            }
-
-            var book = new Book(bookEntity.Title, bookEntity.Pages.Select(p => (p.Title, p.Content)).ToArray(), bookEntity.UseChapters, bookEntity.AllowEdit, bookEntity.Guid.ToString())
-            {
-                Parent = GameService.Graphics.SpriteScreen,
-                Location = new Point(GameService.Graphics.SpriteScreen.Width / 2, GameService.Graphics.SpriteScreen.Height / 2),
-            };
-            book.Disposed += OnBookDisposed;
-            book.Location = new Point((GameService.Graphics.SpriteScreen.Width - book.Width) / 2, (GameService.Graphics.SpriteScreen.Height - book.Height) / 2);
-            book.Show();
-
-            _activeBooks.Add(book);
-        }
-
-        private void CreateNewBook()
-        {
-            var book = new Book
-            {
-                Parent = GameService.Graphics.SpriteScreen,
-                Location = new Point(GameService.Graphics.SpriteScreen.Width / 2, GameService.Graphics.SpriteScreen.Height / 2),
-            };
-            book.Disposed += OnBookDisposed;
-            book.Location = new Point((GameService.Graphics.SpriteScreen.Width - book.Width) / 2, (GameService.Graphics.SpriteScreen.Height - book.Height) / 2);
-            book.Show();
-            _activeBooks.Add(book);
-        }
-
-        private void OnBookDisposed(object o, EventArgs e)
-        {
-            _activeBooks.Remove((Book)o);
         }
 
         private void LoadTextures()
@@ -184,21 +126,13 @@ namespace Nekres.Notes
             base.OnModuleLoaded(e);
         }
 
-        private DateTime _prevAutoSaveTime = DateTime.UtcNow;
         protected override void Update(GameTime gameTime) {
-            if (DateTime.UtcNow.Subtract(_prevAutoSaveTime).TotalSeconds > AutoSaveInternalSeconds)
-            {
-                _prevAutoSaveTime = DateTime.UtcNow;
-                foreach (var activeBook in _activeBooks)
-                {
-                    activeBook.Save();
-                }
-                BuildContextMenu();
-            }
+            _bookFactory.Update(BuildContextMenu);
         }
 
         /// <inheritdoc />
         protected override void Unload() {
+            _bookFactory.Dispose();
             moduleCornerIcon.Click -= ModuleCornerIconClicked;
             moduleCornerIcon.Dispose();
             // All static members must be manually unset
