@@ -21,6 +21,7 @@ namespace Nekres.Notes.UI.Models
         [JsonProperty("id")] public Guid Id { get; set; }
 
         [JsonProperty("title")] public string Title { get; set; }
+
         [JsonProperty("pages")] public IList<PageModel> Pages { get; set; }
     }
 }

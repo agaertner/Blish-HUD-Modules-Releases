@@ -133,20 +133,21 @@
   <ItemGroup>
     <Compile Include="Core\Models\BookResponse.cs" />
     <Compile Include="Core\Models\JwtSubtokenModel.cs" />
+    <Compile Include="Core\Models\PageResponse.cs" />
     <Compile Include="Core\Models\UserLoginModel.cs" />
     <Compile Include="NotesModule.cs" />
-    <Compile Include="UI\Controls\BookBase.cs" />
-    <Compile Include="UI\Controls\BookFactory.cs" />
+    <Compile Include="UI\Controls\Book\BookBase.cs" />
+    <Compile Include="UI\BookFactory.cs" />
     <Compile Include="UI\Controls\ContextMenuStripItemSeparator.cs" />
     <Compile Include="Core\CallbackListener.cs" />
     <Compile Include="Core\Models\AuthResponseModel.cs" />
-    <Compile Include="UI\Controls\EditableBook.cs" />
-    <Compile Include="UI\Controls\OnlineBook.cs" />
-    <Compile Include="UI\Controls\ReadOnlyBook.cs" />
-    <Compile Include="UI\Models\BookModel.cs" />
+    <Compile Include="UI\Controls\Book\EditableBook.cs" />
+    <Compile Include="UI\Controls\Book\OnlineBook.cs" />
+    <Compile Include="UI\Controls\Book\ReadOnlyBook.cs" />
+    <Compile Include="UI\Models\Book\BookModel.cs" />
     <Compile Include="UI\Models\CustomSettingsModel.cs" />
-    <Compile Include="UI\Models\OnlineBookModel.cs" />
-    <Compile Include="UI\Models\PageModel.cs" />
+    <Compile Include="UI\Models\Book\OnlineBookModel.cs" />
+    <Compile Include="UI\Models\Book\PageModel.cs" />
     <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
     <Compile Include="UI\Views\CustomSettingsView.cs" />
     <Compile Include="_Extensions\IEnumerableExtensions.cs" />
@@ -217,7 +218,7 @@
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="NAudio.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL">
-      <HintPath>..\packages\NAudio.Core.2.0.0\lib\netstandard2.0\NAudio.Core.dll</HintPath>
+      <HintPath>.\packages\NAudio.Core.2.0.0\lib\netstandard2.0\NAudio.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="NAudio.Wasapi, Version=2.0.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL">

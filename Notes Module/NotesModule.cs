@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
@@ -17,8 +10,10 @@ using Microsoft.Xna.Framework.Graphics;
 using Nekres.Notes.UI.Controls;
 using Nekres.Notes.UI.Models;
 using Nekres.Notes.UI.Views;
-using Newtonsoft.Json;
-using Book = Nekres.Notes.UI.Controls.Book;
+using System;
+using System.ComponentModel.Composition;
+using System.IO;
+using System.Threading.Tasks;
 namespace Nekres.Notes
 {
 

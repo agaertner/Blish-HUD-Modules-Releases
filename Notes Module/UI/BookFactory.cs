@@ -1,6 +1,5 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
-using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Nekres.Notes.UI.Models;
 using Newtonsoft.Json;
@@ -40,6 +39,7 @@ namespace Nekres.Notes.UI.Controls
                 Location = new Point(GameService.Graphics.SpriteScreen.Width / 2, GameService.Graphics.SpriteScreen.Height / 2),
             };
             book.Disposed += OnBookDisposed;
+            book.OnDelete += OnBookDelete;
             book.Location = new Point((GameService.Graphics.SpriteScreen.Width - book.Width) / 2, (GameService.Graphics.SpriteScreen.Height - book.Height) / 2);
             book.Show();
 
@@ -54,6 +54,7 @@ namespace Nekres.Notes.UI.Controls
                 Location = new Point(GameService.Graphics.SpriteScreen.Width / 2, GameService.Graphics.SpriteScreen.Height / 2),
             };
             book.Disposed += OnBookDisposed;
+            book.OnDelete += OnBookDelete;
             book.Location = new Point((GameService.Graphics.SpriteScreen.Width - book.Width) / 2, (GameService.Graphics.SpriteScreen.Height - book.Height) / 2);
             book.Show();
 
@@ -79,13 +80,13 @@ namespace Nekres.Notes.UI.Controls
             }
 
             BookBase prevBook;
-            if ((prevBook = _displayedBooks.FirstOrDefault(b => b.Guid.Equals(bookModel.Guid))) != null)
+            if ((prevBook = _displayedBooks.FirstOrDefault(b => b.Guid.Equals(bookModel.Id))) != null)
             {
                 prevBook.Location = new Point((GameService.Graphics.SpriteScreen.Width - prevBook.Width) / 2, (GameService.Graphics.SpriteScreen.Height - prevBook.Height) / 2);
                 return;
             }
 
-            this.Create(bookModel.Guid, bookModel.Title, bookModel.Pages.Select(p => (p.Title, p.Content)));
+            this.Create(bookModel.Id, bookModel.Title, bookModel.Pages.Select(p => (p.Title, p.Content)));
         }
 
         private void OnBookDisposed(object o, EventArgs e)
@@ -93,7 +94,12 @@ namespace Nekres.Notes.UI.Controls
             _displayedBooks.Remove((BookBase)o);
         }
 
-        internal void Update(Action callback)
+        private void OnBookDelete(object o, EventArgs e)
+        {
+            this.Delete((BookBase)o);
+        }
+
+        internal void Update(Action onSaveCallback)
         {
             if (DateTime.UtcNow.Subtract(_prevAutoSaveTime).TotalSeconds > this.AutoSaveInternalSeconds)
             {
@@ -102,7 +108,7 @@ namespace Nekres.Notes.UI.Controls
                 {
                     this.Save(activeBook);
                 }
-                callback();
+                onSaveCallback();
             }
         }
 
@@ -135,8 +141,10 @@ namespace Nekres.Notes.UI.Controls
         public void Delete(BookBase book)
         {
             if (!FileUtil.TryDelete(this.GetFilePath(book))) return;
+
+            book.Dispose();
+
             NotesModule.ModuleInstance.BuildContextMenu();
-            Dispose();
         }
 
         private string GetFilePath(BookBase book)

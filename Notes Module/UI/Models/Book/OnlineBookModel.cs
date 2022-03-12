@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Nekres.Notes.Core.Models;
 
 namespace Nekres.Notes.UI.Models
@@ -21,7 +22,7 @@ namespace Nekres.Notes.UI.Models
             {
                 Id = response.Id,
                 Title = response.Title,
-                Pages = response.Pages,
+                Pages = response.Pages.OrderBy(p => p.Index).Select(PageModel.FromResponse).ToList(),
                 Author = response.Author,
                 AuthorId = response.AuthorId,
                 PositiveRatings = response.PositiveRatings,
