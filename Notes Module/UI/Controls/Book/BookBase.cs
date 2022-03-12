@@ -15,6 +15,7 @@ namespace Nekres.Notes.UI.Controls
     internal abstract class BookBase : WindowBase2
     {
         public event EventHandler<EventArgs> OnDelete;
+        public event EventHandler<ValueEventArgs<int>> OnTurnPage;
 
         private const int PADDING_LEFT = 20;
         private const int PADDING_TOP = 75;
@@ -82,12 +83,12 @@ namespace Nekres.Notes.UI.Controls
 
             pages = pages.ToList();
 
-            Pages = pages.IsNullOrEmpty() ? new ObservableCollection<(string, string)> { (this.Title, string.Empty) } : pages.ToObservableCollection();
-            PagesTotal = Pages.Count;
+            this.Pages = pages.IsNullOrEmpty() ? new ObservableCollection<(string, string)> { (this.Title, string.Empty) } : pages.ToObservableCollection();
+            this.PagesTotal = Pages.Count;
 
             this.Title = string.IsNullOrEmpty(title) ? "Empty Book" : title;
 
-            Pages.CollectionChanged += OnPagesChanged;
+            this.Pages.CollectionChanged += OnPagesChanged;
 
             this.Disposed += delegate
             {
@@ -151,21 +152,22 @@ namespace Nekres.Notes.UI.Controls
         protected override void OnLeftMouseButtonReleased(MouseEventArgs e)
         {
             if (_mouseOverDeleteBook)
-                OnDelete?.Invoke(this, EventArgs.Empty);
+                this.OnDelete?.Invoke(this, EventArgs.Empty);
 
             if (_mouseOverTurnPageLeft)
-                TurnPage(CurrentPageIndex - 1);
+                this.TurnPage(CurrentPageIndex - 1);
             else if (_mouseOverTurnPageRight)
-                TurnPage(CurrentPageIndex + 1);
+                this.TurnPage(CurrentPageIndex + 1);
 
             base.OnLeftMouseButtonReleased(e);
         }
 
-        protected void TurnPage(int index)
+        protected virtual void TurnPage(int index)
         {
             if (index < 0 || index >= PagesTotal) return;
             GameService.Content.PlaySoundEffectByName("page-open-" + RandomUtil.GetRandom(1, 3));
-            CurrentPageIndex = index;
+            this.CurrentPageIndex = index;
+            this.OnTurnPage?.Invoke(this, new ValueEventArgs<int>(index));
         }
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
@@ -173,7 +175,7 @@ namespace Nekres.Notes.UI.Controls
             base.PaintBeforeChildren(spriteBatch, bounds);
 
             /* Draw title */
-            TitleRegion = new Rectangle(PADDING_LEFT, PADDING_TOP, bounds.Width - PADDING_LEFT * 2, 29);
+            this.TitleRegion = new Rectangle(PADDING_LEFT, PADDING_TOP, bounds.Width - PADDING_LEFT * 2, 29);
 #if DEBUG
             spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, TitleRegion, new Color(0, 50, 0, 20));
 #endif
@@ -185,10 +187,10 @@ namespace Nekres.Notes.UI.Controls
             /* Draw sheet */
             var sheetSize = PointExtensions.ResizeKeepAspect(SheetTexture.Bounds.Size, ContentRegion.Width - 150, ContentRegion.Height - 150, true);
             var sheetLocation = new Point((ContentRegion.Width - sheetSize.X) / 2, TitleRegion.Bottom + TITLE_MARGIN_Y);
-            SheetBounds = new Rectangle(sheetLocation, sheetSize);
+            this.SheetBounds = new Rectangle(sheetLocation, sheetSize);
             spriteBatch.DrawOnCtrl(this, SheetTexture, SheetBounds, SheetTexture.Bounds, Color.White, 0f, Vector2.Zero);
 
-            SheetContentRegion = new Rectangle(SheetBounds.X + SHEET_PADDING_X, SheetBounds.Y + SHEET_PADDING_Y, SheetBounds.Width - SHEET_PADDING_X * 2, SheetBounds.Height - SHEET_PADDING_Y * 2);
+            this.SheetContentRegion = new Rectangle(SheetBounds.X + SHEET_PADDING_X, SheetBounds.Y + SHEET_PADDING_Y, SheetBounds.Width - SHEET_PADDING_X * 2, SheetBounds.Height - SHEET_PADDING_Y * 2);
 #if DEBUG
             spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, SheetContentRegion, new Color(0, 0, 255, 20));
 #endif

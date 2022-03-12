@@ -48,7 +48,7 @@ namespace Nekres.Notes.UI.Presenters
             BrowserUtil.OpenInDefaultBrowser(((Control)sender).BasicTooltipText);
         }
 
-        private async void View_LoginButtonClicked(object sender, EventArgs e)
+        private void View_LoginButtonClicked(object sender, EventArgs e)
         {
             _listener.Start(OnAuthorizedCallback);
             BrowserUtil.OpenInDefaultBrowser($"https://localhost:7168/api/Gw2Auth/auth?displayName={Environment.MachineName}");
@@ -71,7 +71,7 @@ namespace Nekres.Notes.UI.Presenters
             File.WriteAllText(Path.Combine(cache.FullName, "auth.json"), JsonConvert.SerializeObject(userLogin));
         }
 
-        private Dictionary<string, JwtSubtokenModel>? GetTokensFromJwt(string jwt)
+        private Dictionary<string, JwtSubtokenModel> GetTokensFromJwt(string jwt)
         {
             var jwtToken = _tokenHandler.ReadJwtToken(jwt);
 

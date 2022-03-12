@@ -11,6 +11,8 @@ namespace Nekres.Notes.UI.Controls
 {
     internal class EditableBook : BookBase
     {
+        public event EventHandler<EventArgs> OnChanged;
+
         // Edit Button
         private static readonly Texture2D EditButtonTextureDisabled = NotesModule.ModuleInstance.ContentsManager.GetTexture("155939.png");
         private static readonly Texture2D EditButtonTextureHover = NotesModule.ModuleInstance.ContentsManager.GetTexture("155940.png");
@@ -61,6 +63,13 @@ namespace Nekres.Notes.UI.Controls
         {
         }
 
+        protected override void TurnPage(int index)
+        {
+            base.TurnPage(index);
+            this._editTitleTextBox.Text = this.Pages[this.CurrentPageIndex].Item1;
+            this._editContentTextBox.Text = this.Pages[this.CurrentPageIndex].Item2;
+        }
+
         public void AddPage(int index, string content = "", string title = "")
         {
             if (index < 0)
@@ -69,6 +78,7 @@ namespace Nekres.Notes.UI.Controls
                 index = this.PagesTotal;
             this.Pages.Insert(index, (title ?? string.Empty, content ?? string.Empty));
             this.TurnPage(index);
+            this.OnChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void RemovePage(int index)
@@ -80,6 +90,22 @@ namespace Nekres.Notes.UI.Controls
                 index = PagesTotal - 1;
             this.Pages.RemoveAt(index);
             this.TurnPage(index >= PagesTotal ? PagesTotal - 1 : index);
+            this.OnChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void EditTitle(int index, string newTitle)
+        {
+            if (index < 0 || index > PagesTotal) return;
+            this.Pages[index] = (newTitle ?? string.Empty, this.Pages[index].Item2);
+            this.OnChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void EditContent(int index, string newContent)
+        {
+            if (index < 0 || index > PagesTotal) return;
+            var page = this.Pages[index];
+            this.Pages[index] = (this.Pages[index].Item1, newContent ?? string.Empty);
+            this.OnChanged?.Invoke(this, EventArgs.Empty);
         }
 
         protected override void OnMouseMoved(MouseEventArgs e)
@@ -90,6 +116,59 @@ namespace Nekres.Notes.UI.Controls
             _mouseOverRemovePageButton = _removePageButtonBounds.Contains(relPos);
             _mouseOverEditBookTitle = _editTitleButtonBounds.Contains(relPos);
             base.OnMouseMoved(e);
+        }
+
+        private void AddOrUpdateEditTextBox()
+        {
+            if (_editTitleTextBox == null)
+            {
+                _editTitleTextBox = new TextBox
+                {
+                    Parent = this,
+                    Text = this.Pages[this.CurrentPageIndex].Item1,
+                    MaxLength = MaxCharacterCountTitle,
+                    Size = new Point(400, TitleRegion.Height),
+                    Location = new Point((ContentRegion.Width - 400) / 2, TitleRegion.Y - TitleRegion.Height),
+                    Font = TitleFont,
+                    ForeColor = Color.White,
+                    Visible = true,
+                    Enabled = true,
+                    HideBackground = true,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    PlaceholderText = Pages[0].Item1,
+                };
+                _editTitleTextBox.InputFocusChanged += (o, e) =>
+                {
+                    if (e.Value) return;
+                    EditTitle(this.CurrentPageIndex, _editTitleTextBox.Text);
+                };
+            }
+            _editTitleTextBox.Location = new Point((ContentRegion.Width - 400) / 2, TitleRegion.Y - TitleRegion.Height);
+            _editTitleTextBox.Size = new Point(400, TitleRegion.Height);
+
+            if (_editContentTextBox == null)
+            {
+                _editContentTextBox = new MultilineTextBox
+                {
+                    Parent = this,
+                    Text = Pages[CurrentPageIndex].Item2,
+                    MaxLength = MaxCharacterCountContent,
+                    Size = SheetContentRegion.Size,
+                    Location = new Point(SheetContentRegion.X, SheetContentRegion.Y - 30),
+                    Font = TextFont,
+                    ForeColor = Color.Black,
+                    Visible = true,
+                    Enabled = true,
+                    HideBackground = true
+                };
+                _editContentTextBox.InputFocusChanged += (o, e) =>
+                {
+                    if (e.Value) return;
+                    EditContent(CurrentPageIndex, _editContentTextBox.Text);
+                };
+            }
+            _editContentTextBox.Location = new Point(SheetContentRegion.X, SheetContentRegion.Y - 30);
+            _editContentTextBox.Size = SheetContentRegion.Size;
         }
 
         protected override void OnLeftMouseButtonReleased(MouseEventArgs e)
@@ -133,6 +212,7 @@ namespace Nekres.Notes.UI.Controls
                     _editContentTextBox.Enabled = true;
                     _bookTitlePromptInputBox.Dispose();
                     _editingBookTitle = false;
+                    this.OnChanged?.Invoke(this, EventArgs.Empty);
                 };
             }
             else if (_mouseOverEditBookTitle)
@@ -143,71 +223,6 @@ namespace Nekres.Notes.UI.Controls
                 _bookTitlePromptInputBox.Dispose();
                 _editingBookTitle = false;
             }
-        }
-
-        private void EditTitle(int index, string newTitle)
-        {
-            if (index < 0 || index > PagesTotal) return;
-            Title = newTitle ?? string.Empty;
-        }
-
-        private void EditContent(int index, string newContent)
-        {
-            if (index < 0 || index > PagesTotal) return;
-            Pages[index] = (Pages[index].Item1, newContent ?? string.Empty);
-        }
-
-        private void AddOrUpdateEditTextBox()
-        {
-            if (_editTitleTextBox == null)
-            {
-                _editTitleTextBox = new TextBox
-                {
-                    Parent = this,
-                    Text = Pages[CurrentPageIndex].Item1,
-                    MaxLength = MaxCharacterCountTitle,
-                    Size = new Point(400, TitleRegion.Height),
-                    Location = new Point((ContentRegion.Width - 400) / 2, TitleRegion.Y - TitleRegion.Height),
-                    Font = TitleFont,
-                    ForeColor = Color.White,
-                    Visible = true,
-                    Enabled = true,
-                    HideBackground = true,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    PlaceholderText = Pages[0].Item1,
-                };
-                _editTitleTextBox.InputFocusChanged += (o, e) =>
-                {
-                    if (e.Value) return;
-                    EditTitle(CurrentPageIndex, _editTitleTextBox.Text);
-                };
-            }
-            _editTitleTextBox.Location = new Point((ContentRegion.Width - 400) / 2, TitleRegion.Y - TitleRegion.Height);
-            _editTitleTextBox.Size = new Point(400, TitleRegion.Height);
-
-            if (_editContentTextBox == null)
-            {
-                _editContentTextBox = new MultilineTextBox
-                {
-                    Parent = this,
-                    Text = Pages[CurrentPageIndex].Item2,
-                    MaxLength = MaxCharacterCountContent,
-                    Size = SheetContentRegion.Size,
-                    Location = new Point(SheetContentRegion.X, SheetContentRegion.Y - 30),
-                    Font = TextFont,
-                    ForeColor = Color.Black,
-                    Visible = true,
-                    Enabled = true,
-                    HideBackground = true
-                };
-                _editContentTextBox.InputFocusChanged += (o, e) =>
-                {
-                    if (e.Value) return;
-                    EditContent(CurrentPageIndex, _editContentTextBox.Text);
-                };
-            }
-            _editContentTextBox.Location = new Point(SheetContentRegion.X, SheetContentRegion.Y - 30);
-            _editContentTextBox.Size = SheetContentRegion.Size;
         }
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)

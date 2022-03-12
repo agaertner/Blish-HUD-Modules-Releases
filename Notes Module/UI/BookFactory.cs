@@ -20,15 +20,15 @@ namespace Nekres.Notes.UI.Controls
         private readonly int AutoSaveInternalSeconds = 30;
         private DateTime _prevAutoSaveTime = DateTime.UtcNow;
 
+        public BookFactory()
+        {
+            _displayedBooks = new List<BookBase>();
+            _fetchedBooks = new List<BookModel>();
+        }
         public void Dispose()
         {
             foreach (var displayedBook in _displayedBooks) 
                 displayedBook?.Dispose();
-        }
-
-        public BookBase FromStream(Stream stream)
-        {
-            throw new NotImplementedException();
         }
 
         public void Create(string title)
@@ -36,32 +36,40 @@ namespace Nekres.Notes.UI.Controls
             var book = new EditableBook(Guid.NewGuid(), title)
             {
                 Parent = GameService.Graphics.SpriteScreen,
-                Location = new Point(GameService.Graphics.SpriteScreen.Width / 2, GameService.Graphics.SpriteScreen.Height / 2),
+                Location = Point.Zero
             };
             book.Disposed += OnBookDisposed;
             book.OnDelete += OnBookDelete;
+            book.OnChanged += OnBookChanged;
             book.Location = new Point((GameService.Graphics.SpriteScreen.Width - book.Width) / 2, (GameService.Graphics.SpriteScreen.Height - book.Height) / 2);
             book.Show();
 
             _displayedBooks.Add(book);
         }
 
-        public void Create(Guid id, string title, IEnumerable<(string, string)> pages)
+        private void Create(Guid id, string title, IEnumerable<(string, string)> pages)
         {
             var book = new EditableBook(id, title, pages)
             {
                 Parent = GameService.Graphics.SpriteScreen,
-                Location = new Point(GameService.Graphics.SpriteScreen.Width / 2, GameService.Graphics.SpriteScreen.Height / 2),
+                Location = Point.Zero
             };
             book.Disposed += OnBookDisposed;
             book.OnDelete += OnBookDelete;
+            book.OnChanged += OnBookChanged;
             book.Location = new Point((GameService.Graphics.SpriteScreen.Width - book.Width) / 2, (GameService.Graphics.SpriteScreen.Height - book.Height) / 2);
             book.Show();
 
             _displayedBooks.Add(book);
         }
 
-        public async void LoadNote(string filePath)
+        public void FromStream(Stream stream)
+        {
+            var book = new OnlineBookModel();
+            throw new NotImplementedException();
+        }
+
+        public async void FromFile(string filePath)
         {
             BookModel bookModel;
             try
@@ -97,6 +105,11 @@ namespace Nekres.Notes.UI.Controls
         private void OnBookDelete(object o, EventArgs e)
         {
             this.Delete((BookBase)o);
+        }
+
+        private void OnBookChanged(object o, EventArgs e)
+        {
+            this.Save((BookBase)o);
         }
 
         internal void Update(Action onSaveCallback)

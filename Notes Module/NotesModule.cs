@@ -98,7 +98,7 @@ namespace Nekres.Notes
                     BasicTooltipText = filePath,
                     Parent = moduleContextMenu
                 };
-                noteEntry.Click += (o, _) => _bookFactory.LoadNote(((Control)o).BasicTooltipText);
+                noteEntry.Click += (o, _) => _bookFactory.FromFile(((Control)o).BasicTooltipText);
             }
 
             if (!prevVisible.GetValueOrDefault()) return;
