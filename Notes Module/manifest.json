@@ -6,7 +6,7 @@
   "manifest_version": 1,
   "description": "Take notes. Create pages. Bind your book.\nImmortalize your legacy through immersive journaling.",
   "dependencies": {
-    "bh.blishhud": ">=0.11.5-ci.43"
+    "bh.blishhud": ">=0.11.5-ci.68"
   },
   "url": "https://github.com/agaertner/Blish-HUD-Modules-Releases",
   "enabled_without_gw2": false,

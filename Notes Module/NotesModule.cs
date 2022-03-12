@@ -59,8 +59,6 @@ namespace Nekres.Notes
 
             _bookFactory = new BookFactory(DirectoriesManager.GetFullDirectoryPath("notes"));
             _bookFactory.OnIndexChanged += OnBookIndexChanged;
-
-            BuildContextMenu();
         }
 
         private void OnBookIndexChanged(object o, ValueEventArgs<Guid> e)

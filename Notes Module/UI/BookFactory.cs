@@ -53,8 +53,11 @@ namespace Nekres.Notes.UI.Controls
                 using var str = new StreamReader(Path.Combine(this.CacheDir, _indexFileName));
                 var content = await str.ReadToEndAsync();
                 _index = JsonConvert.DeserializeObject<Dictionary<Guid, string>>(content);
+
                 if (_index == null)
                     throw new JsonException("No data after deserialization. Possibly corrupted Json.");
+
+                OnIndexChanged?.Invoke(this, new ValueEventArgs<Guid>(Guid.Empty));
             }
             catch (Exception ex) when (ex is IOException or InvalidOperationException or JsonException)
             {
