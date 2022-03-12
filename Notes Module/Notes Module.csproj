@@ -138,6 +138,7 @@
     <Compile Include="NotesModule.cs" />
     <Compile Include="UI\Controls\Book\BookBase.cs" />
     <Compile Include="UI\BookFactory.cs" />
+    <Compile Include="UI\Controls\ConfirmationPrompt.cs" />
     <Compile Include="UI\Controls\ContextMenuStripItemSeparator.cs" />
     <Compile Include="Core\CallbackListener.cs" />
     <Compile Include="Core\Models\AuthResponseModel.cs" />

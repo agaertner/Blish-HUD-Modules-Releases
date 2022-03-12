@@ -164,8 +164,13 @@ namespace Nekres.Notes.UI.Controls
         private void OnBookDelete(object o, EventArgs e)
         {
             var book = (BookBase)o;
-            this.Delete(book.Guid);
-            book.Dispose();
+            ConfirmationPrompt.ShowPrompt(confirmed =>
+            {
+                if (!confirmed) return;
+                
+                this.Delete(book.Guid);
+                book.Dispose();
+            }, $"Are you sure you want to delete \"{book.Title}\"?\nConfirm this action by typing the title:", "Yes", "Cancel", book.Title);
         }
 
         private void OnBookChanged(object o, EventArgs e)

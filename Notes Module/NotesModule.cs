@@ -12,7 +12,6 @@ using Nekres.Notes.UI.Models;
 using Nekres.Notes.UI.Views;
 using System;
 using System.ComponentModel.Composition;
-using System.IO;
 using System.Threading.Tasks;
 namespace Nekres.Notes
 {
