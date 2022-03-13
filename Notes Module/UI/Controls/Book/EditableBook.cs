@@ -104,7 +104,7 @@ namespace Nekres.Notes.UI.Controls
                 this.Pages.RemoveAt(index);
                 this.TurnPage(index >= PagesTotal ? PagesTotal - 1 : index);
                 this.OnChanged?.Invoke(this, EventArgs.Empty);
-            }, string.Format(Resources.You_are_about_to_permanently_destroy__0__, $"\u201c{(string.IsNullOrEmpty(pageTitle) ? Resources.Empty_Page : pageTitle)}\u201d") + '\n' + Resources.Are_you_sure_,
+            }, string.Format(Resources.You_are_about_to_permanently_destroy__0__, $"\u201c{(string.IsNullOrEmpty(pageTitle) ? Resources.Empty_Page : pageTitle)}\u201d ({Resources.Page} {this.CurrentPageIndex + 1})") + '\n' + Resources.Are_you_sure_,
                 Resources.Yes, Resources.Cancel);
         }
 

@@ -140,23 +140,19 @@ Zerstörung den Vorgang zu bestätigen.</value>
   </data>
   <data name="Add new page right" xml:space="preserve">
     <value>Neue Seite rechts hinzufügen</value>
-    <comment>Tooltip of add page right button.
-Fuzzy</comment>
+    <comment>Tooltip of add page right button.</comment>
   </data>
   <data name="Remove current page" xml:space="preserve">
     <value>Aktuelle Seite entfernen</value>
-    <comment>Removing current page.
-Fuzzy</comment>
+    <comment>Removing current page.</comment>
   </data>
   <data name="Add new page left" xml:space="preserve">
     <value>Neue Seite links hinzufügen</value>
-    <comment>Tooltip of adding one page to the left button.
-Fuzzy</comment>
+    <comment>Tooltip of adding one page to the left button.</comment>
   </data>
   <data name="Edit book title" xml:space="preserve">
     <value>Buchtitel bearbeiten</value>
-    <comment>Tooltip of the edit book title button.
-Fuzzy</comment>
+    <comment>Tooltip of the edit book title button.</comment>
   </data>
   <data name="Are you sure?" xml:space="preserve">
     <value>Seid Ihr sicher?</value>
@@ -164,7 +160,6 @@ Fuzzy</comment>
   </data>
   <data name="Edit page title" xml:space="preserve">
     <value>Seitentitel bearbeiten</value>
-    <comment>Fuzzy</comment>
   </data>
   <data name="Create a brand new book" xml:space="preserve">
     <value>Erstelle ein brandneues Buch</value>
@@ -189,5 +184,29 @@ Fuzzy</comment>
   <data name="Write something..." xml:space="preserve">
     <value>Schreib etwas...</value>
     <comment>placeholder</comment>
+  </data>
+  <data name="There was an error loading your library." xml:space="preserve">
+    <value>Es ist ein Fehler beim Laden Ihrer Bibliothek aufgetreten.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="There was an error loading your book." xml:space="preserve">
+    <value>Es ist ein Fehler beim Laden Ihres Buches aufgetreten.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Autosave of {0} failed." xml:space="preserve">
+    <value>Automatisches Speichern von {0} fehlgeschlagen.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Saving index file failed." xml:space="preserve">
+    <value>Speichern der Indexdatei fehlgeschlagen.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Access denied." xml:space="preserve">
+    <value>Zugriff verweigert.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Page" xml:space="preserve">
+    <value>Seite</value>
+    <comment>book page</comment>
   </data>
 </root>

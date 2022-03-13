@@ -122,7 +122,7 @@
     <comment>permanently deleting something</comment>
   </data>
   <data name="Enter the book&apos;s title below to confirm before destroying." xml:space="preserve">
-    <value>Enter the book&apos;s name below to confirm before destroying.</value>
+    <value>Enter the book&apos;s title below to confirm before destroying.</value>
     <comment>permanently deleting something
 Fuzzy</comment>
   </data>
@@ -189,5 +189,29 @@ Fuzzy</comment>
   <data name="Write something..." xml:space="preserve">
     <value>Write something...</value>
     <comment>placeholder</comment>
+  </data>
+  <data name="There was an error loading your library." xml:space="preserve">
+    <value>There was an error loading your library.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="There was an error loading your book." xml:space="preserve">
+    <value>There was an error loading your book.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Autosave of {0} failed." xml:space="preserve">
+    <value>Autosave of {0} failed.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Saving index file failed." xml:space="preserve">
+    <value>Saving index file failed.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Access denied." xml:space="preserve">
+    <value>Access denied.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Page" xml:space="preserve">
+    <value>Page</value>
+    <comment>book page</comment>
   </data>
 </root>

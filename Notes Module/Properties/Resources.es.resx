@@ -184,4 +184,28 @@
     <value>Escribe algo...</value>
     <comment>placeholder</comment>
   </data>
+  <data name="There was an error loading your library." xml:space="preserve">
+    <value>Hubo un error al cargar su biblioteca.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="There was an error loading your book." xml:space="preserve">
+    <value>Hubo un error al cargar su libro.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Autosave of {0} failed." xml:space="preserve">
+    <value>El autoguardado de {0} ha fallado.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Saving index file failed." xml:space="preserve">
+    <value>El guardado del archivo de índice ha fallado.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Access denied." xml:space="preserve">
+    <value>Acceso denegado.</value>
+    <comment>screen notification</comment>
+  </data>
+  <data name="Page" xml:space="preserve">
+    <value>Página</value>
+    <comment>book page</comment>
+  </data>
 </root>

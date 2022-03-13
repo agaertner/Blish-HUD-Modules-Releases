@@ -61,6 +61,15 @@ namespace Nekres.Notes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Access denied..
+        /// </summary>
+        internal static string Access_denied_ {
+            get {
+                return ResourceManager.GetString("Access denied.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add new page left.
         /// </summary>
         internal static string Add_new_page_left {
@@ -84,6 +93,15 @@ namespace Nekres.Notes.Properties {
         internal static string Are_you_sure_ {
             get {
                 return ResourceManager.GetString("Are you sure?", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Autosave of {0} failed..
+        /// </summary>
+        internal static string Autosave_of__0__failed_ {
+            get {
+                return ResourceManager.GetString("Autosave of {0} failed.", resourceCulture);
             }
         }
         
@@ -160,7 +178,7 @@ namespace Nekres.Notes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enter the book&apos;s name below to confirm before destroying..
+        ///   Looks up a localized string similar to Enter the book&apos;s title below to confirm before destroying..
         /// </summary>
         internal static string Enter_the_book_s_title_below_to_confirm_before_destroying_ {
             get {
@@ -178,11 +196,47 @@ namespace Nekres.Notes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Page.
+        /// </summary>
+        internal static string Page {
+            get {
+                return ResourceManager.GetString("Page", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Remove current page.
         /// </summary>
         internal static string Remove_current_page {
             get {
                 return ResourceManager.GetString("Remove current page", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saving index file failed..
+        /// </summary>
+        internal static string Saving_index_file_failed_ {
+            get {
+                return ResourceManager.GetString("Saving index file failed.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There was an error loading your book..
+        /// </summary>
+        internal static string There_was_an_error_loading_your_book_ {
+            get {
+                return ResourceManager.GetString("There was an error loading your book.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There was an error loading your library..
+        /// </summary>
+        internal static string There_was_an_error_loading_your_library_ {
+            get {
+                return ResourceManager.GetString("There was an error loading your library.", resourceCulture);
             }
         }
         

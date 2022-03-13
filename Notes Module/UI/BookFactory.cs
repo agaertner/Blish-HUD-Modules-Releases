@@ -62,7 +62,7 @@ namespace Nekres.Notes.UI.Controls
             }
             catch (Exception ex) when (ex is IOException or InvalidOperationException or JsonException)
             {
-                ScreenNotification.ShowNotification("There was an error loading your library.", ScreenNotification.NotificationType.Error);
+                ScreenNotification.ShowNotification(Resources.There_was_an_error_loading_your_library_, ScreenNotification.NotificationType.Error);
                 NotesModule.Logger.Error(ex, ex.Message);
             }
         }
@@ -145,7 +145,7 @@ namespace Nekres.Notes.UI.Controls
             }
             catch (Exception ex) when (ex is IOException or InvalidOperationException or JsonException)
             {
-                ScreenNotification.ShowNotification("There was an error loading your book.", ScreenNotification.NotificationType.Error);
+                ScreenNotification.ShowNotification(Resources.There_was_an_error_loading_your_book_, ScreenNotification.NotificationType.Error);
                 NotesModule.Logger.Error(ex, ex.Message);
                 return;
             }
@@ -208,7 +208,7 @@ namespace Nekres.Notes.UI.Controls
             }
             catch (UnauthorizedAccessException)
             {
-                ScreenNotification.ShowNotification($"Autosave of \"{book.Title}\" failed. Access denied.", ScreenNotification.NotificationType.Error);
+                ScreenNotification.ShowNotification(string.Format(Resources.Autosave_of__0__failed_, $"\u201c{book.Title}\u201d") + ' ' + Resources.Access_denied_, ScreenNotification.NotificationType.Error);
                 return;
             }
             catch (IOException ex)
@@ -232,7 +232,7 @@ namespace Nekres.Notes.UI.Controls
             }
             catch (UnauthorizedAccessException)
             {
-                ScreenNotification.ShowNotification($"Saving index file failed. Access denied.", ScreenNotification.NotificationType.Error);
+                ScreenNotification.ShowNotification(Resources.Saving_index_file_failed_ + ' ' + Resources.Access_denied_, ScreenNotification.NotificationType.Error);
             }
             catch (IOException ex)
             {
