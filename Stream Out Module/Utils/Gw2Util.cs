@@ -97,7 +97,7 @@ namespace Nekres.Stream_Out
                     canvas.Flush();
                     canvas.Save();
                 }
-                bitmap.Save(filePath, ImageFormat.Png);
+                bitmap.SaveOnNetworkShare(filePath, ImageFormat.Png);
             }
             copperIcon.Dispose();
             copperIconStream.Close();
@@ -135,7 +135,7 @@ namespace Nekres.Stream_Out
                     canvas.Save();
                 }
 
-                bitmap.Save(filePath);
+                bitmap.SaveOnNetworkShare(filePath, ImageFormat.Png);
             }
 
             karmaIcon.Dispose();
@@ -174,7 +174,7 @@ namespace Nekres.Stream_Out
                     canvas.Flush();
                     canvas.Save();
                 }
-                bitmap.Save(filePath, ImageFormat.Png);
+                bitmap.SaveOnNetworkShare(filePath, ImageFormat.Png);
             }
             tierIconFilled.Dispose();
             tierIconFilledStream.Close();

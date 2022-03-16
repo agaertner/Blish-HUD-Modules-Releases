@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stream Out Module", "Stream Out Module.csproj", "{4F250D89-9B66-42BB-82F5-A50338871D16}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4F250D89-9B66-42BB-82F5-A50338871D16}.Debug|x64.ActiveCfg = Debug|x64
+		{4F250D89-9B66-42BB-82F5-A50338871D16}.Debug|x64.Build.0 = Debug|x64
+		{4F250D89-9B66-42BB-82F5-A50338871D16}.Release|x64.ActiveCfg = Release|x64
+		{4F250D89-9B66-42BB-82F5-A50338871D16}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D715F65E-ACE7-4115-AC51-2E727A35EC4F}
+	EndGlobalSection
+EndGlobal

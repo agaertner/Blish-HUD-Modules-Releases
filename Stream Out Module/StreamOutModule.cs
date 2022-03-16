@@ -429,7 +429,7 @@ namespace Nekres.Stream_Out
                     }
                     using var textureStream = new MemoryStream(textureDataResponse.Result);
                     using var bitmap = new Bitmap(textureStream);
-                    bitmap.Save(path, ImageFormat.Png);
+                    bitmap.SaveOnNetworkShare(path, ImageFormat.Png);
                 });
         }
 
@@ -443,7 +443,7 @@ namespace Nekres.Stream_Out
                 gfx.Clear(Color.Transparent);
                 gfx.Flush();
             }
-            bitmap.Save(path, ImageFormat.Png);
+            bitmap.SaveOnNetworkShare(path, ImageFormat.Png);
         }
 
         private async Task<IEnumerable<ContinentFloorRegionMapSector>> RequestSectors(int continentId, int floor, int regionId, int mapId)

@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Runtime.InteropServices;
+
 namespace Nekres.Stream_Out
 {
     internal static class BitmapExtensions
@@ -19,10 +23,7 @@ namespace Nekres.Stream_Out
             var newBitmap = new Bitmap(newWidth, newHeight);
             using (var gfx = Graphics.FromImage(newBitmap))
             {
-                gfx.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                gfx.SmoothingMode = SmoothingMode.HighQuality;
-                gfx.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                gfx.CompositingQuality = CompositingQuality.HighQuality;
+                gfx.SetHighestQuality();
                 gfx.Clear(Color.Transparent);
                 gfx.DrawImage(source, 0, 0, newWidth, newHeight);
                 gfx.Flush();
@@ -40,17 +41,14 @@ namespace Nekres.Stream_Out
             if (source.Size.Equals(other.Size))
                 return source;
 
-            float scale = Math.Min(other.Width / source.Width, other.Height / source.Height);
+            float scale = Math.Min(other.Width / (float)source.Width, other.Height / (float)source.Height);
 
             int newHeight = Convert.ToInt32(source.Width * scale);
             int newWidth = Convert.ToInt32(source.Height * scale);
             var newBitmap = new Bitmap(newWidth, newHeight);
             using (var gfx = Graphics.FromImage(newBitmap))
             {
-                gfx.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                gfx.SmoothingMode = SmoothingMode.HighQuality;
-                gfx.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                gfx.CompositingQuality = CompositingQuality.HighQuality;
+                gfx.SetHighestQuality();
                 gfx.Clear(Color.Transparent);
                 gfx.DrawImage(source, 0, 0, newWidth, newHeight);
                 gfx.Flush();
@@ -97,6 +95,23 @@ namespace Nekres.Stream_Out
 
             if (yFlip)
                 source.RotateFlip(RotateFlipType.RotateNoneFlipY);
+        }
+
+        public static void SaveOnNetworkShare(this Image image, string fileName, ImageFormat imageFormat)
+        {
+            try {
+                using var lMemoryStream = new MemoryStream();
+                image.Save(lMemoryStream, imageFormat);
+
+                using var lFileStream = new FileStream(fileName, FileMode.Create);
+                lMemoryStream.Position = 0;
+
+                lMemoryStream.CopyTo(lFileStream);
+            }
+            catch (Exception ex) when (ex is ExternalException or UnauthorizedAccessException or IOException)
+            {
+                StreamOutModule.Logger.Warn(ex, ex.Message);
+            }
         }
     }
 }
