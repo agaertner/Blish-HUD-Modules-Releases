@@ -1,9 +1,8 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using Blish_HUD.Input;
 using MonoGame.Extended.BitmapFonts;
+using System;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -109,6 +108,7 @@ namespace Nekres.Notes.UI.Controls
             base.PaintBeforeChildren(spriteBatch, bounds);
 
             var textSize = _font.MeasureString(_text);
+
             // Darken background outside container
             spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, bounds, Color.Black * 0.8f);
 

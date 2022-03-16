@@ -89,14 +89,14 @@ namespace Nekres.Notes.UI.Views
                 btn.MouseLeft += OnSocialButtonMouseLeft;
             }
 
-            /*_loginButton = new StandardButton
+            _loginButton = new StandardButton
             {
                 Parent = buildPanel,
                 Size = new Point(100, 50),
                 Location = new Point(0, _socialFlowPanel.Height),
                 Text = "Login with GW2Auth"
             };
-            _loginButton.Click += OnLoginButtonClick;*/
+            _loginButton.Click += OnLoginButtonClick;
 
             _settingFlowPanel = new FlowPanel
             {
@@ -161,7 +161,7 @@ namespace Nekres.Notes.UI.Views
                 btn.MouseEntered -= OnSocialButtonMouseEntered;
                 btn.MouseLeft -= OnSocialButtonMouseLeft;
             }
-            //_loginButton.Click -= OnLoginButtonClick;
+            _loginButton.Click -= OnLoginButtonClick;
         }
     }
 }

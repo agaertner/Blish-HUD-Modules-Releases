@@ -209,4 +209,8 @@ Zerstörung den Vorgang zu bestätigen.</value>
     <value>Seite</value>
     <comment>book page</comment>
   </data>
+  <data name="Deletion of {0} failed." xml:space="preserve">
+    <value>Löschen von {0} fehlgeschlagen.</value>
+    <comment>screen notification</comment>
+  </data>
 </root>

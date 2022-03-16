@@ -1,6 +1,6 @@
 {
   "name": "Commander's Quire (Journal)",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "namespace": "Nekres.Notes",
   "package": "Notes.dll",
   "manifest_version": 1,

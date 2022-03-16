@@ -133,6 +133,15 @@ namespace Nekres.Notes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Deletion of {0} failed..
+        /// </summary>
+        internal static string Deletion_of__0__failed_ {
+            get {
+                return ResourceManager.GetString("Deletion of {0} failed.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Destroy book.
         /// </summary>
         internal static string Destroy_Book {

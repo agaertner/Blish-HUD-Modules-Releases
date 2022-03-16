@@ -214,4 +214,8 @@ Fuzzy</comment>
     <value>Page</value>
     <comment>book page</comment>
   </data>
+  <data name="Deletion of {0} failed." xml:space="preserve">
+    <value>Deletion of {0} failed.</value>
+    <comment>screen notification</comment>
+  </data>
 </root>

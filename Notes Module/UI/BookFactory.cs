@@ -172,7 +172,7 @@ namespace Nekres.Notes.UI.Controls
             {
                 if (!confirmed) return;
                 
-                this.Delete(book.Guid);
+                this.Delete(BookModel.FromControl(book));
                 book.Dispose();
             }, string.Format(Resources.You_are_about_to_permanently_destroy__0__, $"\u201c{book.Title}\u201d") + '\n' + Resources.Enter_the_book_s_title_below_to_confirm_before_destroying_, 
                 Resources.Yes, Resources.Cancel, book.Title);
@@ -240,11 +240,24 @@ namespace Nekres.Notes.UI.Controls
             }
         }
 
-        public void Delete(Guid id)
+        public void Delete(BookModel model)
         {
-            if (!FileUtil.TryDelete(this.GetFilePath(id))) return;
+            var path = this.GetFilePath(model.Id);
+            try
+            {
+                File.Delete(path);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ScreenNotification.ShowNotification(string.Format(Resources.Deletion_of__0__failed_, $"\u201c{model.Title}\u201d") + ' ' + Resources.Access_denied_, ScreenNotification.NotificationType.Error);
+                return;
+            }
+            catch (IOException ex)
+            {
+                NotesModule.Logger.Warn(ex, ex.Message);
+            }
 
-            this.RemoveFromIndex(id);
+            this.RemoveFromIndex(model.Id);
         }
 
         private string GetFilePath(Guid id)

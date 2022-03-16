@@ -159,7 +159,6 @@
     <Compile Include="UI\Views\CustomSettingsView.cs" />
     <Compile Include="_Extensions\IEnumerableExtensions.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
-    <Compile Include="_Utils\FileUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AsyncClipboardService, Version=1.7.1.0, Culture=neutral, PublicKeyToken=null">

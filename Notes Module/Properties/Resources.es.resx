@@ -208,4 +208,8 @@
     <value>Página</value>
     <comment>book page</comment>
   </data>
+  <data name="Deletion of {0} failed." xml:space="preserve">
+    <value>Fallo en la eliminación de {0}.</value>
+    <comment>screen notification</comment>
+  </data>
 </root>
