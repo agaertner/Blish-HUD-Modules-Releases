@@ -1,8 +1,14 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using Blish_HUD;
+using Blish_HUD.Content;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Microsoft.Xna.Framework;
+using Nekres.Screenshot_Manager.Properties;
+using Nekres.Screenshot_Manager.UI.Controls;
 using Nekres.Screenshot_Manager.UI.Models;
 using Nekres.Screenshot_Manager.UI.Presenters;
 using Container = Blish_HUD.Controls.Container;
@@ -11,6 +17,9 @@ namespace Nekres.Screenshot_Manager.UI.Views
 {
     public class ScreenshotManagerView : View<ScreenshotManagerPresenter>
     {
+        public FlowPanel ThumbnailFlowPanel { get; private set; }
+        public TextBox SearchBox { get; private set; }
+
         public ScreenshotManagerView(ScreenshotManagerModel model)
         {
             this.WithPresenter(new ScreenshotManagerPresenter(this, model));
@@ -21,13 +30,13 @@ namespace Nekres.Screenshot_Manager.UI.Views
             /* NOOP */
         }
 
-        protected override void Build(Container buildPanel)
+        protected override async void Build(Container buildPanel)
         {
-            var thumbnailFlowPanel = new FlowPanel
+            ThumbnailFlowPanel = new FlowPanel
             {
                 Parent = buildPanel,
-                Size = new Point(buildPanel.ContentRegion.Size.X - 70, buildPanel.ContentRegion.Size.Y - 130),
-                Location = new Point(35, 50),
+                Size = new Point(buildPanel.ContentRegion.Size.X, buildPanel.ContentRegion.Size.Y - 90),
+                Location = new Point(0, 50),
                 FlowDirection = ControlFlowDirection.LeftToRight,
                 ControlPadding = new Vector2(5, 5),
                 CanCollapse = false,
@@ -36,19 +45,24 @@ namespace Nekres.Screenshot_Manager.UI.Views
                 ShowTint = true,
                 ShowBorder = true
             };
-            thumbnailFlowPanel.PropertyChanged += delegate (object o, PropertyChangedEventArgs e) {
-                if (!e.PropertyName.Equals(nameof(thumbnailFlowPanel.VerticalScrollOffset))) return;
-                //TODO: Load/Unload displayed thumbnails that are (not) in view while scrolling.
-
-            };
-            var searchBox = new TextBox
+            SearchBox = new TextBox
             {
                 Parent = buildPanel,
-                Location = new Point(thumbnailFlowPanel.Location.X, thumbnailFlowPanel.Location.Y - 40),
+                Location = new Point(ThumbnailFlowPanel.Location.X, ThumbnailFlowPanel.Location.Y - 40),
                 Size = new Point(200, 40),
-                //PlaceholderText = SearchBoxPlaceHolder
+                PlaceholderText = Resources.Search___
             };
+
+            SearchBox.TextChanged += (o, e) => this.ThumbnailFlowPanel.SortChildren<ResponsiveThumbnail>(this.Presenter.SortThumbnails);
+
+            foreach (var fileName in this.Presenter.Model.FileWatcherFactory.Index)
+            {
+                var texture = new AsyncTexture2D();
+                this.Presenter.CreateThumbnail(this.ThumbnailFlowPanel, texture, fileName);
+                await this.Presenter.LoadTexture(texture, fileName);
+            }
         }
+
         protected override void Unload()
         {
         }

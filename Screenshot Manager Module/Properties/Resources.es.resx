@@ -202,4 +202,26 @@
     <value>Capture de pantalla</value>
     <comment>display name</comment>
   </data>
+  <data name="Mute Screenshot Sound" xml:space="preserve">
+    <value>Silenciar el sonido de la pantalla</value>
+    <comment>capture sound setting</comment>
+  </data>
+  <data name="Mutes the sound alert when a new screenshot has been captured." xml:space="preserve">
+    <value>Desactiva el efecto de sonido para las capturas de pantalla recién grabadas.</value>
+  </data>
+  <data name="Disables the notification when a new screenshot has been captured." xml:space="preserve">
+    <value>Desactiva la notificación de las nuevas capturas de pantalla.</value>
+  </data>
+  <data name="You are about to permanently destroy {0}." xml:space="preserve">
+    <value>Estás a punto de destruir {0} de forma permanente.</value>
+  </data>
+  <data name="Are you sure?" xml:space="preserve">
+    <value>¿Está seguro?</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Sí</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
 </root>

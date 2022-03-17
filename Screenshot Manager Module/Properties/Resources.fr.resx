@@ -204,4 +204,26 @@ Fuzzy</comment>
     <value>Capture d&apos;écran</value>
     <comment>display name</comment>
   </data>
+  <data name="Mute Screenshot Sound" xml:space="preserve">
+    <value>Couper le son de la capture d&apos;écran</value>
+    <comment>capture sound setting</comment>
+  </data>
+  <data name="Mutes the sound alert when a new screenshot has been captured." xml:space="preserve">
+    <value>Désactive l&apos;alerte sonore lorsqu&apos;une nouvelle capture d&apos;écran a été effectuée.</value>
+  </data>
+  <data name="Disables the notification when a new screenshot has been captured." xml:space="preserve">
+    <value>Désactive la notification lorsqu&apos;une nouvelle capture d&apos;écran a été réalisée.</value>
+  </data>
+  <data name="You are about to permanently destroy {0}." xml:space="preserve">
+    <value>Vous êtes sur le point de détruire {0}. La destruction sera irréversible.</value>
+  </data>
+  <data name="Are you sure?" xml:space="preserve">
+    <value>Vous êtes sûr ?</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Oui</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
 </root>

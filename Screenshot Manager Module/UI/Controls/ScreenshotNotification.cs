@@ -1,66 +1,41 @@
-﻿using System;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.Content;
 using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.BitmapFonts;
 using Nekres.Screenshot_Manager;
-using Nekres.Screenshot_Manager.UI.Models;
-using Nekres.Screenshot_Manager.UI.Views;
-
+using Nekres.Screenshot_Manager.UI.Controls;
+using System;
 namespace Nekres.Screenshot_Manager_Module.Controls
 {
     public class ScreenshotNotification : Panel
     {
-        private const int HEADING_HEIGHT = 20;
-
-        private const int PanelMargin = 10;
-
         private static int _visibleNotifications;
 
-        private readonly AsyncTexture2D _thumbnail;
+        private static BitmapFont _font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular);
+        private readonly ThumbnailBase _thumbnail;
+        private string _message;
 
-        private readonly Point _thumbnailSize;
-        private Rectangle _layoutInspectIconBounds;
-
-        private Rectangle _layoutThumbnailBounds;
-
-        private static Texture2D _notificationBackgroundTexture = ScreenshotManagerModule.ModuleInstance.ContentsManager.GetTexture("ns-button.png");
-        private static Texture2D _inspectIcon = ScreenshotManagerModule.ModuleInstance.ContentsManager.GetTexture("inspect.png");
-
-        private ScreenshotNotification(AsyncTexture2D texture, string message)
+        private ScreenshotNotification(AsyncTexture2D texture, string fileName, string message)
         {
-            _thumbnail = texture;
+            _thumbnail = new ThumbnailBase(texture, fileName)
+            {
+                Parent = this,
+                Location = new Point(0, HEADER_HEIGHT),
+                Size = new Point(256, 144)
+            };
+
+            _message = message;
 
             Opacity = 0f;
 
-            Size = new Point(350 + PanelMargin, 200 + HEADING_HEIGHT + PanelMargin);
-
-            Location = new Point(60, 60 + (Size.Y + 15) * _visibleNotifications);
+            Size = new Point(256, 144 + HEADER_HEIGHT);
+            Location = new Point(60, 60 + 144 * _visibleNotifications);
 
             ShowBorder = true;
             ShowTint = true;
-
-            var borderPanel = new Panel
-            {
-                Parent = this,
-                Size = new Point(Size.X, Size.Y + PanelMargin),
-                Location = new Point(0, HEADING_HEIGHT),
-                BackgroundColor = Color.Black,
-                ShowTint = true,
-                ShowBorder = true
-            };
-            var messageLbl = new Label
-            {
-                Parent = this,
-                Location = new Point(0, 2),
-                Size = Size,
-                Font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size14, ContentService.FontStyle.Regular),
-                VerticalAlignment = VerticalAlignment.Top,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Text = message
-            };
         }
 
         protected override CaptureType CapturesInput()
@@ -71,23 +46,16 @@ namespace Nekres.Screenshot_Manager_Module.Controls
         /// <inheritdoc />
         public override void RecalculateLayout()
         {
-            _layoutThumbnailBounds = new Rectangle(PanelMargin / 2, HEADING_HEIGHT + PanelMargin / 2, Size.X,Size.Y);
-            _layoutInspectIconBounds = new Rectangle(Size.X / 2 - 32, Size.Y / 2 - 32 + HEADING_HEIGHT, 64, 64);
+            this.Location = new Point(60, 60 + 144 * _visibleNotifications);
         }
 
-        public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
+        public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bound)
         {
-            spriteBatch.DrawOnCtrl(this, _notificationBackgroundTexture, bounds, Color.White * 0.85f);
+            spriteBatch.DrawStringOnCtrl(this, _message, _font, new Rectangle(0,0, this.Width, HEADER_HEIGHT), Color.White, false, true, 1, HorizontalAlignment.Center);
         }
 
         public override void PaintAfterChildren(SpriteBatch spriteBatch, Rectangle bound)
         {
-            if (_thumbnail.HasTexture)
-                spriteBatch.DrawOnCtrl(this, _thumbnail, new Rectangle((this.Width - _thumbnail.Texture.Width) / 2, (this.Height - _thumbnail.Texture.Height) / 2, _thumbnail.Texture.Width, _thumbnail.Texture.Height));
-            else
-                LoadingSpinnerUtil.DrawLoadingSpinner(this, spriteBatch, _layoutThumbnailBounds);
-
-            spriteBatch.DrawOnCtrl(this, _inspectIcon, _layoutInspectIconBounds);
         }
 
         private void Show(float duration)
@@ -102,20 +70,20 @@ namespace Nekres.Screenshot_Manager_Module.Controls
                 .OnComplete(Dispose);
         }
 
-        public static void ShowNotification(AsyncTexture2D texture, string message, float duration, Action clickCallback)
+        public static void ShowNotification(AsyncTexture2D texture, string fileName, string message, float duration, Action clickCallback)
         {
-            var notif = new ScreenshotNotification(texture, message)
+            var notif = new ScreenshotNotification(texture, fileName, message)
             {
                 Parent = Graphics.SpriteScreen
             };
             notif.Click += (o, e) => clickCallback();
             notif.Show(duration);
+            _visibleNotifications++;
         }
 
         protected override void DisposeControl()
         {
             _visibleNotifications--;
-
             base.DisposeControl();
         }
         protected override void OnClick(MouseEventArgs e)

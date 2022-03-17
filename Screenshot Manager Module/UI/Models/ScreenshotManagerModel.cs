@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Blish_HUD.Modules.Managers;
 using Microsoft.Xna.Framework.Graphics;
+using Nekres.Screenshot_Manager.Core;
 
 namespace Nekres.Screenshot_Manager.UI.Models
 {
@@ -15,31 +16,19 @@ namespace Nekres.Screenshot_Manager.UI.Models
 
         public Texture2D DeleteSearchBoxContentIcon;
 
-        public Texture2D InspectIcon;
-
-        public Texture2D TrashcanClosedIcon64;
-        public Texture2D TrashcanOpenIcon64;
-        //public Texture2D TrashcanClosedIcon128;
-        //public Texture2D TrashcanOpenIcon128;
-
         //public Texture2D PortaitModeIcon128;
         //public Texture2D PortaitModeIcon512;
         #endregion
 
-        public const int MaxFileNameLength = 50;
-
-        public IEnumerable<char> InvalidFileNameCharacters;
-
+        public FileWatcherFactory FileWatcherFactory;
         private static ContentsManager ContentsManager => ScreenshotManagerModule.ModuleInstance.ContentsManager;
-        public ScreenshotManagerModel()
+        public ScreenshotManagerModel(FileWatcherFactory fileWatcherFactory)
         {
+            FileWatcherFactory = fileWatcherFactory;
         }
 
         public void Dispose()
         {
-            InspectIcon?.Dispose();
-            TrashcanClosedIcon64?.Dispose();
-            TrashcanOpenIcon64?.Dispose();
             IncompleteHeartIcon?.Dispose();
             CompleteHeartIcon?.Dispose();
             DeleteSearchBoxContentIcon?.Dispose();

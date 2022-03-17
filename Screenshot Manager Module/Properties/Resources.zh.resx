@@ -204,4 +204,26 @@ Fuzzy</comment>
     <value>屏幕截图</value>
     <comment>display name</comment>
   </data>
+  <data name="Mute Screenshot Sound" xml:space="preserve">
+    <value>将截图声音静音</value>
+    <comment>capture sound setting</comment>
+  </data>
+  <data name="Mutes the sound alert when a new screenshot has been captured." xml:space="preserve">
+    <value>当有新的屏幕截图被捕获时，关闭声音警报。</value>
+  </data>
+  <data name="Disables the notification when a new screenshot has been captured." xml:space="preserve">
+    <value>当有新的屏幕截图被捕获时，禁用通知。</value>
+  </data>
+  <data name="You are about to permanently destroy {0}." xml:space="preserve">
+    <value>你即将永久性地摧毁{0}。</value>
+  </data>
+  <data name="Are you sure?" xml:space="preserve">
+    <value>你确定吗？</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
 </root>

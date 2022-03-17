@@ -1,36 +1,38 @@
 ﻿using Blish_HUD;
+using Blish_HUD.Content;
+using Blish_HUD.Controls;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nekres.Screenshot_Manager.Properties;
+using Nekres.Screenshot_Manager.UI.Models;
+using Nekres.Screenshot_Manager.UI.Views;
 using Nekres.Screenshot_Manager_Module.Controls;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Blish_HUD.Content;
-using Blish_HUD.Controls;
-using Blish_HUD.Input;
-using Microsoft.Xna.Framework;
-using Nekres.Screenshot_Manager.UI.Models;
-using Nekres.Screenshot_Manager.UI.Views;
+using Nekres.Screenshot_Manager.UI.Controls;
 
 namespace Nekres.Screenshot_Manager.Core
 {
-    internal class FileWatcherFactory : IDisposable
+    public class FileWatcherFactory : IDisposable
     {
+        public event EventHandler<ValueEventArgs<string>> FileAdded;
+        public event EventHandler<ValueEventArgs<string>> FileDeleted;
+        public event EventHandler<ValueChangedEventArgs<string>> FileRenamed;
+
         public const int NewFileNotificationDelay = 300;
 
         private string[] _imageFilters;
 
         private List<FileSystemWatcher> _screensPathWatchers;
 
-        private AsyncCache<string, Texture2D> _cache;
-        private List<string> _index;
+        public List<string> Index { get; private set; }
 
         public FileWatcherFactory()
         {
-            _cache = new AsyncCache<string, Texture2D>(GetScreenShot);
-            _index = new List<string>();
+            Index = new List<string>();
             _screensPathWatchers = new List<FileSystemWatcher>();
             _imageFilters = new[] { "*.bmp", "*.jpg", "*.png" };
 
@@ -49,28 +51,38 @@ namespace Nekres.Screenshot_Manager.Core
                 watcher.EnableRaisingEvents = true;
                 _screensPathWatchers.Add(watcher);
             }
+
+            var initialFiles = Directory.EnumerateFiles(DirectoryUtil.ScreensPath)
+                                                        .Where(s => Array.Exists(_imageFilters, filter => filter.Equals('*' + Path.GetExtension(s), StringComparison.InvariantCultureIgnoreCase)))
+                                                        .Select(x => Path.Combine(DirectoryUtil.ScreensPath, x));
+            Index.AddRange(initialFiles);
         }
 
         private async void OnScreenShotCreated(object sender, FileSystemEventArgs e)
         {
-            _index.Add(e.FullPath);
+            Index.Add(e.FullPath);
             await ScreenShotNotify(e.FullPath);
+            FileAdded?.Invoke(this, new ValueEventArgs<string>(e.FullPath));
 
         }
 
         private void OnScreenShotDeleted(object sender, FileSystemEventArgs e)
         {
-            _index.Remove(e.FullPath);
+            Index.Remove(e.FullPath);
+            FileDeleted?.Invoke(this, new ValueEventArgs<string>(e.FullPath));
         }
 
         private void OnScreenShotRenamed(object sender, RenamedEventArgs e)
         {
-            _index.Remove(e.OldFullPath);
-            _index.Add(e.FullPath);
+            Index.Remove(e.OldFullPath);
+            Index.Add(e.FullPath);
+            FileRenamed?.Invoke(this, new ValueChangedEventArgs<string>(e.OldFullPath, e.FullPath));
         }
 
         private async Task ScreenShotNotify(string filePath)
         {
+            if (!ScreenshotManagerModule.ModuleInstance.MuteSound.Value) ScreenshotManagerModule.ModuleInstance.ScreenShotSfx.Play();
+            if (ScreenshotManagerModule.ModuleInstance.DisableNotification.Value) return;
             // Delaying so created file handle is closed (write completed) before we look at the directory for its newest file.
             await Task.Delay(NewFileNotificationDelay).ContinueWith(async delegate
             {
@@ -79,9 +91,9 @@ namespace Nekres.Screenshot_Manager.Core
                 {
                     try
                     {
-                        var thumb = new AsyncTexture2D();
-                        await TextureUtil.GetThumbnail(filePath, 270, 170).ContinueWith(x => thumb.SwapTexture(x.Result));
-                        ScreenshotNotification.ShowNotification(thumb, Resources.Screenshot_Created_, 5.0f, () => OpenInspectionPanel(filePath));
+                        var texture = new AsyncTexture2D();
+                        ScreenshotNotification.ShowNotification(texture, filePath, Resources.Screenshot_Created_, 5.0f, () => OpenInspectionPanel(filePath));
+                        await TextureUtil.GetThumbnail(filePath).ContinueWith(t => texture.SwapTexture(t.Result));
                         break;
                     }
                     catch (InvalidOperationException ex)
@@ -95,41 +107,17 @@ namespace Nekres.Screenshot_Manager.Core
             });
         }
 
-        private async Task<Texture2D> GetScreenShot(string filePath)
-        {
-            return null;
-        }
-
         private async void OpenInspectionPanel(string filePath)
         {
-            var texture = await _cache.GetItem(filePath);
-            CreateInspectionPanel(texture);
             GameService.Overlay.BlishHudWindow.Show();
-            GameService.Overlay.BlishHudWindow.Navigate(new ScreenshotManagerView(new ScreenshotManagerModel()));
+            GameService.Overlay.BlishHudWindow.Navigate(new ScreenshotManagerView(new ScreenshotManagerModel(this)));
         }
 
-        public void CreateInspectionPanel(Texture2D texture)
+        public async Task CreateInspectionPanel(string fileName)
         {
-            if (texture == null) return;
-            var panel = new Panel
-            {
-                Parent = GameService.Graphics.SpriteScreen,
-                Size = new Point(texture.Width + 10, texture.Height + 10),
-                Location = new Point(GameService.Graphics.SpriteScreen.Width / 2 - texture.Width / 2, GameService.Graphics.SpriteScreen.Height / 2 - texture.Height / 2),
-                BackgroundColor = Color.Black,
-                ZIndex = 9999,
-                ShowTint = true,
-                Opacity = 0.0f
-            };
-            var image = new Image
-            {
-                Parent = panel,
-                Location = new Point(5, 5),
-                Size = new Point(texture.Width, texture.Height),
-                Texture = texture
-            };
-            GameService.Animation.Tweener.Tween(panel, new { Opacity = 1.0f }, 0.35f);
-            image.Click += (o, e) => GameService.Animation.Tweener.Tween(panel, new { Opacity = 0.0f }, 0.15f).OnComplete(() => panel?.Dispose());
+            var texture = new AsyncTexture2D();
+            var inspect = new InspectPanel(texture, Path.GetFileNameWithoutExtension(fileName));
+            await TextureUtil.GetScreenShot(fileName).ContinueWith(t => texture.SwapTexture(t.Result));
         }
 
         public void Dispose()

@@ -17,6 +17,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework.Audio;
 using Nekres.Screenshot_Manager.Core;
 using Nekres.Screenshot_Manager_Module.Controls;
 
@@ -45,24 +46,32 @@ namespace Nekres.Screenshot_Manager
             ModuleInstance = this;
         }
 
-        #region Settings
+        #region SettingsWWWWWW
 
         private SettingEntry<KeyBinding> ScreenshotNormalBinding;
         private SettingEntry<KeyBinding> ScreenshotStereoscopicBinding;
-        private SettingEntry<List<string>> _favorites;
+
+        internal SettingEntry<bool> MuteSound;
+        internal SettingEntry<bool> DisableNotification;
+        internal SettingEntry<List<string>> Favorites;
 
         #endregion
 
         private Texture2D _icon64;
         //private Texture2D _icon128;
 
-        private CornerIcon moduleCornerIcon;
-        private WindowTab moduleTab;
+        public SoundEffect ScreenShotSfx { get; private set; }
+
+        private CornerIcon _moduleCornerIcon;
+        private WindowTab _moduleTab;
         private FileWatcherFactory _fileWatcherFactory;
 
         public const int FileTimeOutMilliseconds = 10000;
         protected override void DefineSettings(SettingCollection settings)
         {
+            MuteSound = settings.DefineSetting("muteSound", false, () => Resources.Mute_Screenshot_Sound, () => Resources.Mutes_the_sound_alert_when_a_new_screenshot_has_been_captured_);
+            DisableNotification = settings.DefineSetting("disableNotification", false, () => Resources.Disable_Screenshot_Notification, () => Resources.Disables_the_notification_when_a_new_screenshot_has_been_captured_);
+
             var keyBindingCol = settings.AddSubCollection("Screenshot", true, false);
             ScreenshotNormalBinding = keyBindingCol.DefineSetting("NormalKey", new KeyBinding(Keys.PrintScreen),
                 () => Resources.Normal, () => Resources.Take_a_normal_screenshot_);
@@ -70,21 +79,21 @@ namespace Nekres.Screenshot_Manager
                 () => Resources.Stereoscopic, () => Resources.Take_a_stereoscopic_screenshot_);
 
             var selfManagedSettings = settings.AddSubCollection("ManagedSettings", false, false);
-            _favorites = selfManagedSettings.DefineSetting("favorites", new List<string>());
+            Favorites = selfManagedSettings.DefineSetting("favorites", new List<string>());
         }
         protected override void Initialize()
         {
             _fileWatcherFactory = new FileWatcherFactory();
             LoadTextures();
 
-            moduleTab = GameService.Overlay.BlishHudWindow.AddTab(Name, _icon64, () => new ScreenshotManagerView(new ScreenshotManagerModel()));
-            moduleCornerIcon = new CornerIcon
+            _moduleTab = GameService.Overlay.BlishHudWindow.AddTab(Name, _icon64, () => new ScreenshotManagerView(new ScreenshotManagerModel(_fileWatcherFactory)));
+            _moduleCornerIcon = new CornerIcon
             {
                 IconName = Name,
                 Icon = _icon64,
                 Priority = Name.GetHashCode()
             };
-            moduleCornerIcon.Click += ModuleCornerIconClicked;
+            _moduleCornerIcon.Click += ModuleCornerIconClicked;
         }
 
         public override IView GetSettingsView()
@@ -94,6 +103,7 @@ namespace Nekres.Screenshot_Manager
 
         private void LoadTextures()
         {
+            ScreenShotSfx = ContentsManager.GetSound(@"audio\screenshot.wav");
             _icon64 = ContentsManager.GetTexture("screenshots_icon_64x64.png");
             //_icon128 = ContentsManager.GetTexture("screenshots_icon_128x128.png");
         }
@@ -110,9 +120,9 @@ namespace Nekres.Screenshot_Manager
         protected override void Unload()
         {
             _fileWatcherFactory.Dispose();
-            moduleCornerIcon.Click -= ModuleCornerIconClicked;
-            moduleCornerIcon.Dispose();
-            GameService.Overlay.BlishHudWindow.RemoveTab(moduleTab);
+            _moduleCornerIcon.Click -= ModuleCornerIconClicked;
+            _moduleCornerIcon.Dispose();
+            GameService.Overlay.BlishHudWindow.RemoveTab(_moduleTab);
             // All static members must be manually unset
             ModuleInstance = null;
         }
@@ -120,7 +130,7 @@ namespace Nekres.Screenshot_Manager
         private void ModuleCornerIconClicked(object o, MouseEventArgs e)
         {
             GameService.Overlay.BlishHudWindow.Show();
-            GameService.Overlay.BlishHudWindow.Navigate(new ScreenshotManagerView(new ScreenshotManagerModel()));
+            GameService.Overlay.BlishHudWindow.Navigate(new ScreenshotManagerView(new ScreenshotManagerModel(_fileWatcherFactory)));
         }
     }
 }

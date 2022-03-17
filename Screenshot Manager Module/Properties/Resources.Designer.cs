@@ -70,6 +70,24 @@ namespace Nekres.Screenshot_Manager.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Are you sure?.
+        /// </summary>
+        internal static string Are_you_sure_ {
+            get {
+                return ResourceManager.GetString("Are you sure?", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Click To Zoom.
         /// </summary>
         internal static string Click_To_Zoom {
@@ -97,6 +115,15 @@ namespace Nekres.Screenshot_Manager.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disables the notification when a new screenshot has been captured..
+        /// </summary>
+        internal static string Disables_the_notification_when_a_new_screenshot_has_been_captured_ {
+            get {
+                return ResourceManager.GetString("Disables the notification when a new screenshot has been captured.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to delete image {0}..
         /// </summary>
         internal static string Failed_to_delete_image__0__ {
@@ -120,6 +147,24 @@ namespace Nekres.Screenshot_Manager.Properties {
         internal static string Image_name_cannot_be_empty_ {
             get {
                 return ResourceManager.GetString("Image name cannot be empty.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mute Screenshot Sound.
+        /// </summary>
+        internal static string Mute_Screenshot_Sound {
+            get {
+                return ResourceManager.GetString("Mute Screenshot Sound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mutes the sound alert when a new screenshot has been captured..
+        /// </summary>
+        internal static string Mutes_the_sound_alert_when_a_new_screenshot_has_been_captured_ {
+            get {
+                return ResourceManager.GetString("Mutes the sound alert when a new screenshot has been captured.", resourceCulture);
             }
         }
         
@@ -255,6 +300,24 @@ namespace Nekres.Screenshot_Manager.Properties {
         internal static string Unfavourite {
             get {
                 return ResourceManager.GetString("Unfavourite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yes.
+        /// </summary>
+        internal static string Yes {
+            get {
+                return ResourceManager.GetString("Yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are about to permanently destroy {0}..
+        /// </summary>
+        internal static string You_are_about_to_permanently_destroy__0__ {
+            get {
+                return ResourceManager.GetString("You are about to permanently destroy {0}.", resourceCulture);
             }
         }
     }
