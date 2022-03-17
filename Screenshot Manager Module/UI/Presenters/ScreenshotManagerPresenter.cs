@@ -27,7 +27,7 @@ namespace Nekres.Screenshot_Manager.UI.Presenters
         {
             //this.Model.PortaitModeIcon128 = ScreenshotManagerModule.ModuleInstance.ContentsManager.GetTexture("portaitMode_icon_128x128.png");
             //this.Model.PortaitModeIcon512 = ScreenshotManagerModule.ModuleInstance.ContentsManager.GetTexture("portaitMode_icon_128x128.png");
-            this.Model.DeleteSearchBoxContentIcon = ScreenshotManagerModule.ModuleInstance.ContentsManager.GetTexture("784262.png");
+            //this.Model.DeleteSearchBoxContentIcon = ScreenshotManagerModule.ModuleInstance.ContentsManager.GetTexture("784262.png");
         }
 
         protected override Task<bool> Load(IProgress<string> progress)

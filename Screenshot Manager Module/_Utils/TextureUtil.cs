@@ -33,7 +33,7 @@ namespace Nekres.Screenshot_Manager
                 var timeout = DateTime.UtcNow.AddMilliseconds(ScreenshotManagerModule.FileTimeOutMilliseconds);
                 while (DateTime.UtcNow < timeout)
                 {
-                    if (!File.Exists(filePath)) return null;
+                    if (!File.Exists(filePath)) return ContentService.Textures.Pixel;
                     try
                     {
                         using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);

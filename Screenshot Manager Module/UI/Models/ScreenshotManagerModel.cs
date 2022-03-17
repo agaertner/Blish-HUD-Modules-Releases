@@ -11,17 +11,14 @@ namespace Nekres.Screenshot_Manager.UI.Models
 
         #region Textures
 
-        public Texture2D CompleteHeartIcon;
-        public Texture2D IncompleteHeartIcon;
-
-        public Texture2D DeleteSearchBoxContentIcon;
+        //public Texture2D DeleteSearchBoxContentIcon;
 
         //public Texture2D PortaitModeIcon128;
         //public Texture2D PortaitModeIcon512;
+
         #endregion
 
         public FileWatcherFactory FileWatcherFactory;
-        private static ContentsManager ContentsManager => ScreenshotManagerModule.ModuleInstance.ContentsManager;
         public ScreenshotManagerModel(FileWatcherFactory fileWatcherFactory)
         {
             FileWatcherFactory = fileWatcherFactory;
@@ -29,9 +26,6 @@ namespace Nekres.Screenshot_Manager.UI.Models
 
         public void Dispose()
         {
-            IncompleteHeartIcon?.Dispose();
-            CompleteHeartIcon?.Dispose();
-            DeleteSearchBoxContentIcon?.Dispose();
         }
     }
 }
