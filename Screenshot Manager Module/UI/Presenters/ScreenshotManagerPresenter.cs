@@ -53,11 +53,12 @@ namespace Nekres.Screenshot_Manager.UI.Presenters
         {
             if (!FindThumbnailByFileName(e.PreviousValue, out var ctrl)) return;
             ctrl.FileName = e.NewValue;
+            ctrl.NameTextBox.Text = Path.GetFileNameWithoutExtension(e.NewValue);
         }
 
-        private bool FindThumbnailByFileName(string fileName, out ThumbnailBase thumbnail)
+        private bool FindThumbnailByFileName(string fileName, out ResponsiveThumbnail thumbnail)
         {
-            thumbnail = this.View.ThumbnailFlowPanel.Children.Where(x => x.GetType() == typeof(ThumbnailBase)).Cast<ThumbnailBase>().FirstOrDefault(y => fileName.Equals(y.FileName));
+            thumbnail = this.View.ThumbnailFlowPanel.Children.Where(x => x.GetType() == typeof(ResponsiveThumbnail)).Cast<ResponsiveThumbnail>().FirstOrDefault(y => fileName.Equals(y.FileName));
             return thumbnail != null;
         }
 

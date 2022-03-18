@@ -5,7 +5,6 @@ using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.BitmapFonts;
-using Nekres.Screenshot_Manager;
 using Nekres.Screenshot_Manager.UI.Controls;
 using System;
 namespace Nekres.Screenshot_Manager_Module.Controls
@@ -14,9 +13,9 @@ namespace Nekres.Screenshot_Manager_Module.Controls
     {
         private static int _visibleNotifications;
 
-        private static BitmapFont _font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular);
+        private static readonly BitmapFont Font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular);
         private readonly ThumbnailBase _thumbnail;
-        private string _message;
+        private readonly string _message;
 
         private ScreenshotNotification(AsyncTexture2D texture, string fileName, string message)
         {
@@ -32,7 +31,7 @@ namespace Nekres.Screenshot_Manager_Module.Controls
             Opacity = 0f;
 
             Size = new Point(256, 144 + HEADER_HEIGHT);
-            Location = new Point(60, 60 + 144 * _visibleNotifications);
+            Location = new Point(60, 60 + this.Height * _visibleNotifications);
 
             ShowBorder = true;
             ShowTint = true;
@@ -46,12 +45,13 @@ namespace Nekres.Screenshot_Manager_Module.Controls
         /// <inheritdoc />
         public override void RecalculateLayout()
         {
-            this.Location = new Point(60, 60 + 144 * _visibleNotifications);
+            this.Location = new Point(60, 60 + this.Height * _visibleNotifications);
         }
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bound)
         {
-            spriteBatch.DrawStringOnCtrl(this, _message, _font, new Rectangle(0,0, this.Width, HEADER_HEIGHT), Color.White, false, true, 1, HorizontalAlignment.Center);
+            spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, bound, Color.Black * 0.4f);
+            spriteBatch.DrawStringOnCtrl(this, _message, Font, new Rectangle(0,0, this.Width, HEADER_HEIGHT), Color.White, false, true, 2, HorizontalAlignment.Center);
         }
 
         public override void PaintAfterChildren(SpriteBatch spriteBatch, Rectangle bound)

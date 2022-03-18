@@ -109,6 +109,7 @@ namespace Nekres.Screenshot_Manager.Core
 
         private async void OpenInspectionPanel(string filePath)
         {
+            await CreateInspectionPanel(filePath);
             GameService.Overlay.BlishHudWindow.Show();
             GameService.Overlay.BlishHudWindow.Navigate(new ScreenshotManagerView(new ScreenshotManagerModel(this)));
         }

@@ -19,7 +19,7 @@ namespace Nekres.Screenshot_Manager.UI.Controls
         public event EventHandler<EventArgs> OnDelete; 
 
         private Rectangle _nameTextBoxBounds;
-        private TextBox _nameTextBox;
+        public TextBox NameTextBox { get; private set; }
 
         private const int MaxFileNameLength = 50;
 
@@ -98,8 +98,8 @@ namespace Nekres.Screenshot_Manager.UI.Controls
 
         private void CreateNameTextBox()
         {
-            if (_nameTextBox != null) return;
-            _nameTextBox = new TextBox
+            if (NameTextBox != null) return;
+            NameTextBox = new TextBox
             {
                 Parent = this,
                 MaxLength = MaxFileNameLength,
@@ -108,47 +108,47 @@ namespace Nekres.Screenshot_Manager.UI.Controls
                 Text = Path.GetFileNameWithoutExtension(this.FileName),
                 BasicTooltipText = Resources.Rename_Image
             };
-            _nameTextBox.InputFocusChanged += async (o, e) =>
+            NameTextBox.InputFocusChanged += async (o, e) =>
             {
-                if (e.Value || _nameTextBox.Text.Equals(Path.GetFileNameWithoutExtension(this.FileName))) return;
+                if (e.Value || NameTextBox.Text.Equals(Path.GetFileNameWithoutExtension(this.FileName))) return;
 
-                if (string.IsNullOrEmpty(_nameTextBox.Text))
+                if (string.IsNullOrEmpty(NameTextBox.Text))
                 {
                     ScreenNotification.ShowNotification(Resources.Image_name_cannot_be_empty_, ScreenNotification.NotificationType.Error);
-                    _nameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
+                    NameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
                     return;
                 }
 
-                if (_nameTextBox.Text.Length > MaxFileNameLength)
+                if (NameTextBox.Text.Length > MaxFileNameLength)
                 {
                     ScreenNotification.ShowNotification(Resources.Please_enter_a_different_image_name_, ScreenNotification.NotificationType.Error);
-                    _nameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
+                    NameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
                     return;
                 }
 
-                if (_nameTextBox.Text.Any(x => _invalidFileNameCharacters.Any(y => y.Equals(x))))
+                if (NameTextBox.Text.Any(x => _invalidFileNameCharacters.Any(y => y.Equals(x))))
                 {
                     ScreenNotification.ShowNotification(Resources.The_image_name_contains_invalid_characters_, ScreenNotification.NotificationType.Error);
-                    _nameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
+                    NameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
                     return;
                 }
 
                 var ext = Path.GetExtension(this.FileName);
                 var path = Path.GetDirectoryName(this.FileName);
                 if (path == null) return;
-                var newName = Path.Combine(path, _nameTextBox.Text + ext);
+                var newName = Path.Combine(path, NameTextBox.Text + ext);
 
                 if (File.Exists(newName))
                 {
                     ScreenNotification.ShowNotification(Resources.A_duplicate_image_name_was_specified_, ScreenNotification.NotificationType.Error);
-                    _nameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
+                    NameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
                     return;
                 }
 
                 if (!await FileUtil.MoveAsync(this.FileName, newName))
                 {
                     ScreenNotification.ShowNotification(string.Format(Resources.Unable_to_rename_image__0__, $"\u201c{Path.GetFileNameWithoutExtension(this.FileName)}\u201d"), ScreenNotification.NotificationType.Error);
-                    _nameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
+                    NameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
                     return;
                 }
 
