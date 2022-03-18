@@ -46,7 +46,7 @@ namespace Nekres.Screenshot_Manager.UI.Presenters
         {
             if (!FindThumbnailByFileName(e.Value, out var ctrl)) return;
             this.View.ThumbnailFlowPanel.RemoveChild(ctrl);
-            ctrl.Dispose();
+            ctrl?.Dispose();
         }
 
         public void OnScreenShotRenamed(object o, ValueChangedEventArgs<string> e)
