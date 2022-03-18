@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Blish_HUD;
 using Blish_HUD.Content;
 using Blish_HUD.Controls;
+using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nekres.Screenshot_Manager.Properties;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Blish_HUD;
-using Blish_HUD.Input;
-using Nekres.Screenshot_Manager.Properties;
 
 namespace Nekres.Screenshot_Manager.UI.Controls
 {

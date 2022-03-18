@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Blish_HUD.Modules.Managers;
-using Microsoft.Xna.Framework.Graphics;
-using Nekres.Screenshot_Manager.Core;
+﻿using Nekres.Screenshot_Manager.Core;
+using System;
 
 namespace Nekres.Screenshot_Manager.UI.Models
 {

@@ -1,9 +1,7 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Content;
-using Blish_HUD.Controls;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Nekres.Screenshot_Manager.Properties;
+using Nekres.Screenshot_Manager.UI.Controls;
 using Nekres.Screenshot_Manager.UI.Models;
 using Nekres.Screenshot_Manager.UI.Views;
 using Nekres.Screenshot_Manager_Module.Controls;
@@ -12,7 +10,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Nekres.Screenshot_Manager.UI.Controls;
 
 namespace Nekres.Screenshot_Manager.Core
 {

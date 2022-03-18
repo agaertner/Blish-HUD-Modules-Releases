@@ -8,7 +8,6 @@ using Blish_HUD.Settings;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Nekres.Screenshot_Manager.Core;
 using Nekres.Screenshot_Manager.Properties;
 using Nekres.Screenshot_Manager.UI.Models;
@@ -44,8 +43,8 @@ namespace Nekres.Screenshot_Manager
 
         #region SettingsWWWWWW
 
-        private SettingEntry<KeyBinding> ScreenshotNormalBinding;
-        private SettingEntry<KeyBinding> ScreenshotStereoscopicBinding;
+        //private SettingEntry<KeyBinding> ScreenshotNormalBinding;
+        //private SettingEntry<KeyBinding> ScreenshotStereoscopicBinding;
 
         internal SettingEntry<bool> MuteSound;
         internal SettingEntry<bool> DisableNotification;
@@ -71,11 +70,11 @@ namespace Nekres.Screenshot_Manager
             MuteSound = settings.DefineSetting("muteSound", false, () => Resources.Mute_Screenshot_Sound, () => Resources.Mutes_the_sound_alert_when_a_new_screenshot_has_been_captured_);
             DisableNotification = settings.DefineSetting("disableNotification", false, () => Resources.Disable_Screenshot_Notification, () => Resources.Disables_the_notification_when_a_new_screenshot_has_been_captured_);
 
-            var keyBindingCol = settings.AddSubCollection("Screenshot", true, false);
+            /*var keyBindingCol = settings.AddSubCollection("Screenshot", true, false);
             ScreenshotNormalBinding = keyBindingCol.DefineSetting("NormalKey", new KeyBinding(Keys.PrintScreen),
                 () => Resources.Normal, () => Resources.Take_a_normal_screenshot_);
             ScreenshotStereoscopicBinding = keyBindingCol.DefineSetting("StereoscopicKey", new KeyBinding(Keys.None),
-                () => Resources.Stereoscopic, () => Resources.Take_a_stereoscopic_screenshot_);
+                () => Resources.Stereoscopic, () => Resources.Take_a_stereoscopic_screenshot_);*/
 
             var selfManagedSettings = settings.AddSubCollection("ManagedSettings", false, false);
             Favorites = selfManagedSettings.DefineSetting("favorites", new List<string>());
@@ -128,6 +127,8 @@ namespace Nekres.Screenshot_Manager
             _moduleCornerIcon.Click -= ModuleCornerIconClicked;
             _moduleCornerIcon.Dispose();
             GameService.Overlay.BlishHudWindow.RemoveTab(_moduleTab);
+            foreach (var sfx in _deleteSfx) sfx?.Dispose();
+            ScreenShotSfx?.Dispose();
             // All static members must be manually unset
             ModuleInstance = null;
         }
