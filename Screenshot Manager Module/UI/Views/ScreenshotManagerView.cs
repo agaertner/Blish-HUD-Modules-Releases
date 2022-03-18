@@ -55,11 +55,13 @@ namespace Nekres.Screenshot_Manager.UI.Views
 
             SearchBox.TextChanged += (o, e) => this.ThumbnailFlowPanel.SortChildren<ResponsiveThumbnail>(this.Presenter.SortThumbnails);
 
+            // Load existing screenshots and do initial sorting
             foreach (var fileName in this.Presenter.Model.FileWatcherFactory.Index)
             {
                 var texture = new AsyncTexture2D();
                 this.Presenter.CreateThumbnail(this.ThumbnailFlowPanel, texture, fileName);
                 await this.Presenter.LoadTexture(texture, fileName);
+                this.ThumbnailFlowPanel.SortChildren<ResponsiveThumbnail>(this.Presenter.SortThumbnails);
             }
         }
 

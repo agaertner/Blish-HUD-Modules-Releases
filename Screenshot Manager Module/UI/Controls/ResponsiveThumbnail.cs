@@ -90,10 +90,21 @@ namespace Nekres.Screenshot_Manager.UI.Controls
             }
 
             if (_mouseOverFavButton)
+            {
                 this.IsFavorite = !IsFavorite;
+                GameService.Content.PlaySoundEffectByName("color-change");
+            }
 
-            if (_mouseOverDelButton) 
+            if (_mouseOverDelButton)
                 this.OnDelete?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected override void OnMouseLeft(MouseEventArgs e)
+        {
+            _mouseOverFavButton = false;
+            _mouseOverDelButton = false;
+            _mouseOverInspect = false;
+            base.OnMouseLeft(e);
         }
 
         private void CreateNameTextBox()
@@ -116,6 +127,7 @@ namespace Nekres.Screenshot_Manager.UI.Controls
                 {
                     ScreenNotification.ShowNotification(Resources.Image_name_cannot_be_empty_, ScreenNotification.NotificationType.Error);
                     NameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
+                    GameService.Content.PlaySoundEffectByName("error");
                     return;
                 }
 
@@ -123,6 +135,7 @@ namespace Nekres.Screenshot_Manager.UI.Controls
                 {
                     ScreenNotification.ShowNotification(Resources.Please_enter_a_different_image_name_, ScreenNotification.NotificationType.Error);
                     NameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
+                    GameService.Content.PlaySoundEffectByName("error");
                     return;
                 }
 
@@ -130,6 +143,7 @@ namespace Nekres.Screenshot_Manager.UI.Controls
                 {
                     ScreenNotification.ShowNotification(Resources.The_image_name_contains_invalid_characters_, ScreenNotification.NotificationType.Error);
                     NameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
+                    GameService.Content.PlaySoundEffectByName("error");
                     return;
                 }
 
@@ -142,6 +156,7 @@ namespace Nekres.Screenshot_Manager.UI.Controls
                 {
                     ScreenNotification.ShowNotification(Resources.A_duplicate_image_name_was_specified_, ScreenNotification.NotificationType.Error);
                     NameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
+                    GameService.Content.PlaySoundEffectByName("error");
                     return;
                 }
 
@@ -149,6 +164,7 @@ namespace Nekres.Screenshot_Manager.UI.Controls
                 {
                     ScreenNotification.ShowNotification(string.Format(Resources.Unable_to_rename_image__0__, $"\u201c{Path.GetFileNameWithoutExtension(this.FileName)}\u201d"), ScreenNotification.NotificationType.Error);
                     NameTextBox.Text = Path.GetFileNameWithoutExtension(this.FileName);
+                    GameService.Content.PlaySoundEffectByName("error");
                     return;
                 }
 

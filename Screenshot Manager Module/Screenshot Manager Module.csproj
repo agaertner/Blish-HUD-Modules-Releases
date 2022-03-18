@@ -152,6 +152,7 @@
     <Compile Include="UI\Views\CustomSettingsView.cs" />
     <Compile Include="UI\Views\ScreenshotManagerView.cs" />
     <Compile Include="_Extensions\BitmapExtensions.cs" />
+    <Compile Include="_Extensions\GraphicsExtensions.cs" />
     <Compile Include="_Extensions\RectangleExtensions.cs" />
     <Compile Include="_Extensions\SizeExtensions.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />

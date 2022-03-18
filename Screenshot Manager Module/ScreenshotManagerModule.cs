@@ -6,20 +6,16 @@ using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Nekres.Screenshot_Manager.Core;
 using Nekres.Screenshot_Manager.Properties;
 using Nekres.Screenshot_Manager.UI.Models;
 using Nekres.Screenshot_Manager.UI.Views;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework.Audio;
-using Nekres.Screenshot_Manager.Core;
-using Nekres.Screenshot_Manager_Module.Controls;
 
 namespace Nekres.Screenshot_Manager
 {
@@ -61,6 +57,9 @@ namespace Nekres.Screenshot_Manager
         //private Texture2D _icon128;
 
         public SoundEffect ScreenShotSfx { get; private set; }
+
+        private SoundEffect[] _deleteSfx;
+        public SoundEffect DeleteSfx => _deleteSfx[RandomUtil.GetRandom(0, 1)];
 
         private CornerIcon _moduleCornerIcon;
         private WindowTab _moduleTab;
@@ -104,7 +103,13 @@ namespace Nekres.Screenshot_Manager
         private void LoadTextures()
         {
             ScreenShotSfx = ContentsManager.GetSound(@"audio\screenshot.wav");
-            _icon64 = ContentsManager.GetTexture("screenshots_icon_64x64.png");
+            _deleteSfx = new []
+            {
+                ContentsManager.GetSound(@"audio\crumbling-paper-1.wav"),
+                ContentsManager.GetSound(@"audio\crumbling-paper-2.wav")
+            };
+
+           _icon64 = ContentsManager.GetTexture("screenshots_icon_64x64.png");
             //_icon128 = ContentsManager.GetTexture("screenshots_icon_128x128.png");
         }
 

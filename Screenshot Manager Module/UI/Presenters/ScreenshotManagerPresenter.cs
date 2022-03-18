@@ -98,8 +98,10 @@ namespace Nekres.Screenshot_Manager.UI.Presenters
             if (!await FileUtil.DeleteAsync(ctrl.FileName))
             {
                 ScreenNotification.ShowNotification(string.Format(Resources.Failed_to_delete_image__0__, $"\u201c{Path.GetFileNameWithoutExtension(ctrl.FileName)}\u201d"), ScreenNotification.NotificationType.Error);
+                GameService.Content.PlaySoundEffectByName("error");
                 return;
             }
+            ScreenshotManagerModule.ModuleInstance.DeleteSfx.Play();
             this.View.ThumbnailFlowPanel.RemoveChild(ctrl);
             ctrl.Dispose();
             this.View.ThumbnailFlowPanel.SortChildren<ResponsiveThumbnail>(SortThumbnails);

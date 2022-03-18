@@ -38,16 +38,14 @@ namespace Nekres.Screenshot_Manager
                     {
                         using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
                         using var source = Image.FromStream(fs);
-                        var maxWidth = GameService.Graphics.Resolution.X - 100;
-                        var maxHeight = GameService.Graphics.Resolution.Y - 100;
-                        var (width, height) = PointExtensions.ResizeKeepAspect(new Microsoft.Xna.Framework.Point(source.Width, source.Height), maxWidth, maxHeight);
 
-                        using var target = new Bitmap(source, width, height);
+                        using var target = new Bitmap(source);
                         using var graphic = Graphics.FromImage(target);
-                        graphic.CompositingQuality = CompositingQuality.HighSpeed;
                         graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
                         graphic.SmoothingMode = SmoothingMode.HighSpeed;
-                        graphic.DrawImage(target, 0, 0, width, height);
+                        graphic.PixelOffsetMode = PixelOffsetMode.Default;
+                        graphic.CompositingQuality = CompositingQuality.Default;
+                        graphic.DrawImage(target, 0, 0);
 
                         using var textureStream = new MemoryStream();
                         target.Save(textureStream, ImageFormat.Jpeg);
