@@ -76,8 +76,7 @@ namespace Nekres.Screenshot_Manager
                 () => Resources.Disables_the_notification_when_a_new_screenshot_has_been_captured_);
             SendToRecycleBin = settings.DefineSetting("sendToRecycleBin", true,
                 () => Resources.Delete_sends_to_Recycle_Bin,
-                () => Resources
-                    .By_default__screenshots_are_sent_to_the_Recycle_Bin_so_that_they_can_be_recovered_if_needed__nWhen_this_feature_is_disabled__deleted_screenshots_are_removed_from_the_hard_disk_and_their_space_is_marked_as_overwriteable_);
+                () => Resources.By_default__screenshots_are_sent_to_the_Recycle_Bin_so_that_they_can_be_recovered_if_needed__nWhen_this_feature_is_disabled__deleted_screenshots_are_removed_from_the_hard_disk_and_their_space_is_marked_as_overwriteable_);
 
             /*var keyBindingCol = settings.AddSubCollection("Screenshot", true, false);
             ScreenshotNormalBinding = keyBindingCol.DefineSetting("NormalKey", new KeyBinding(Keys.PrintScreen),
