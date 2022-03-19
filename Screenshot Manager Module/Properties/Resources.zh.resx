@@ -226,4 +226,12 @@ Fuzzy</comment>
   <data name="Cancel" xml:space="preserve">
     <value>取消</value>
   </data>
+  <data name="Delete sends to Recycle Bin" xml:space="preserve">
+    <value>删除发送到回收站的邮件</value>
+  </data>
+  <data name="By default, screenshots are sent to the Recycle Bin so that they can be recovered if needed.\nWhen this feature is disabled, deleted screenshots are removed from the hard disk and their space is marked as overwriteable." xml:space="preserve">
+    <value>默认情况下，屏幕截图被发送到回收站，以便在需要时可以恢复。
+如果该功能被停用，被删除的屏幕截图将从硬盘中删除，其存储空间被标记为可覆盖。</value>
+    <comment>Fuzzy</comment>
+  </data>
 </root>

@@ -48,6 +48,7 @@ namespace Nekres.Screenshot_Manager
 
         internal SettingEntry<bool> MuteSound;
         internal SettingEntry<bool> DisableNotification;
+        internal SettingEntry<bool> SendToRecycleBin;
         internal SettingEntry<List<string>> Favorites;
 
         #endregion
@@ -65,10 +66,18 @@ namespace Nekres.Screenshot_Manager
         private FileWatcherFactory _fileWatcherFactory;
 
         public const int FileTimeOutMilliseconds = 10000;
+
         protected override void DefineSettings(SettingCollection settings)
         {
-            MuteSound = settings.DefineSetting("muteSound", false, () => Resources.Mute_Screenshot_Sound, () => Resources.Mutes_the_sound_alert_when_a_new_screenshot_has_been_captured_);
-            DisableNotification = settings.DefineSetting("disableNotification", false, () => Resources.Disable_Screenshot_Notification, () => Resources.Disables_the_notification_when_a_new_screenshot_has_been_captured_);
+            MuteSound = settings.DefineSetting("muteSound", false, () => Resources.Mute_Screenshot_Sound,
+                () => Resources.Mutes_the_sound_alert_when_a_new_screenshot_has_been_captured_);
+            DisableNotification = settings.DefineSetting("disableNotification", false,
+                () => Resources.Disable_Screenshot_Notification,
+                () => Resources.Disables_the_notification_when_a_new_screenshot_has_been_captured_);
+            SendToRecycleBin = settings.DefineSetting("sendToRecycleBin", true,
+                () => Resources.Delete_sends_to_Recycle_Bin,
+                () => Resources
+                    .By_default__screenshots_are_sent_to_the_Recycle_Bin_so_that_they_can_be_recovered_if_needed__nWhen_this_feature_is_disabled__deleted_screenshots_are_removed_from_the_hard_disk_and_their_space_is_marked_as_overwriteable_);
 
             /*var keyBindingCol = settings.AddSubCollection("Screenshot", true, false);
             ScreenshotNormalBinding = keyBindingCol.DefineSetting("NormalKey", new KeyBinding(Keys.PrintScreen),
@@ -79,12 +88,14 @@ namespace Nekres.Screenshot_Manager
             var selfManagedSettings = settings.AddSubCollection("ManagedSettings", false, false);
             Favorites = selfManagedSettings.DefineSetting("favorites", new List<string>());
         }
+
         protected override void Initialize()
         {
             _fileWatcherFactory = new FileWatcherFactory();
             LoadTextures();
 
-            _moduleTab = GameService.Overlay.BlishHudWindow.AddTab(Name, _icon64, () => new ScreenshotManagerView(new ScreenshotManagerModel(_fileWatcherFactory)));
+            _moduleTab = GameService.Overlay.BlishHudWindow.AddTab(Name, _icon64,
+                () => new ScreenshotManagerView(new ScreenshotManagerModel(_fileWatcherFactory)));
             _moduleCornerIcon = new CornerIcon
             {
                 IconName = Name,
@@ -102,13 +113,13 @@ namespace Nekres.Screenshot_Manager
         private void LoadTextures()
         {
             ScreenShotSfx = ContentsManager.GetSound(@"audio\screenshot.wav");
-            _deleteSfx = new []
+            _deleteSfx = new[]
             {
                 ContentsManager.GetSound(@"audio\crumbling-paper-1.wav"),
                 ContentsManager.GetSound(@"audio\crumbling-paper-2.wav")
             };
 
-           _icon64 = ContentsManager.GetTexture("screenshots_icon_64x64.png");
+            _icon64 = ContentsManager.GetTexture("screenshots_icon_64x64.png");
             //_icon128 = ContentsManager.GetTexture("screenshots_icon_128x128.png");
         }
 
@@ -117,9 +128,11 @@ namespace Nekres.Screenshot_Manager
             // Base handler must be called
             base.OnModuleLoaded(e);
         }
+
         protected override void Update(GameTime gameTime)
         {
         }
+
         /// <inheritdoc />
         protected override void Unload()
         {
@@ -135,6 +148,11 @@ namespace Nekres.Screenshot_Manager
 
         private void ModuleCornerIconClicked(object o, MouseEventArgs e)
         {
+            if (GameService.Overlay.BlishHudWindow.Visible)
+            {
+                GameService.Overlay.BlishHudWindow.Hide();
+                return;
+            }
             GameService.Overlay.BlishHudWindow.Show();
             GameService.Overlay.BlishHudWindow.Navigate(new ScreenshotManagerView(new ScreenshotManagerModel(_fileWatcherFactory)));
         }

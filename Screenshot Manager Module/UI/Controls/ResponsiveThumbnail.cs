@@ -62,6 +62,18 @@ namespace Nekres.Screenshot_Manager.UI.Controls
 
         protected override void OnMouseMoved(MouseEventArgs e)
         {
+            this.InvalidateMousePosition();
+            base.OnMouseMoved(e);
+        }
+
+        protected override void OnMoved(MovedEventArgs e)
+        {
+            this.InvalidateMousePosition();
+            base.OnMoved(e);
+        }
+
+        private void InvalidateMousePosition()
+        {
             var relPos = RelativeMousePosition;
             _mouseOverFavButton = _favButtonBounds.Contains(relPos);
             _mouseOverDelButton = _delButtonBounds.Contains(relPos);
@@ -75,8 +87,6 @@ namespace Nekres.Screenshot_Manager.UI.Controls
                 this.BasicTooltipText = Resources.Click_To_Zoom;
             else
                 this.BasicTooltipText = string.Empty;
-
-            base.OnMouseMoved(e);
         }
 
         protected override void OnClick(MouseEventArgs e)
@@ -84,10 +94,7 @@ namespace Nekres.Screenshot_Manager.UI.Controls
             base.OnClick(e);
 
             if (_mouseOverInspect)
-            {
                 this.OnInspect?.Invoke(this, EventArgs.Empty);
-                return;
-            }
 
             if (_mouseOverFavButton)
             {

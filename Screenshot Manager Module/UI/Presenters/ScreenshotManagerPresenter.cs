@@ -79,6 +79,13 @@ namespace Nekres.Screenshot_Manager.UI.Presenters
         private void OnClickDelete(object o, EventArgs e)
         {
             var ctrl = (ThumbnailBase)o;
+
+            if (ScreenshotManagerModule.ModuleInstance.SendToRecycleBin.Value)
+            {
+                DoDelete(ctrl, true);
+                return;
+            }
+
             ConfirmationPrompt.ShowPrompt(confirmed =>
             {
                 if (!confirmed) return;
@@ -93,9 +100,9 @@ namespace Nekres.Screenshot_Manager.UI.Presenters
             await this.Model.FileWatcherFactory.CreateInspectionPanel(ctrl.FileName);
         }
 
-        private async void DoDelete(ThumbnailBase ctrl)
+        private async void DoDelete(ThumbnailBase ctrl, bool sendToRecycleBin = false)
         {
-            if (!await FileUtil.DeleteAsync(ctrl.FileName))
+            if (sendToRecycleBin ? !await FileUtil.SendToRecycleBinAsync(ctrl.FileName) : !await FileUtil.DeleteAsync(ctrl.FileName))
             {
                 ScreenNotification.ShowNotification(string.Format(Resources.Failed_to_delete_image__0__, $"\u201c{Path.GetFileNameWithoutExtension(ctrl.FileName)}\u201d"), ScreenNotification.NotificationType.Error);
                 GameService.Content.PlaySoundEffectByName("error");

@@ -79,6 +79,18 @@ namespace Nekres.Screenshot_Manager.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to By default, screenshots are sent to the Recycle Bin so that they can be recovered if needed.
+        ///When this feature is disabled, deleted screenshots are removed from the hard disk and their space is marked as overwriteable..
+        /// </summary>
+        internal static string By_default__screenshots_are_sent_to_the_Recycle_Bin_so_that_they_can_be_recovered_if_needed__nWhen_this_feature_is_disabled__deleted_screenshots_are_removed_from_the_hard_disk_and_their_space_is_marked_as_overwriteable_ {
+            get {
+                return ResourceManager.GetString("By default, screenshots are sent to the Recycle Bin so that they can be recovered" +
+                        " if needed.\\nWhen this feature is disabled, deleted screenshots are removed from" +
+                        " the hard disk and their space is marked as overwriteable.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         internal static string Cancel {
@@ -102,6 +114,15 @@ namespace Nekres.Screenshot_Manager.Properties {
         internal static string Delete_Image_ {
             get {
                 return ResourceManager.GetString("Delete Image?", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete sends to Recycle Bin.
+        /// </summary>
+        internal static string Delete_sends_to_Recycle_Bin {
+            get {
+                return ResourceManager.GetString("Delete sends to Recycle Bin", resourceCulture);
             }
         }
         

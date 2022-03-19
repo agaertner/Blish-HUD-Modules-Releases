@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.FileIO;
+using System;
 using System.IO;
+using System.Security;
 using System.Threading.Tasks;
 
 namespace Nekres.Screenshot_Manager
@@ -16,10 +18,10 @@ namespace Nekres.Screenshot_Manager
                         File.Move(oldFilePath, newFilePath);
                         return true;
                     }
-                    catch (IOException e)
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException or SecurityException)
                     {
                         if (DateTime.UtcNow < timeout) continue;
-                        ScreenshotManagerModule.Logger.Error(e.Message + e.StackTrace);
+                        ScreenshotManagerModule.Logger.Error(e, e.Message);
                     }
                 }
                 return false;
@@ -37,10 +39,31 @@ namespace Nekres.Screenshot_Manager
                         File.Delete(filePath);
                         return true;
                     }
-                    catch (IOException e)
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException or SecurityException)
                     {
                         if (DateTime.UtcNow < timeout) continue;
-                        ScreenshotManagerModule.Logger.Error(e.Message + e.StackTrace);
+                        ScreenshotManagerModule.Logger.Error(e, e.Message);
+                    }
+                }
+                return false;
+            });
+        }
+
+        public static async Task<bool> SendToRecycleBinAsync(string filePath)
+        {
+            return await Task.Run(() => {
+                var timeout = DateTime.UtcNow.AddMilliseconds(ScreenshotManagerModule.FileTimeOutMilliseconds);
+                while (DateTime.UtcNow < timeout)
+                {
+                    try
+                    {
+                        FileSystem.DeleteFile(filePath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin, UICancelOption.DoNothing);
+                        return true;
+                    }
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException or SecurityException)
+                    {
+                        if (DateTime.UtcNow < timeout) continue;
+                        ScreenshotManagerModule.Logger.Error(e, e.Message);
                     }
                 }
                 return false;

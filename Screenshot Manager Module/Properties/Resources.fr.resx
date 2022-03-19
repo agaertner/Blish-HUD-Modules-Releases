@@ -226,4 +226,12 @@ Fuzzy</comment>
   <data name="Cancel" xml:space="preserve">
     <value>Annuler</value>
   </data>
+  <data name="Delete sends to Recycle Bin" xml:space="preserve">
+    <value>Supprimer envoie à la corbeille</value>
+  </data>
+  <data name="By default, screenshots are sent to the Recycle Bin so that they can be recovered if needed.\nWhen this feature is disabled, deleted screenshots are removed from the hard disk and their space is marked as overwriteable." xml:space="preserve">
+    <value>Par défaut, les captures d&apos;écran sont envoyées à la corbeille afin de pouvoir les restaurer si nécessaire.
+Si cette fonction est désactivée, les captures d&apos;écran supprimées sont retirées du disque dur et leur espace est marqué comme écrasable.</value>
+    <comment>Fuzzy</comment>
+  </data>
 </root>

@@ -224,4 +224,12 @@
   <data name="Cancel" xml:space="preserve">
     <value>Cancelar</value>
   </data>
+  <data name="Delete sends to Recycle Bin" xml:space="preserve">
+    <value>Borrar los envíos a la papelera de reciclaje</value>
+  </data>
+  <data name="By default, screenshots are sent to the Recycle Bin so that they can be recovered if needed.\nWhen this feature is disabled, deleted screenshots are removed from the hard disk and their space is marked as overwriteable." xml:space="preserve">
+    <value>Por defecto, las capturas de pantalla se envían a la papelera de reciclaje para poder recuperarlas en caso de necesidad.
+Cuando esta función está desactivada, las capturas de pantalla borradas se eliminan del disco duro y su espacio se marca como sobrescribible.</value>
+    <comment>Fuzzy</comment>
+  </data>
 </root>

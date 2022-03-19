@@ -225,4 +225,12 @@ Fuzzy</comment>
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="Delete sends to Recycle Bin" xml:space="preserve">
+    <value>Delete sends to Recycle Bin</value>
+  </data>
+  <data name="By default, screenshots are sent to the Recycle Bin so that they can be recovered if needed.\nWhen this feature is disabled, deleted screenshots are removed from the hard disk and their space is marked as overwriteable." xml:space="preserve">
+    <value>By default, screenshots are sent to the Recycle Bin so that they can be recovered if needed.
+When this feature is disabled, deleted screenshots are removed from the hard disk and their space is marked as overwriteable.</value>
+    <comment>Fuzzy</comment>
+  </data>
 </root>
