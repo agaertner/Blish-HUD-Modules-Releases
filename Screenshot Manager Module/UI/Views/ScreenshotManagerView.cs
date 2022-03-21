@@ -48,7 +48,7 @@ namespace Nekres.Screenshot_Manager.UI.Views
                 PlaceholderText = Resources.Search___
             };
 
-            SearchBox.TextChanged += (o, e) => this.ThumbnailFlowPanel.SortChildren<ResponsiveThumbnail>(this.Presenter.SortThumbnails);
+            SearchBox.TextChanged += (_,_) => this.ThumbnailFlowPanel.SortChildren<ResponsiveThumbnail>(this.Presenter.SortThumbnails);
 
             // Load existing screenshots and do initial sorting
             foreach (var fileName in this.Presenter.Model.FileWatcherFactory.Index)

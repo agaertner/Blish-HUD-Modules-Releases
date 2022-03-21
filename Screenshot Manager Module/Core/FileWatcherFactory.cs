@@ -25,11 +25,12 @@ namespace Nekres.Screenshot_Manager.Core
 
         private List<FileSystemWatcher> _screensPathWatchers;
 
-        public List<string> Index { get; private set; }
+        private readonly List<string> _index;
+        public IReadOnlyList<string> Index => new List<string>(_index);
 
         public FileWatcherFactory()
         {
-            Index = new List<string>();
+            _index = new List<string>();
             _screensPathWatchers = new List<FileSystemWatcher>();
             _imageFilters = new[] { "*.bmp", "*.jpg", "*.png" };
 
@@ -52,12 +53,12 @@ namespace Nekres.Screenshot_Manager.Core
             var initialFiles = Directory.EnumerateFiles(DirectoryUtil.ScreensPath)
                                                         .Where(s => Array.Exists(_imageFilters, filter => filter.Equals('*' + Path.GetExtension(s), StringComparison.InvariantCultureIgnoreCase)))
                                                         .Select(x => Path.Combine(DirectoryUtil.ScreensPath, x));
-            Index.AddRange(initialFiles);
+            _index.AddRange(initialFiles);
         }
 
         private async void OnScreenShotCreated(object sender, FileSystemEventArgs e)
         {
-            Index.Add(e.FullPath);
+            _index.Add(e.FullPath);
             await ScreenShotNotify(e.FullPath);
             FileAdded?.Invoke(this, new ValueEventArgs<string>(e.FullPath));
 
@@ -65,14 +66,14 @@ namespace Nekres.Screenshot_Manager.Core
 
         private void OnScreenShotDeleted(object sender, FileSystemEventArgs e)
         {
-            Index.Remove(e.FullPath);
+            _index.Remove(e.FullPath);
             FileDeleted?.Invoke(this, new ValueEventArgs<string>(e.FullPath));
         }
 
         private void OnScreenShotRenamed(object sender, RenamedEventArgs e)
         {
-            Index.Remove(e.OldFullPath);
-            Index.Add(e.FullPath);
+            _index.Remove(e.OldFullPath);
+            _index.Add(e.FullPath);
             FileRenamed?.Invoke(this, new ValueChangedEventArgs<string>(e.OldFullPath, e.FullPath));
         }
 
