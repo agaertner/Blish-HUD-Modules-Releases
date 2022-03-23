@@ -144,6 +144,7 @@
     <Compile Include="UI\Models\CustomSettingsModel.cs" />
     <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
     <Compile Include="UI\Views\CustomSettingsView.cs" />
+    <Compile Include="_Extensions\SpriteBatchExtensions.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
     <Compile Include="_Utils\CommonStrings.cs" />
     <Compile Include="_Utils\ConvexHullUtil.cs" />
@@ -322,7 +323,7 @@
     <Error Condition="!Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets'))" />
     <Error Condition="!Exists('packages\BlishHUD.0.11.5-ci.68\build\BlishHUD.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\BlishHUD.0.11.5-ci.68\build\BlishHUD.targets'))" />
   </Target>
-    <Import Project="packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets" Condition="Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" />
+  <Import Project="packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets" Condition="Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" />
   <Import Project="packages\BlishHUD.0.11.5-ci.68\build\BlishHUD.targets" Condition="Exists('packages\BlishHUD.0.11.5-ci.68\build\BlishHUD.targets')" />
   <ProjectExtensions>
     <VisualStudio>

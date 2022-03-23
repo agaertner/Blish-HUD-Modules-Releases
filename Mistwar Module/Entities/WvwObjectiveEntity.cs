@@ -169,9 +169,10 @@ namespace Nekres.Mistwar.Entities
         private Texture2D GetUpgradeTierTexture(bool useCustom = false)
         {
             return YaksDelivered >= 140 ? 
-                (useCustom ? CustomTextureFortified : TextureFortified) :
-                YaksDelivered >= 60 ? (useCustom ? CustomTextureReinforced : TextureReinforced) :
-                YaksDelivered >= 20 ? (useCustom ? CustomTextureSecured : TextureSecured) : null;
+                useCustom ? CustomTextureFortified : TextureFortified :
+                YaksDelivered >= 60 ?
+                    useCustom ? CustomTextureReinforced : TextureReinforced : 
+                    useCustom ? CustomTextureSecured : TextureSecured;
         }
     }
 }

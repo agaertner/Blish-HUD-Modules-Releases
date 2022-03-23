@@ -8,6 +8,7 @@ using MonoGame.Extended.BitmapFonts;
 using Nekres.Mistwar.Entities;
 using System.Collections.Generic;
 using System.Linq;
+using MonoGame.Extended.Triangulation;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -100,26 +101,14 @@ namespace Nekres.Mistwar.UI.Controls
                         // draw diamond (we have to fake thickness to fill the diamond because the thickness param draws outside. >_>)
                         // Note: Drawing on a bitmap with Graphics.FillPolygon, saving it into a stream and drawing a Texture2D created from that stream is too resource intensive and will cause the UI thread to stall.
                         // Unfortunately, the source of Monogame Extension's FillRectangle just scales a single white pixel and doesn't offer a rectangle to transform.
-                        Vector2[] shapeDiamond;
                         var aWidth = 1.6f * tDest.Width;
                         var aHeight = 1.6f * tDest.Height;
-                        for (int i = 100; i >= 0; i--)
-                        {
-                            var j = i / 100f;
-
-                            shapeDiamond = new[]
-                            {
-                                new Vector2(j * aWidth, j * (aWidth / 2)), new Vector2(j * (aWidth / 2), 0),
-                                new Vector2(0, j * (aWidth / 2)), new Vector2(j * (aWidth / 2), j * aWidth)
-                            };
-                            spriteBatch.DrawPolygon(new Vector2(tDest.X - j * (aWidth / 2), tDest.Y - j * (aHeight / 2)), shapeDiamond, teamColor);
-                        }
-                        shapeDiamond = new[]
+                        var shapeDiamond = new[]
                         {
                             new Vector2( aWidth, aWidth / 2), new Vector2(aWidth / 2, 0),
                             new Vector2(0, aWidth / 2), new Vector2(aWidth / 2, aWidth)
                         };
-                        spriteBatch.DrawPolygon(new Vector2(tDest.X - aWidth / 2, tDest.Y - aHeight / 2), shapeDiamond, Color.Black);
+                        spriteBatch.DrawPolygonFill(new Vector2(tDest.X - aWidth / 2, tDest.Y - aHeight / 2), shapeDiamond, Color.Black);
                         break;
                     default:
                         // draw circle
