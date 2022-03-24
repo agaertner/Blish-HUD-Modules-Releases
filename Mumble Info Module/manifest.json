@@ -1,7 +1,7 @@
 {
   "name": "Mumble Info",
   "version": "0.2.8",
-  "namespace": "Nekres.Mumble_Info_Module",
+  "namespace": "Nekres.Mumble_Info",
   "package": "MumbleInfo.dll",
   "manifest_version": 1,
 

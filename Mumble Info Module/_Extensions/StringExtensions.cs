@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Nekres.Mumble_Info_Module
+namespace Nekres.Mumble_Info
 {
     public static class StringExtensions
     {

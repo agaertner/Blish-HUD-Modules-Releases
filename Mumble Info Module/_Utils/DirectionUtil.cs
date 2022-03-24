@@ -1,7 +1,7 @@
-﻿using Gw2Sharp.Models;
-using System;
+﻿using System;
+using Gw2Sharp.Models;
 
-namespace Nekres.Mumble_Info_Module
+namespace Nekres.Mumble_Info
 {
     internal static class DirectionUtil
     {

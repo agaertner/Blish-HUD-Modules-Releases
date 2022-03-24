@@ -1,4 +1,5 @@
-﻿using Blish_HUD;
+﻿using System;
+using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Gw2Sharp.Models;
@@ -6,12 +7,12 @@ using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.BitmapFonts;
-using System;
+using Nekres.Mumble_Info._Extensions;
 using static Blish_HUD.GameService;
 using Color = Microsoft.Xna.Framework.Color;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
-namespace Nekres.Mumble_Info_Module
+namespace Nekres.Mumble_Info
 {
     internal class DataPanel : Container
     {

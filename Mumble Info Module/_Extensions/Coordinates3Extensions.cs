@@ -1,6 +1,7 @@
 ﻿using Gw2Sharp.Models;
 using Gw2Sharp.WebApi.V2.Models;
-namespace Nekres.Mumble_Info_Module
+
+namespace Nekres.Mumble_Info._Extensions
 {
     internal static class Coordinates3Extensions
     {

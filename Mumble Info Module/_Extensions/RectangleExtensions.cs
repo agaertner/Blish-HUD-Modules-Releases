@@ -1,7 +1,7 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
+using Microsoft.Xna.Framework;
 
-namespace Nekres.Mumble_Info_Module
+namespace Nekres.Mumble_Info
 {
     internal static class RectangleExtensions
     {

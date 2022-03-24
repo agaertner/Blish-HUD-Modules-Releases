@@ -1,4 +1,9 @@
-﻿using Blish_HUD;
+﻿using System;
+using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.Management;
+using System.Threading.Tasks;
+using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Blish_HUD.Modules;
@@ -7,15 +12,10 @@ using Blish_HUD.Settings;
 using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.ComponentModel.Composition;
-using System.Diagnostics;
-using System.Management;
-using System.Threading.Tasks;
 using static Blish_HUD.GameService;
 using Color = Microsoft.Xna.Framework.Color;
 
-namespace Nekres.Mumble_Info_Module
+namespace Nekres.Mumble_Info
 {
     [Export(typeof(Module))]
     public class MumbleInfoModule : Module

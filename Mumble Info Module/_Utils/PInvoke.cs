@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-namespace Nekres.Mumble_Info_Module
+
+namespace Nekres.Mumble_Info
 {
     internal static class PInvoke
     {
