@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Security;
 using System.Threading.Tasks;
 using Microsoft.WindowsAPICodePack.Shell;
 
@@ -33,7 +34,6 @@ namespace Nekres.Screenshot_Manager
                 var timeout = DateTime.UtcNow.AddMilliseconds(ScreenshotManagerModule.FileTimeOutMilliseconds);
                 while (DateTime.UtcNow < timeout)
                 {
-                    if (!File.Exists(filePath)) return ContentService.Textures.Pixel;
                     try
                     {
                         using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -55,10 +55,10 @@ namespace Nekres.Screenshot_Manager
 
                         return Texture2D.FromStream(GameService.Graphics.GraphicsDevice, textureStream);
                     }
-                    catch (IOException e)
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException or SecurityException)
                     {
                         if (DateTime.UtcNow < timeout) continue;
-                        ScreenshotManagerModule.Logger.Error(e.Message);
+                        ScreenshotManagerModule.Logger.Error(e, e.Message);
                         return ContentService.Textures.Pixel;
                     }
                 }
