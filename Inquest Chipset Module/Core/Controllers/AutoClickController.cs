@@ -3,6 +3,7 @@ using Blish_HUD.Input;
 using System;
 using System.Drawing;
 using Blish_HUD;
+using Microsoft.Xna.Framework.Audio;
 using Nekres.Inquest_Module.UI.Controls;
 
 namespace Nekres.Inquest_Module.Core.Controllers
@@ -11,6 +12,9 @@ namespace Nekres.Inquest_Module.Core.Controllers
     {
         private KeyBinding AutoClickHoldKey => InquestModule.ModuleInstance.AutoClickHoldKeySetting.Value;
         private KeyBinding AutoClickToggleKey => InquestModule.ModuleInstance.AutoClickToggleKeySetting.Value;
+
+        private SoundEffect[] _doubleClickSfx;
+        public SoundEffect DoubleClickSfx => _doubleClickSfx[RandomUtil.GetRandom(0, 2)];
 
         private DateTime _nextHoldClick = DateTime.UtcNow;
 
@@ -29,6 +33,12 @@ namespace Nekres.Inquest_Module.Core.Controllers
             AutoClickHoldKey.Enabled = true;
             AutoClickToggleKey.Enabled = true;
             AutoClickToggleKey.Activated += OnToggleActivate;
+            _doubleClickSfx = new[]
+            {
+                InquestModule.ModuleInstance.ContentsManager.GetSound(@"audio\double-click-1.wav"),
+                InquestModule.ModuleInstance.ContentsManager.GetSound(@"audio\double-click-2.wav"),
+                InquestModule.ModuleInstance.ContentsManager.GetSound(@"audio\double-click-3.wav")
+            };
         }
 
         private void OnToggleActivate(object o, EventArgs e)
@@ -84,6 +94,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
 
             if (!_toggleActive && AutoClickHoldKey.IsTriggering && DateTime.UtcNow > _nextHoldClick)
             {
+                if (InquestModule.ModuleInstance.AutoClickSoundEnabledSetting.Value) DoubleClickSfx.Play();
                 Mouse.DoubleClick(MouseButton.LEFT, -1, -1, true);
                 _nextHoldClick = DateTime.UtcNow.AddMilliseconds(50);
             }
@@ -91,6 +102,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
             if (_toggleActive && DateTime.UtcNow > _nextToggleClick)
             {
                 Mouse.SetPosition(_togglePos.X, _togglePos.Y, true);
+                if (InquestModule.ModuleInstance.AutoClickSoundEnabledSetting.Value) DoubleClickSfx.Play();
                 Mouse.DoubleClick(MouseButton.LEFT, -1, -1, true);
                 _nextToggleClick = DateTime.UtcNow.AddMilliseconds(_toggleIntervalMs);
             }
@@ -116,6 +128,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
 
         public void Dispose()
         {
+            foreach (var sfx in _doubleClickSfx) sfx?.Dispose();
             AutoClickToggleKey.Activated -= OnToggleActivate;
         }
     }
