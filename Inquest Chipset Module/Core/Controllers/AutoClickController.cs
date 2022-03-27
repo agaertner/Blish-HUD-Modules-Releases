@@ -94,17 +94,19 @@ namespace Nekres.Inquest_Module.Core.Controllers
 
             if (!_toggleActive && AutoClickHoldKey.IsTriggering && DateTime.UtcNow > _nextHoldClick)
             {
-                if (InquestModule.ModuleInstance.AutoClickSoundEnabledSetting.Value) DoubleClickSfx.Play();
+                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play();
                 Mouse.DoubleClick(MouseButton.LEFT, -1, -1, true);
                 _nextHoldClick = DateTime.UtcNow.AddMilliseconds(50);
             }
 
             if (_toggleActive && DateTime.UtcNow > _nextToggleClick)
             {
+                var savePos = Mouse.GetPosition();
                 Mouse.SetPosition(_togglePos.X, _togglePos.Y, true);
-                if (InquestModule.ModuleInstance.AutoClickSoundEnabledSetting.Value) DoubleClickSfx.Play();
-                Mouse.DoubleClick(MouseButton.LEFT, -1, -1, true);
+                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play();
+                Mouse.DoubleClick(MouseButton.LEFT, _togglePos.X, _togglePos.Y, true);
                 _nextToggleClick = DateTime.UtcNow.AddMilliseconds(_toggleIntervalMs);
+                Mouse.SetPosition(savePos.X, savePos.Y, true);
             }
         }
 

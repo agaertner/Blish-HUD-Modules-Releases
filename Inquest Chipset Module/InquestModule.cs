@@ -32,7 +32,7 @@ namespace Nekres.Inquest_Module
 
         internal SettingEntry<KeyBinding> AutoClickHoldKeySetting;
         internal SettingEntry<KeyBinding> AutoClickToggleKeySetting;
-        internal SettingEntry<bool> AutoClickSoundEnabledSetting;
+        internal SettingEntry<bool> AutoClickSoundDisabledSetting;
         internal SettingEntry<KeyBinding> JumpKeyBindingSetting;
         internal SettingEntry<KeyBinding> DodgeKeyBindingSetting;
         internal SettingEntry<KeyBinding> DodgeJumpKeyBindingSetting;
@@ -52,7 +52,7 @@ namespace Nekres.Inquest_Module
         {
             AutoClickHoldKeySetting = settings.DefineSetting("autoClickHoldKeyBinding", new KeyBinding(Keys.OemComma), () => "Hold Double Clicking", () => "Perform Double Clicks at the current cursor position while the key is being held down.");
             AutoClickToggleKeySetting = settings.DefineSetting("autoClickToggleKeyBinding", new KeyBinding(Keys.None), () => "Toggle Double Clicking", () => "Perform Double Clicks in an interval at the current cursor position until the key is pressed again.");
-            AutoClickSoundEnabledSetting = settings.DefineSetting("autoClickSoundEnabled", true, () => "Disable Clicking Sounds", () => "Disables the sound alert when an auto click is performed.");
+            AutoClickSoundDisabledSetting = settings.DefineSetting("autoClickSoundsDisabled", false, () => "Disable Clicking Sounds", () => "Disables the sound alert when an auto click is performed.");
 
             DodgeJumpKeyBindingSetting = settings.DefineSetting("dodgeJumpKeyBinding", new KeyBinding(ModifierKeys.Shift,Keys.Space), () => "Dodge-Jump", () => "Perform a dodge roll and a jump simultaneously.");
 
