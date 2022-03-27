@@ -1,13 +1,12 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
-using Blish_HUD.Controls.Intern;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.BitmapFonts;
 
 namespace Nekres.Inquest_Module.UI.Controls
 {
-    internal class TaskIndicator : Control
+    internal sealed class TaskIndicator : Control
     {
         private static Texture2D _stopIcon = GameService.Content.GetTexture("common/154982");
         private static Texture2D _mouseIcon = GameService.Content.GetTexture("156734");
@@ -31,6 +30,7 @@ namespace Nekres.Inquest_Module.UI.Controls
 
         public TaskIndicator()
         {
+            this.ZIndex = 1000;
             Update();
         }
 
