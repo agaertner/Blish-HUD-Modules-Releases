@@ -51,12 +51,12 @@ namespace Nekres.Inquest_Module
         protected override void DefineSettings(SettingCollection settings)
         {
             AutoClickHoldKeySetting = settings.DefineSetting("autoClickHoldKeyBinding", new KeyBinding(Keys.OemComma), () => "Hold Double Clicking", () => "Perform Double Clicks at the current cursor position while the key is being held down.");
-            AutoClickToggleKeySetting = settings.DefineSetting("autoClickToggleKeyBinding", new KeyBinding(Keys.None), () => "Toggle Double Clicking", () => "Perform Double Clicks in an interval at the current cursor position until the key is pressed again.");
+            AutoClickToggleKeySetting = settings.DefineSetting("autoClickToggleKeyBinding", new KeyBinding(Keys.OemOpenBrackets), () => "Toggle Double Clicking", () => "Perform Double Clicks in an interval at the current cursor position until the key is pressed again.");
             AutoClickSoundDisabledSetting = settings.DefineSetting("autoClickSoundsDisabled", false, () => "Disable Clicking Sounds", () => "Disables the sound alert when an auto click is performed.");
 
-            DodgeJumpKeyBindingSetting = settings.DefineSetting("dodgeJumpKeyBinding", new KeyBinding(ModifierKeys.Shift,Keys.Space), () => "Dodge-Jump", () => "Perform a dodge roll and a jump simultaneously.");
+            DodgeJumpKeyBindingSetting = settings.DefineSetting("dodgeJumpKeyBinding", new KeyBinding(ModifierKeys.Ctrl, Keys.Space), () => "Dodge-Jump", () => "Perform a dodge roll and a jump simultaneously.");
 
-            var controlOptions = settings.AddSubCollection("Movement", true, false);
+            var controlOptions = settings.AddSubCollection("Movement Keys to Trigger on Dodge-Jump", true, false);
             DodgeKeyBindingSetting = controlOptions.DefineSetting("dodgeKeyBinding", new KeyBinding(Keys.V), () => "Dodge", () => "Do an evasive dodge roll, negating damage, in the direction your character is moving (backward if stationary).");
             JumpKeyBindingSetting = controlOptions.DefineSetting("jumpKeyBinding", new KeyBinding(Keys.Space), () => "Jump", () => "Press to jump over obstacles.");
         }
@@ -83,7 +83,8 @@ namespace Nekres.Inquest_Module
 
         private void OnDodgeJumpKeyActivated(object o, EventArgs e)
         {
-            if (DateTime.UtcNow < _nextDodgeJump || DodgeKeyBindingSetting.Value.PrimaryKey == Keys.None || JumpKeyBindingSetting.Value.PrimaryKey == Keys.None) return;
+            if (DateTime.UtcNow < _nextDodgeJump) return;
+
             if (DodgeKeyBindingSetting.Value.PrimaryKey == DodgeJumpKeyBindingSetting.Value.PrimaryKey 
                 && DodgeKeyBindingSetting.Value.ModifierKeys == DodgeJumpKeyBindingSetting.Value.ModifierKeys)
             {
@@ -97,9 +98,12 @@ namespace Nekres.Inquest_Module
                 ScreenNotification.ShowNotification("Endless Loop Error. Dodge-Jump key cannot be the same as Jump.", ScreenNotification.NotificationType.Error);
                 return;
             }
-            _nextDodgeJump = DateTime.UtcNow.AddMilliseconds(100);
-            Blish_HUD.Controls.Intern.Keyboard.Stroke((VirtualKeyShort)DodgeKeyBindingSetting.Value.PrimaryKey, true);
-            Blish_HUD.Controls.Intern.Keyboard.Stroke((VirtualKeyShort)JumpKeyBindingSetting.Value.PrimaryKey, true);
+            _nextDodgeJump = DateTime.UtcNow.AddMilliseconds(80);
+            
+            if (DodgeKeyBindingSetting.Value.PrimaryKey != Keys.None)
+                Blish_HUD.Controls.Intern.Keyboard.Stroke((VirtualKeyShort)DodgeKeyBindingSetting.Value.PrimaryKey, true);
+            if (JumpKeyBindingSetting.Value.PrimaryKey != Keys.None)
+                Blish_HUD.Controls.Intern.Keyboard.Stroke((VirtualKeyShort)JumpKeyBindingSetting.Value.PrimaryKey, true);
         }
 
         protected override void OnModuleLoaded(EventArgs e)
