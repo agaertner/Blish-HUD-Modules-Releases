@@ -49,7 +49,8 @@ namespace Nekres.Inquest_Module.Core.Controllers
         {
             if (!confirmed) return;
             _toggleActive = true;
-            _toggleIntervalMs = Math.Max(75, input * 1000);
+            _toggleIntervalMs = Math.Min(300000, Math.Max(75, input * 1000));
+            _nextToggleClick = DateTime.UtcNow;
         }
 
         public void UpdateIndicator()
