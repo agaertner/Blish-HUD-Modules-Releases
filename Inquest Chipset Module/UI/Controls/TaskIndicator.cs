@@ -34,6 +34,8 @@ namespace Nekres.Inquest_Module.UI.Controls
             Update();
         }
 
+        protected override CaptureType CapturesInput() => CaptureType.Filter;
+
         private void Update()
         {
             Location = new Point(_mousePos.X + this.Width / 2, _mousePos.Y - this.Height / 2);
