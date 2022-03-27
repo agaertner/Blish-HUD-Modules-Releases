@@ -49,8 +49,8 @@ namespace Nekres.Inquest_Module
 
         protected override void DefineSettings(SettingCollection settings)
         {
-            AutoClickHoldKeySetting = settings.DefineSetting("autoClickHoldKeyBinding", new KeyBinding((Keys)219), () => "Hold Double Clicking", () => "Perform Double Clicks at the current cursor position while the key is being held down.");
-            AutoClickToggleKeySetting = settings.DefineSetting("autoClickToggleKeyBinding", new KeyBinding((Keys)221), () => "Toggle Double Clicking", () => "Perform Double Clicks in an interval at the current cursor position until the key is pressed again.");
+            AutoClickHoldKeySetting = settings.DefineSetting("autoClickHoldKeyBinding", new KeyBinding(Keys.OemComma), () => "Hold Double Clicking", () => "Perform Double Clicks at the current cursor position while the key is being held down.");
+            AutoClickToggleKeySetting = settings.DefineSetting("autoClickToggleKeyBinding", new KeyBinding(Keys.None), () => "Toggle Double Clicking", () => "Perform Double Clicks in an interval at the current cursor position until the key is pressed again.");
 
             DodgeJumpKeyBindingSetting = settings.DefineSetting("dodgeJumpKeyBinding", new KeyBinding(ModifierKeys.Shift,Keys.Space), () => "Dodge-Jump", () => "Perform a dodge roll and a jump simultaneously.");
 
