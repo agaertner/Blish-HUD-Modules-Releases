@@ -131,10 +131,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Controllers\AutoClickController.cs" />
-    <Compile Include="Core\Controllers\OcrController.cs" />
     <Compile Include="InquestModule.cs" />
     <Compile Include="_Extensions\ContentsManagerExtensions.cs" />
-    <Compile Include="_Extensions\StringExtensions.cs" />
     <Compile Include="_Utils\FileUtil.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -162,9 +160,6 @@
       <HintPath>packages\CSCore.1.2.1.2\lib\net35-client\CSCore.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Fastenshtein, Version=1.0.0.8, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Fastenshtein.1.0.0.8\lib\net452\Fastenshtein.dll</HintPath>
-    </Reference>
     <Reference Include="Gapotchenko.FX, Version=2021.1.5.4096, Culture=neutral, PublicKeyToken=a750ee378eaf756f, processorArchitecture=MSIL">
       <HintPath>packages\Gapotchenko.FX.2021.1.5\lib\net472\Gapotchenko.FX.dll</HintPath>
       <Private>False</Private>
@@ -180,9 +175,6 @@
     <Reference Include="Gw2Sharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Gw2Sharp.1.7.0\lib\netstandard2.0\Gw2Sharp.dll</HintPath>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="IronOcr, Version=2022.3.0.0, Culture=neutral, PublicKeyToken=c2cbcea5ea3f6d8d, processorArchitecture=MSIL">
-      <HintPath>packages\IronOcr.2022.3.0\lib\net40\IronOcr.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
