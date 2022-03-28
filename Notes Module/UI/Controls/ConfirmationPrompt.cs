@@ -95,7 +95,8 @@ namespace Nekres.Notes.UI.Controls
                 Parent = this,
                 Size = _challengeTextBoxBounds.Size,
                 Location = _challengeTextBoxBounds.Location,
-                Font = _font
+                Font = _font,
+                Focused = true
             };
             _challengeTextBox.TextChanged += (o, _) =>
             {
