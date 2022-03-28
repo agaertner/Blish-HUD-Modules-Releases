@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.BitmapFonts;
 using Nekres.Screenshot_Manager.UI.Controls;
 using System;
+using System.IO;
+
 namespace Nekres.Screenshot_Manager_Module.Controls
 {
     public class ScreenshotNotification : Panel
@@ -14,6 +16,8 @@ namespace Nekres.Screenshot_Manager_Module.Controls
         private static int _visibleNotifications;
 
         private static readonly BitmapFont Font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular);
+        private static readonly BitmapFont TitleFont = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size22, ContentService.FontStyle.Regular);
+
         private readonly ThumbnailBase _thumbnail;
         private readonly string _message;
 
@@ -37,25 +41,21 @@ namespace Nekres.Screenshot_Manager_Module.Controls
             ShowTint = true;
         }
 
-        protected override CaptureType CapturesInput()
-        {
-            return CaptureType.Mouse;
-        }
+        protected override CaptureType CapturesInput() => CaptureType.Mouse;
 
-        /// <inheritdoc />
-        public override void RecalculateLayout()
-        {
-            this.Location = new Point(60, 60 + this.Height * _visibleNotifications);
-        }
+        public override void RecalculateLayout() => this.Location = new Point(60, 60 + this.Height * _visibleNotifications);
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bound)
         {
+            base.PaintBeforeChildren(spriteBatch, bound);
             spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, bound, Color.Black * 0.4f);
             spriteBatch.DrawStringOnCtrl(this, _message, Font, new Rectangle(0,0, this.Width, HEADER_HEIGHT), Color.White, false, true, 2, HorizontalAlignment.Center);
         }
 
         public override void PaintAfterChildren(SpriteBatch spriteBatch, Rectangle bound)
         {
+            base.PaintAfterChildren(spriteBatch, bound);
+            spriteBatch.DrawStringOnCtrl(this, $"\u201c{Path.GetFileNameWithoutExtension(_thumbnail.FileName)}\u201d", TitleFont, new Rectangle(0, HEADER_HEIGHT + 2, this.Width, HEADER_HEIGHT), Color.White, false, true, 1, HorizontalAlignment.Center);
         }
 
         private void Show(float duration)
