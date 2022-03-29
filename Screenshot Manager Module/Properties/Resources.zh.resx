@@ -234,4 +234,12 @@ Fuzzy</comment>
 如果该功能被停用，被删除的屏幕截图将从硬盘中删除，其存储空间被标记为可覆盖。</value>
     <comment>Fuzzy</comment>
   </data>
+  <data name="Hide Corner Icon" xml:space="preserve">
+    <value>隐藏墙角图标</value>
+    <comment>Setting label to hide the menu entry</comment>
+  </data>
+  <data name="Disables the corner icon in the navigation menu." xml:space="preserve">
+    <value>停用导航菜单中的图标。</value>
+    <comment>Setting tooltip</comment>
+  </data>
 </root>

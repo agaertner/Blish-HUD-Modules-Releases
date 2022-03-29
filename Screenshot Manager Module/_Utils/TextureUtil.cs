@@ -1,4 +1,5 @@
 ﻿using Blish_HUD;
+using Microsoft.WindowsAPICodePack.Shell;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Drawing;
@@ -7,12 +8,37 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Security;
 using System.Threading.Tasks;
-using Microsoft.WindowsAPICodePack.Shell;
 
 namespace Nekres.Screenshot_Manager
 {
     internal class TextureUtil
     {
+        /*public static async Task<Texture2D> GetThumbnail(string filePath)
+        {
+            // Decode the image directly in the given DecodePixelHeight (or width), maintaining aspect ratio.
+            var thumbnail = new BitmapImage();
+            thumbnail.BeginInit();
+            thumbnail.UriSource = new Uri(filePath, UriKind.Absolute);
+            thumbnail.DecodePixelHeight = 144;
+            thumbnail.EndInit();
+
+            // Format the bitmap image into a known format.
+            var formatted = new FormatConvertedBitmap();
+            formatted.BeginInit();
+            formatted.Source = thumbnail;
+            formatted.DestinationFormat = System.Windows.Media.PixelFormats.Default;
+            formatted.EndInit();
+
+            using var stream = new MemoryStream();
+            var bytesPerPixel = (formatted.DestinationFormat.BitsPerPixel + 7) / 8;
+            var stride = 4 * ((formatted.PixelWidth * bytesPerPixel + 3) / 4);
+            var buffer = new byte[formatted.PixelHeight * stride];
+            formatted.CopyPixels(buffer, stride, 0);
+            await stream.WriteAsync(buffer, 0, buffer.Length);
+
+            return Texture2D.FromStream(GameService.Graphics.GraphicsDevice, stream);
+        }*/
+        //TODO: Make thumbnail independent of shell to workaround wrong folder view settings. ("Always show icons, never show thumbnails" makes shell return file icons.)
         public static async Task<Texture2D> GetThumbnail(string filePath)
         {
             return await Task.Run(() => {

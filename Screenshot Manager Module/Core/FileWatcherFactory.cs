@@ -79,7 +79,7 @@ namespace Nekres.Screenshot_Manager.Core
 
         private async Task ScreenShotNotify(string filePath)
         {
-            if (!ScreenshotManagerModule.ModuleInstance.MuteSound.Value) ScreenshotManagerModule.ModuleInstance.ScreenShotSfx.Play();
+            if (!ScreenshotManagerModule.ModuleInstance.MuteSound.Value) ScreenshotManagerModule.ModuleInstance.ScreenShotSfx.Play(GameService.GameIntegration.Audio.Volume,0,0);
             if (ScreenshotManagerModule.ModuleInstance.DisableNotification.Value) return;
             // Delaying so created file handle is closed (write completed) before we look at the directory for its newest file.
             await Task.Delay(NewFileNotificationDelay).ContinueWith(async delegate

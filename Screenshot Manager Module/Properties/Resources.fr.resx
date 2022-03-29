@@ -234,4 +234,12 @@ Fuzzy</comment>
 Si cette fonction est désactivée, les captures d&apos;écran supprimées sont retirées du disque dur et leur espace est marqué comme écrasable.</value>
     <comment>Fuzzy</comment>
   </data>
+  <data name="Hide Corner Icon" xml:space="preserve">
+    <value>Masquer l&apos;élément de menu</value>
+    <comment>Setting label to hide the menu entry</comment>
+  </data>
+  <data name="Disables the corner icon in the navigation menu." xml:space="preserve">
+    <value>Désactive l&apos;icône du menu de navigation.</value>
+    <comment>Setting tooltip</comment>
+  </data>
 </root>

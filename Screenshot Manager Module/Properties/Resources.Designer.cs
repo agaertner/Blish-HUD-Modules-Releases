@@ -136,6 +136,15 @@ namespace Nekres.Screenshot_Manager.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disables the icon in the navigation menu..
+        /// </summary>
+        internal static string Disables_the_corner_icon_in_the_navigation_menu_ {
+            get {
+                return ResourceManager.GetString("Disables the corner icon in the navigation menu.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disables the notification when a new screenshot has been captured..
         /// </summary>
         internal static string Disables_the_notification_when_a_new_screenshot_has_been_captured_ {
@@ -159,6 +168,15 @@ namespace Nekres.Screenshot_Manager.Properties {
         internal static string Favourite {
             get {
                 return ResourceManager.GetString("Favourite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide Corner Icon.
+        /// </summary>
+        internal static string Hide_Corner_Icon {
+            get {
+                return ResourceManager.GetString("Hide Corner Icon", resourceCulture);
             }
         }
         

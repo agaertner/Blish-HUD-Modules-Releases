@@ -89,7 +89,7 @@ namespace Nekres.Screenshot_Manager.UI.Presenters
             ConfirmationPrompt.ShowPrompt(confirmed =>
             {
                 if (!confirmed) return;
-                DoDelete(ctrl);
+                DoDelete(ctrl, false);
             }, string.Format(Resources.You_are_about_to_permanently_destroy__0__, $"\u201c{Path.GetFileNameWithoutExtension(ctrl.FileName)}\u201d") + '\n' + Resources.Are_you_sure_, 
                 Resources.Yes, Resources.Cancel);
         }
@@ -100,15 +100,15 @@ namespace Nekres.Screenshot_Manager.UI.Presenters
             await this.Model.FileWatcherFactory.CreateInspectionPanel(ctrl.FileName);
         }
 
-        private async void DoDelete(ThumbnailBase ctrl, bool sendToRecycleBin = false)
+        private async void DoDelete(ThumbnailBase ctrl, bool sendToRecycleBin)
         {
-            if (sendToRecycleBin ? !await FileUtil.SendToRecycleBinAsync(ctrl.FileName) : !await FileUtil.DeleteAsync(ctrl.FileName))
+            if (!await FileUtil.DeleteAsync(ctrl.FileName, sendToRecycleBin))
             {
                 ScreenNotification.ShowNotification(string.Format(Resources.Failed_to_delete_image__0__, $"\u201c{Path.GetFileNameWithoutExtension(ctrl.FileName)}\u201d"), ScreenNotification.NotificationType.Error);
                 GameService.Content.PlaySoundEffectByName("error");
                 return;
             }
-            ScreenshotManagerModule.ModuleInstance.DeleteSfx.Play();
+            ScreenshotManagerModule.ModuleInstance.DeleteSfx.Play(GameService.GameIntegration.Audio.Volume, 0, 0);
             this.View.ThumbnailFlowPanel.RemoveChild(ctrl);
             ctrl.Dispose();
             this.View.ThumbnailFlowPanel.SortChildren<ResponsiveThumbnail>(SortThumbnails);

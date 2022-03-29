@@ -232,4 +232,12 @@
 Cuando esta función está desactivada, las capturas de pantalla borradas se eliminan del disco duro y su espacio se marca como sobrescribible.</value>
     <comment>Fuzzy</comment>
   </data>
+  <data name="Hide Corner Icon" xml:space="preserve">
+    <value>Ocultar el elemento del menú</value>
+    <comment>Setting label to hide the menu entry</comment>
+  </data>
+  <data name="Disables the corner icon in the navigation menu." xml:space="preserve">
+    <value>Desactiva el icono del menú de navegación.</value>
+    <comment>Setting tooltip</comment>
+  </data>
 </root>

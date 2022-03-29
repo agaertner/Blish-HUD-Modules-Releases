@@ -3,6 +3,7 @@ using System.Linq;
 using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
+using Blish_HUD.Input;
 using Blish_HUD.Settings.UI.Views;
 using Microsoft.Xna.Framework;
 using Nekres.Screenshot_Manager.UI.Models;
@@ -87,7 +88,7 @@ namespace Nekres.Screenshot_Manager.UI.Views
                 btn.MouseLeft += _bttn_MouseLeft;
             }
 
-            _settingFlowPanel = new FlowPanel()
+            _settingFlowPanel = new FlowPanel
             {
                 Size = new Point(buildPanel.Width, buildPanel.Height - _socialFlowPanel.Height),
                 Location = new Point(0, _socialFlowPanel.Height),
@@ -106,7 +107,7 @@ namespace Nekres.Screenshot_Manager.UI.Views
 
                 if ((settingView = SettingView.FromType(setting, _settingFlowPanel.Width)) != null)
                 {
-                    _lastSettingContainer = new ViewContainer()
+                    _lastSettingContainer = new ViewContainer
                     {
                         WidthSizingMode = SizingMode.Fill,
                         HeightSizingMode = SizingMode.AutoSize,
@@ -121,19 +122,49 @@ namespace Nekres.Screenshot_Manager.UI.Views
                     }
                 }
             }
+
+            var troubleShootLabel = new Label
+            {
+                Parent = _settingFlowPanel,
+                Size = new Point(_settingFlowPanel.Width / 2, 100),
+                Text = "Troubleshooting:\nIf you only see file icons (ie. symbols) instead of thumbnail previews (ie. miniature image previews), please disable \"Always show icons, never thumbnails\" in the File Explorer Options dialogue.",
+                WrapText = true,
+                Font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size14, ContentService.FontStyle.Regular)
+            };
+
+            var openFolderDiaBttn = new StandardButton
+            {
+                Parent = _settingFlowPanel,
+                Size = new Point(200, 60),
+                Text = "Open File Explorer Options",
+                BackgroundColor = Color.LightBlue
+            };
+
+            openFolderDiaBttn.Click += (_,_) =>
+            {
+                var process = new System.Diagnostics.Process();
+                var startInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+                    FileName = "cmd.exe",
+                    Arguments = "/C rundll32.exe shell32.dll,Options_RunDLL 7"
+                };
+                process.StartInfo = startInfo;
+                process.Start();
+            };
         }
 
-        private void _bttn_Click(object sender, Blish_HUD.Input.MouseEventArgs e)
+        private void _bttn_Click(object sender, MouseEventArgs e)
         {
             this.SocialButtonClicked?.Invoke(sender, e);
         }
 
-        private void _bttn_MouseEntered(object sender, Blish_HUD.Input.MouseEventArgs e)
+        private void _bttn_MouseEntered(object sender, MouseEventArgs e)
         {
             ((Image)sender).Tint = Color.Gray;
         }
 
-        private void _bttn_MouseLeft(object sender, Blish_HUD.Input.MouseEventArgs e)
+        private void _bttn_MouseLeft(object sender, MouseEventArgs e)
         {
             ((Image)sender).Tint = Color.White;
         }

@@ -234,4 +234,12 @@ Fuzzy</comment>
 Wenn diese Funktion deaktiviert ist, werden gelöschte Screenshots von der Festplatte entfernt und ihr Speicherplatz als Überschreibar markiert.</value>
     <comment>Fuzzy</comment>
   </data>
+  <data name="Hide Corner Icon" xml:space="preserve">
+    <value>Menüeintrag ausblenden</value>
+    <comment>Setting label to hide the menu entry</comment>
+  </data>
+  <data name="Disables the corner icon in the navigation menu." xml:space="preserve">
+    <value>Deaktiviert das Symbol im Navigationsmenü.</value>
+    <comment>Setting tooltip</comment>
+  </data>
 </root>

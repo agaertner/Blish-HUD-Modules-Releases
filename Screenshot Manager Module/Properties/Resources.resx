@@ -233,4 +233,12 @@ Fuzzy</comment>
 When this feature is disabled, deleted screenshots are removed from the hard disk and their space is marked as overwriteable.</value>
     <comment>Fuzzy</comment>
   </data>
+  <data name="Hide Corner Icon" xml:space="preserve">
+    <value>Hide Corner Icon</value>
+    <comment>Setting label to hide the menu entry</comment>
+  </data>
+  <data name="Disables the corner icon in the navigation menu." xml:space="preserve">
+    <value>Disables the icon in the navigation menu.</value>
+    <comment>Setting tooltip</comment>
+  </data>
 </root>
