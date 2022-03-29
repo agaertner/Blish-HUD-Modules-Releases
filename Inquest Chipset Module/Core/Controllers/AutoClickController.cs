@@ -97,28 +97,25 @@ namespace Nekres.Inquest_Module.Core.Controllers
                 return;
             }
 
-            if (!_toggleActive && AutoClickHoldKey.IsTriggering && DateTime.UtcNow > _nextHoldClick)
+            if (!_toggleActive && AutoClickHoldKey.IsTriggering && DateTime.UtcNow > _nextHoldClick && GameService.GameIntegration.Gw2Instance.Gw2HasFocus)
             {
-                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play();
+                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(GameService.GameIntegration.Audio.Volume, 0, 0);
                 Mouse.DoubleClick(MouseButton.LEFT, -1, -1, true);
                 _nextHoldClick = DateTime.UtcNow.AddMilliseconds(50);
             }
 
             if (_toggleActive && DateTime.UtcNow > _nextToggleClick)
             {
-                var savePos = Mouse.GetPosition();
-                Mouse.SetPosition(_togglePos.X, _togglePos.Y, true);
-                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play();
-                Mouse.DoubleClick(MouseButton.LEFT, _togglePos.X, _togglePos.Y, true);
+                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(GameService.GameIntegration.Audio.Volume,0,0);
+                Mouse.DoubleClick(MouseButton.LEFT, _togglePos.X, _togglePos.Y);
+                Mouse.Click(MouseButton.LEFT, _togglePos.X, _togglePos.Y); // WM_BUTTONDBLCLK (0x0203) jams message queue. Unjam with followup click.
                 _nextToggleClick = DateTime.UtcNow.AddMilliseconds(_toggleIntervalMs);
-                Mouse.SetPosition(savePos.X, savePos.Y, true);
             }
         }
 
         private bool IsBusy()
         {
             var isBusy = !GameService.GameIntegration.Gw2Instance.Gw2IsRunning
-                         || !GameService.GameIntegration.Gw2Instance.Gw2HasFocus
                          || !GameService.Gw2Mumble.IsAvailable
                          || GameService.Gw2Mumble.UI.IsTextInputFocused
                          || GameService.Input.Mouse.CameraDragging;
