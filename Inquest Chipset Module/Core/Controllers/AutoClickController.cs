@@ -1,10 +1,11 @@
-﻿using Blish_HUD.Controls.Intern;
+﻿using Blish_HUD;
+using Blish_HUD.Controls.Intern;
 using Blish_HUD.Input;
-using System;
-using System.Drawing;
-using Blish_HUD;
 using Microsoft.Xna.Framework.Audio;
 using Nekres.Inquest_Module.UI.Controls;
+using System;
+using System.Drawing;
+using Color = Microsoft.Xna.Framework.Color;
 
 namespace Nekres.Inquest_Module.Core.Controllers
 {
@@ -26,10 +27,12 @@ namespace Nekres.Inquest_Module.Core.Controllers
         private int _toggleIntervalMs;
         private Point _togglePos;
         private bool _toggleActive;
+        private Color _redShift;
 
         private TaskIndicator _indicator;
         public AutoClickController()
         {
+            _redShift = new Color(255, 105, 105);
             AutoClickHoldKey.Enabled = true;
             AutoClickToggleKey.Enabled = true;
             AutoClickToggleKey.Activated += OnToggleActivate;
@@ -55,11 +58,11 @@ namespace Nekres.Inquest_Module.Core.Controllers
             NumericInputPrompt.ShowPrompt(OnToggleInputPromptCallback, "Enter an interval in seconds:");
         }
 
-        private void OnToggleInputPromptCallback(bool confirmed, int input)
+        private void OnToggleInputPromptCallback(bool confirmed, double input)
         {
             if (!confirmed) return;
             _toggleActive = true;
-            _toggleIntervalMs = Math.Min(300000, Math.Max(75, input * 1000));
+            _toggleIntervalMs = Math.Min(300000, Math.Max(250, (int)(input * 1000)));
             _nextToggleClick = DateTime.UtcNow;
         }
 
@@ -69,8 +72,10 @@ namespace Nekres.Inquest_Module.Core.Controllers
 
             if (_indicator != null)
             {
+                var remainingTime = DateTime.UtcNow.Subtract(_nextToggleClick);
                 _indicator.Paused = IsBusy();
-                _indicator.Text = DateTime.UtcNow.Subtract(_nextToggleClick).ToString(@"m\:ss");
+                _indicator.Text = remainingTime.ToString(remainingTime.TotalSeconds > -1 ? @"\.ff" : remainingTime.TotalMinutes > -1 ? "ss" : @"m\:ss").TrimStart('0');
+                _indicator.TextColor = Color.Lerp(Color.White, _redShift, 1 + (float)remainingTime.TotalMilliseconds / _toggleIntervalMs);
                 _indicator.Visible = !GameService.Input.Mouse.CameraDragging;
                 return;
             }
@@ -114,6 +119,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
         {
             var isBusy = !GameService.GameIntegration.Gw2Instance.Gw2IsRunning
                          || !GameService.GameIntegration.Gw2Instance.Gw2HasFocus
+                         || !GameService.Gw2Mumble.IsAvailable
                          || GameService.Gw2Mumble.UI.IsTextInputFocused
                          || GameService.Input.Mouse.CameraDragging;
 

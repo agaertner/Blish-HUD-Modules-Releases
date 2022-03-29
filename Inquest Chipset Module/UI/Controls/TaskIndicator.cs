@@ -14,22 +14,30 @@ namespace Nekres.Inquest_Module.UI.Controls
 
         private Point _mousePos => GameService.Input.Mouse.Position;
 
-        public bool _paused;
+        private bool _paused;
         public bool Paused
         {
             get => _paused;
             set => SetProperty(ref _paused, value);
         }
 
-        public string _text;
+        private string _text;
         public string Text
         {
             get => _text;
             set => SetProperty(ref _text, value);
         }
 
+        private Color _textColor;
+        public Color TextColor
+        {
+            get => _textColor;
+            set => SetProperty(ref _textColor, value);
+        }
+        
         public TaskIndicator()
         {
+            _textColor = Color.White;
             this.ZIndex = 1000;
             Update();
         }
@@ -47,12 +55,12 @@ namespace Nekres.Inquest_Module.UI.Controls
 
             if (_paused) {
                 spriteBatch.DrawOnCtrl(this, _mouseIcon, new Rectangle((bounds.Width - _mouseIcon.Width) / 2, (bounds.Height - _mouseIcon.Height) / 2, _mouseIcon.Width, _mouseIcon.Height), _mouseIcon.Bounds);
-                spriteBatch.DrawOnCtrl(this, _stopIcon, new Rectangle((bounds.Width - _stopIcon.Width) / 2, (bounds.Height - _stopIcon.Height) / 2, _stopIcon.Width, _stopIcon.Height), _stopIcon.Bounds, Color.White * 0.5f);
+                spriteBatch.DrawOnCtrl(this, _stopIcon, new Rectangle((bounds.Width - _stopIcon.Width) / 2, (bounds.Height - _stopIcon.Height) / 2, _stopIcon.Width, _stopIcon.Height), _stopIcon.Bounds, Color.White * 0.65f);
             }
             else
             {
                 LoadingSpinnerUtil.DrawLoadingSpinner(this, spriteBatch, bounds);
-                spriteBatch.DrawStringOnCtrl(this, _text, _font, bounds, Color.White, false, true, 1, HorizontalAlignment.Center);
+                spriteBatch.DrawStringOnCtrl(this, _text, _font, bounds, _textColor, false, true, 1, HorizontalAlignment.Center);
             }
         }
     }

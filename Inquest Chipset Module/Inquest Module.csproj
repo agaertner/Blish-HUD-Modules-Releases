@@ -134,9 +134,6 @@
     <Compile Include="InquestModule.cs" />
     <Compile Include="UI\Controls\NumericInputPrompt.cs" />
     <Compile Include="UI\Controls\TaskIndicator.cs" />
-    <Compile Include="_Extensions\ContentsManagerExtensions.cs" />
-    <Compile Include="_Extensions\StringExtensions.cs" />
-    <Compile Include="_Utils\FileUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">

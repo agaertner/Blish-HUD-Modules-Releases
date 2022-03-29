@@ -17,7 +17,7 @@ namespace Nekres.Inquest_Module
     [Export(typeof(Module))]
     public class InquestModule : Module
     {
-        private static readonly Logger Logger = Logger.GetLogger(typeof(InquestModule));
+        internal static readonly Logger Logger = Logger.GetLogger(typeof(InquestModule));
 
         internal static InquestModule ModuleInstance;
 

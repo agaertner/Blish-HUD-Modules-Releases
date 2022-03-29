@@ -3,6 +3,7 @@ using Blish_HUD.Controls;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.BitmapFonts;
 using System;
+using System.Globalization;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -24,12 +25,12 @@ namespace Nekres.Inquest_Module.UI.Controls
         private StandardButton _cancelButton;
         private TextBox _inputTextBox;
 
-        private readonly Action<bool, int> _callback;
+        private readonly Action<bool, double> _callback;
         private readonly string _text;
         private readonly string _confirmButtonText;
         private readonly string _cancelButtonButtonText;
 
-        private NumericInputPrompt(Action<bool, int> callback, string text, string confirmButtonText, string cancelButtonText)
+        private NumericInputPrompt(Action<bool, double> callback, string text, string confirmButtonText, string cancelButtonText)
         {
             _callback = callback;
             _text = text;
@@ -38,7 +39,7 @@ namespace Nekres.Inquest_Module.UI.Controls
             this.ZIndex = 999;
         }
 
-        public static void ShowPrompt(Action<bool, int> callback, string text, string confirmButtonText = "Confirm", string cancelButtonText = "Cancel")
+        public static void ShowPrompt(Action<bool, double> callback, string text, string confirmButtonText = "Confirm", string cancelButtonText = "Cancel")
         {
             if (_singleton != null) return;
             _singleton = new NumericInputPrompt(callback, text, confirmButtonText, cancelButtonText)
@@ -65,7 +66,7 @@ namespace Nekres.Inquest_Module.UI.Controls
                 _confirmButton.Click += (_, _) =>
                 {
                     GameService.Content.PlaySoundEffectByName("button-click");
-                    _callback(true, int.Parse(_inputTextBox.Text));
+                    _callback(true, double.Parse(_inputTextBox.Text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture));
                     _singleton = null;
                     this.Dispose();
                 };
@@ -104,7 +105,7 @@ namespace Nekres.Inquest_Module.UI.Controls
             };
             _inputTextBox.TextChanged += (o, _) =>
             {
-                _confirmButton.Enabled = ((TextBox)o).Text.IsDigitsOnly();
+                _confirmButton.Enabled = double.TryParse(((TextBox)o).Text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var _);
             };
         }
 
