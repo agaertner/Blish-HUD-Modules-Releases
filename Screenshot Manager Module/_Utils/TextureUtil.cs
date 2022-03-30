@@ -38,24 +38,41 @@ namespace Nekres.Screenshot_Manager
 
             return Texture2D.FromStream(GameService.Graphics.GraphicsDevice, stream);
         }*/
-        //TODO: Make thumbnail independent of shell to workaround wrong folder view settings. ("Always show icons, never show thumbnails" makes shell return file icons.)
+        //TODO: Consider making thumbnail independent of shell
         public static async Task<Texture2D> GetThumbnail(string filePath)
         {
-            return await Task.Run(() => {
-                using var shellFile = ShellFile.FromFilePath(filePath);
-                using var shellThumb = shellFile.Thumbnail.ExtraLargeBitmap;
-                using var textureStream = new MemoryStream();
-                shellThumb.Save(textureStream, ImageFormat.Jpeg);
-                var buffer = new byte[textureStream.Length];
-                textureStream.Position = 0;
-                textureStream.Read(buffer, 0, buffer.Length);
-                return Texture2D.FromStream(GameService.Graphics.GraphicsDevice, textureStream);
+            return await Task.Run(async () => {
+                var timeout = DateTime.UtcNow.AddMilliseconds(ScreenshotManagerModule.FileTimeOutMilliseconds);
+                while (DateTime.UtcNow < timeout)
+                {
+                    try
+                    {
+                        using var shellFile = ShellFile.FromFilePath(filePath);
+                        if (shellFile.Thumbnail == null) throw new ShellException();
+                        shellFile.Thumbnail.FormatOption = ShellThumbnailFormatOption.ThumbnailOnly;
+                        using var shellThumb = shellFile.Thumbnail.ExtraLargeBitmap;
+                        using var textureStream = new MemoryStream();
+                        shellThumb.Save(textureStream, ImageFormat.Jpeg);
+                        var buffer = new byte[textureStream.Length];
+                        textureStream.Position = 0;
+                        // ReSharper disable once MustUseReturnValue
+                        await textureStream.ReadAsync(buffer, 0, buffer.Length);
+                        return Texture2D.FromStream(GameService.Graphics.GraphicsDevice, textureStream);
+                    }
+                    catch (Exception e) when (e is ShellException or IOException or UnauthorizedAccessException or SecurityException)
+                    {
+                        if (DateTime.UtcNow < timeout) continue;
+                        ScreenshotManagerModule.Logger.Error(e, e.Message);
+                        return ContentService.Textures.Pixel;
+                    }
+                }
+                return ContentService.Textures.Pixel;
             });
         }
 
         public static async Task<Texture2D> GetScreenShot(string filePath)
         {
-            return await Task.Run(() =>
+            return await Task.Run(async () =>
             {
                 var timeout = DateTime.UtcNow.AddMilliseconds(ScreenshotManagerModule.FileTimeOutMilliseconds);
                 while (DateTime.UtcNow < timeout)
@@ -77,8 +94,8 @@ namespace Nekres.Screenshot_Manager
                         target.Save(textureStream, ImageFormat.Jpeg);
                         var buffer = new byte[textureStream.Length];
                         textureStream.Position = 0;
-                        textureStream.Read(buffer, 0, buffer.Length);
-
+                        // ReSharper disable once MustUseReturnValue
+                        await textureStream.ReadAsync(buffer, 0, buffer.Length);
                         return Texture2D.FromStream(GameService.Graphics.GraphicsDevice, textureStream);
                     }
                     catch (Exception e) when (e is IOException or UnauthorizedAccessException or SecurityException)
@@ -88,7 +105,6 @@ namespace Nekres.Screenshot_Manager
                         return ContentService.Textures.Pixel;
                     }
                 }
-
                 return ContentService.Textures.Pixel;
             });
         }

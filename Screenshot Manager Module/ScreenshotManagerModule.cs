@@ -161,8 +161,10 @@ namespace Nekres.Screenshot_Manager
         {
             HideCornerIcon.SettingChanged -= OnHideCornerIconSettingChanged;
             _fileWatcherFactory.Dispose();
-            _moduleCornerIcon.Click -= ModuleCornerIconClicked;
-            _moduleCornerIcon.Dispose();
+            if (_moduleCornerIcon != null) {
+                _moduleCornerIcon.Click -= ModuleCornerIconClicked;
+                _moduleCornerIcon.Dispose();
+            }
             GameService.Overlay.BlishHudWindow.RemoveTab(_moduleTab);
             foreach (var sfx in _deleteSfx) sfx?.Dispose();
             ScreenShotSfx?.Dispose();

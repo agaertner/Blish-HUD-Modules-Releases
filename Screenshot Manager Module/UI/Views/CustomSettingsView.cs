@@ -122,36 +122,6 @@ namespace Nekres.Screenshot_Manager.UI.Views
                     }
                 }
             }
-
-            var troubleShootLabel = new Label
-            {
-                Parent = _settingFlowPanel,
-                Size = new Point(_settingFlowPanel.Width / 2, 100),
-                Text = "Troubleshooting:\nIf you only see file icons (ie. symbols) instead of thumbnail previews (ie. miniature image previews), please disable \"Always show icons, never thumbnails\" in the File Explorer Options dialogue.",
-                WrapText = true,
-                Font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size14, ContentService.FontStyle.Regular)
-            };
-
-            var openFolderDiaBttn = new StandardButton
-            {
-                Parent = _settingFlowPanel,
-                Size = new Point(200, 60),
-                Text = "Open File Explorer Options",
-                BackgroundColor = Color.LightBlue
-            };
-
-            openFolderDiaBttn.Click += (_,_) =>
-            {
-                var process = new System.Diagnostics.Process();
-                var startInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
-                    FileName = "cmd.exe",
-                    Arguments = "/C rundll32.exe shell32.dll,Options_RunDLL 7"
-                };
-                process.StartInfo = startInfo;
-                process.Start();
-            };
         }
 
         private void _bttn_Click(object sender, MouseEventArgs e)
