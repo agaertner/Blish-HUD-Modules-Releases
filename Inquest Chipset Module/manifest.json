@@ -1,6 +1,6 @@
 {
   "name": "Inquest Chipset",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "namespace": "Nekres.Inquest_Module",
   "package": "Inquest Module.dll",
   "manifest_version": 1,

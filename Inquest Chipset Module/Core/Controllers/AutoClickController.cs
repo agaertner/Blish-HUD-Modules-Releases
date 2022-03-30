@@ -2,9 +2,11 @@
 using Blish_HUD.Controls.Intern;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Input;
 using Nekres.Inquest_Module.UI.Controls;
 using System;
 using Color = Microsoft.Xna.Framework.Color;
+using Mouse = Blish_HUD.Controls.Intern.Mouse;
 using Point = Microsoft.Xna.Framework.Point;
 namespace Nekres.Inquest_Module.Core.Controllers
 {
@@ -121,44 +123,42 @@ namespace Nekres.Inquest_Module.Core.Controllers
             };
         }
 
-        public void UpdateIndicator()
-        {
-            if (!_toggleActive) return;
-
-            var isBusy = IsBusy();
-            _clickIndicator.Paused = isBusy;
-            _indicator.Paused = isBusy;
-            _indicator.Visible = !isBusy;
-            var remainingTime = DateTime.UtcNow.Subtract(_nextToggleClick);
-            _indicator.Text = remainingTime.ToString(remainingTime.TotalSeconds > -1 ? @"\.ff" : remainingTime.TotalMinutes > -1 ? "ss" : @"m\:ss").TrimStart('0');
-            _indicator.TextColor = Color.Lerp(Color.White, _redShift, 1 + (float)remainingTime.TotalMilliseconds / _toggleIntervalMs);
-
-        }
+        private bool HoldIsTriggering() => InquestModule.ModuleInstance.HoldKeyWithLeftClickEnabledSetting.Value
+                ? AutoClickHoldKey.IsTriggering && GameService.Input.Mouse.State.LeftButton == ButtonState.Pressed
+                : AutoClickHoldKey.IsTriggering;
 
         public void Update()
         {
-            UpdateIndicator();
-
-            if (IsBusy())
+            if (_toggleActive)
             {
-                _nextToggleClick = DateTime.UtcNow.Add(_pausedRemainingTime);
-                return;
-            }
+                var isBusy = IsBusy();
 
-            if (!_toggleActive && AutoClickHoldKey.IsTriggering && DateTime.UtcNow > _nextHoldClick && GameService.GameIntegration.Gw2Instance.Gw2HasFocus)
+                _clickIndicator.Paused = isBusy;
+                _indicator.Paused = isBusy;
+                _indicator.Visible = !isBusy;
+
+                if (isBusy)
+                {
+                    _nextToggleClick = DateTime.UtcNow.Add(_pausedRemainingTime);
+                    return;
+                }
+
+                var remainingTime = DateTime.UtcNow.Subtract(_nextToggleClick);
+                _indicator.Text = remainingTime.ToString(remainingTime.TotalSeconds > -1 ? @"\.ff" : remainingTime.TotalMinutes > -1 ? "ss" : @"m\:ss").TrimStart('0');
+                _indicator.TextColor = Color.Lerp(Color.White, _redShift, 1 + (float)remainingTime.TotalMilliseconds / _toggleIntervalMs);
+
+                if (DateTime.UtcNow <= _nextToggleClick) return;
+                _clickIndicator.LeftClick();
+                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(SoundVolume, 0, 0);
+                Mouse.DoubleClick(MouseButton.LEFT, _togglePos.X, _togglePos.Y);
+                Mouse.Click(MouseButton.LEFT, _togglePos.X, _togglePos.Y); // WM_BUTTONDBLCLK (0x0203) jams message queue. Unjam with followup click.
+                _nextToggleClick = DateTime.UtcNow.AddMilliseconds(_toggleIntervalMs);
+            }
+            else if (HoldIsTriggering() && DateTime.UtcNow > _nextHoldClick && GameService.GameIntegration.Gw2Instance.Gw2HasFocus)
             {
                 if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(SoundVolume, 0, 0);
                 Mouse.DoubleClick(MouseButton.LEFT, -1, -1, true);
                 _nextHoldClick = DateTime.UtcNow.AddMilliseconds(50);
-            }
-
-            if (_toggleActive && DateTime.UtcNow > _nextToggleClick)
-            {
-                _clickIndicator.LeftClick();
-                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(SoundVolume, 0,0);
-                Mouse.DoubleClick(MouseButton.LEFT, _togglePos.X, _togglePos.Y);
-                Mouse.Click(MouseButton.LEFT, _togglePos.X, _togglePos.Y); // WM_BUTTONDBLCLK (0x0203) jams message queue. Unjam with followup click.
-                _nextToggleClick = DateTime.UtcNow.AddMilliseconds(_toggleIntervalMs);
             }
         }
 

@@ -34,6 +34,7 @@ namespace Nekres.Inquest_Module
         #endregion
 
         internal SettingEntry<KeyBinding> AutoClickHoldKeySetting;
+        internal SettingEntry<bool> HoldKeyWithLeftClickEnabledSetting;
         internal SettingEntry<KeyBinding> AutoClickToggleKeySetting;
         internal SettingEntry<bool> AutoClickSoundDisabledSetting;
         internal SettingEntry<float> AutoClickSoundVolume;
@@ -55,7 +56,11 @@ namespace Nekres.Inquest_Module
         {
             AutoClickHoldKeySetting = settings.DefineSetting("autoClickHoldKeyBinding", new KeyBinding(Keys.OemComma), 
                 () => "Hold Double Clicking", 
-                () => "Perform Double Clicks at the current cursor position while the key is being held down.");
+                () => "Perform Double Clicks at the current cursor position while the key is being pressed.");
+
+            HoldKeyWithLeftClickEnabledSetting = settings.DefineSetting("holdKeyWithLeftClick", false,
+                () => "Hold Double Clicking + Left Mouse Button",
+                () => "Perform Double clicks at the current cursor position while Hold Double Clicking and Left Mouse Button is being pressed.");
 
             AutoClickToggleKeySetting = settings.DefineSetting("autoClickToggleKeyBinding", new KeyBinding(Keys.OemOpenBrackets), 
                 () => "Toggle Double Clicking", 
@@ -65,7 +70,7 @@ namespace Nekres.Inquest_Module
                 () => "Disable Clicking Sounds", 
                 () => "Disables the sound alert when an auto click is performed.");
 
-            AutoClickSoundVolume = settings.DefineSetting("autoClickSoundsVolume", 0.8f,
+            AutoClickSoundVolume = settings.DefineSetting("autoClickSoundsVolume", 80f,
                 () => "Clicking Sounds Volume", 
                 () => "Sets the audio volume of the clicking alerts.");
 
