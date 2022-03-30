@@ -11,6 +11,9 @@ using Nekres.Inquest_Module.Core.Controllers;
 using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
+using Blish_HUD.Graphics.UI;
+using Nekres.Inquest_Module.UI.Models;
+using Nekres.Inquest_Module.UI.Views;
 
 namespace Nekres.Inquest_Module
 {
@@ -33,10 +36,10 @@ namespace Nekres.Inquest_Module
         internal SettingEntry<KeyBinding> AutoClickHoldKeySetting;
         internal SettingEntry<KeyBinding> AutoClickToggleKeySetting;
         internal SettingEntry<bool> AutoClickSoundDisabledSetting;
+        internal SettingEntry<float> AutoClickSoundVolume;
         internal SettingEntry<KeyBinding> JumpKeyBindingSetting;
         internal SettingEntry<KeyBinding> DodgeKeyBindingSetting;
         internal SettingEntry<KeyBinding> DodgeJumpKeyBindingSetting;
-
         private CornerIcon _moduleIcon;
 
         private AutoClickController _autoClickController;
@@ -62,6 +65,10 @@ namespace Nekres.Inquest_Module
                 () => "Disable Clicking Sounds", 
                 () => "Disables the sound alert when an auto click is performed.");
 
+            AutoClickSoundVolume = settings.DefineSetting("autoClickSoundsVolume", 0.8f,
+                () => "Clicking Sounds Volume", 
+                () => "Sets the audio volume of the clicking alerts.");
+
             DodgeJumpKeyBindingSetting = settings.DefineSetting("dodgeJumpKeyBinding", new KeyBinding(ModifierKeys.Ctrl, Keys.Space), 
                 () => "Dodge-Jump", 
                 () => "Perform a dodge roll and a jump simultaneously.");
@@ -74,6 +81,8 @@ namespace Nekres.Inquest_Module
         protected override void Initialize()
         {
             _autoClickController = new AutoClickController();
+            _autoClickController.SoundVolume = AutoClickSoundVolume.Value / 1000;
+
             /*_moduleIcon = new CornerIcon
             {
                 IconName = "Inquest Chipset",
@@ -84,11 +93,21 @@ namespace Nekres.Inquest_Module
             DodgeKeyBindingSetting.Value.Enabled = false;
             DodgeJumpKeyBindingSetting.Value.Enabled = true;
             DodgeJumpKeyBindingSetting.Value.Activated += OnDodgeJumpKeyActivated;
+            AutoClickSoundVolume.SettingChanged += OnAutoClickSoundVolumeSettingChanged;
+        }
+        public override IView GetSettingsView()
+        {
+            return new CustomSettingsView(new CustomSettingsModel(SettingsManager.ModuleSettings));
         }
 
         protected override async Task LoadAsync()
         {
 
+        }
+
+        private void OnAutoClickSoundVolumeSettingChanged(object o, ValueChangedEventArgs<float> e)
+        {
+            _autoClickController.SoundVolume = e.NewValue / 1000;
         }
 
         private void OnDodgeJumpKeyActivated(object o, EventArgs e)
@@ -132,6 +151,7 @@ namespace Nekres.Inquest_Module
         {
             _autoClickController?.Dispose();
             DodgeJumpKeyBindingSetting.Value.Activated -= OnDodgeJumpKeyActivated;
+            AutoClickSoundVolume.SettingChanged -= OnAutoClickSoundVolumeSettingChanged;
             _moduleIcon?.Dispose();
             // All static members must be manually unset
             ModuleInstance = null;

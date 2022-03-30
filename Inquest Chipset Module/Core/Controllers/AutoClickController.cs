@@ -10,6 +10,13 @@ namespace Nekres.Inquest_Module.Core.Controllers
 {
     internal class AutoClickController : IDisposable
     {
+        private float _soundVolume;
+        public float SoundVolume
+        {
+            get => Math.Min(GameService.GameIntegration.Audio.Volume, _soundVolume);
+            set => _soundVolume = value;
+        }
+
         private KeyBinding AutoClickHoldKey => InquestModule.ModuleInstance.AutoClickHoldKeySetting.Value;
         private KeyBinding AutoClickToggleKey => InquestModule.ModuleInstance.AutoClickToggleKeySetting.Value;
 
@@ -33,6 +40,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
 
         public AutoClickController()
         {
+            this.SoundVolume = 1;
             _redShift = new Color(255, 57, 57);
             AutoClickHoldKey.Enabled = true;
             AutoClickHoldKey.Activated += OnHoldActivated;
@@ -65,12 +73,11 @@ namespace Nekres.Inquest_Module.Core.Controllers
         {
             _togglePos = Mouse.GetPosition();
 
-            _clickIndicator ??= new ClickIndicator
+            _clickIndicator ??= new ClickIndicator(false)
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 Size = new Point(32, 32),
                 Location = new Point(GameService.Input.Mouse.Position.X - 14, GameService.Input.Mouse.Position.Y - 14),
-                ZIndex = 1000
             };
         }
 
@@ -106,11 +113,10 @@ namespace Nekres.Inquest_Module.Core.Controllers
             _toggleIntervalMs = Math.Min(300000, Math.Max(250, (int)(input * 1000)));
             _nextToggleClick = DateTime.UtcNow;
 
-            _indicator ??= new TaskIndicator
+            _indicator ??= new TaskIndicator(false)
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 Size = new Point(50, 50),
-                AttachToCursor = false,
                 Location = new Point(_clickIndicator.Location.X + 25, _clickIndicator.Location.Y - 32),
             };
         }
@@ -141,7 +147,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
 
             if (!_toggleActive && AutoClickHoldKey.IsTriggering && DateTime.UtcNow > _nextHoldClick && GameService.GameIntegration.Gw2Instance.Gw2HasFocus)
             {
-                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(GameService.GameIntegration.Audio.Volume, 0, 0);
+                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(SoundVolume, 0, 0);
                 Mouse.DoubleClick(MouseButton.LEFT, -1, -1, true);
                 _nextHoldClick = DateTime.UtcNow.AddMilliseconds(50);
             }
@@ -149,7 +155,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
             if (_toggleActive && DateTime.UtcNow > _nextToggleClick)
             {
                 _clickIndicator.LeftClick();
-                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(GameService.GameIntegration.Audio.Volume,0,0);
+                if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(SoundVolume, 0,0);
                 Mouse.DoubleClick(MouseButton.LEFT, _togglePos.X, _togglePos.Y);
                 Mouse.Click(MouseButton.LEFT, _togglePos.X, _togglePos.Y); // WM_BUTTONDBLCLK (0x0203) jams message queue. Unjam with followup click.
                 _nextToggleClick = DateTime.UtcNow.AddMilliseconds(_toggleIntervalMs);
