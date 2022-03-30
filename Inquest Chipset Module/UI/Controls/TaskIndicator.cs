@@ -34,18 +34,25 @@ namespace Nekres.Inquest_Module.UI.Controls
             get => _textColor;
             set => SetProperty(ref _textColor, value);
         }
-        
+
+        private bool _attachToCursor;
+        public bool AttachToCursor
+        {
+            get => _attachToCursor;
+            set => SetProperty(ref _attachToCursor, value);
+        }
+
         public TaskIndicator()
         {
             _textColor = Color.White;
             this.ZIndex = 1000;
-            Update();
         }
 
         protected override CaptureType CapturesInput() => CaptureType.Filter;
 
         private void Update()
         {
+            if (!_attachToCursor) return;
             Location = new Point(_mousePos.X + this.Width / 2, _mousePos.Y - this.Height / 2);
         }
 

@@ -133,6 +133,7 @@
     <Compile Include="Core\Controllers\AutoClickController.cs" />
     <Compile Include="InquestModule.cs" />
     <Compile Include="UI\Controls\NumericInputPrompt.cs" />
+    <Compile Include="UI\Controls\ClickIndicator.cs" />
     <Compile Include="UI\Controls\TaskIndicator.cs" />
   </ItemGroup>
   <ItemGroup>

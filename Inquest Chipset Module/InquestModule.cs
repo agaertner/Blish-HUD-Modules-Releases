@@ -50,11 +50,21 @@ namespace Nekres.Inquest_Module
 
         protected override void DefineSettings(SettingCollection settings)
         {
-            AutoClickHoldKeySetting = settings.DefineSetting("autoClickHoldKeyBinding", new KeyBinding(Keys.OemComma), () => "Hold Double Clicking", () => "Perform Double Clicks at the current cursor position while the key is being held down.");
-            AutoClickToggleKeySetting = settings.DefineSetting("autoClickToggleKeyBinding", new KeyBinding(Keys.OemOpenBrackets), () => "Toggle Double Clicking", () => "Perform Double Clicks in an interval at the current cursor position until the key is pressed again.");
-            AutoClickSoundDisabledSetting = settings.DefineSetting("autoClickSoundsDisabled", false, () => "Disable Clicking Sounds", () => "Disables the sound alert when an auto click is performed.");
+            AutoClickHoldKeySetting = settings.DefineSetting("autoClickHoldKeyBinding", new KeyBinding(Keys.OemComma), 
+                () => "Hold Double Clicking", 
+                () => "Perform Double Clicks at the current cursor position while the key is being held down.");
 
-            DodgeJumpKeyBindingSetting = settings.DefineSetting("dodgeJumpKeyBinding", new KeyBinding(ModifierKeys.Ctrl, Keys.Space), () => "Dodge-Jump", () => "Perform a dodge roll and a jump simultaneously.");
+            AutoClickToggleKeySetting = settings.DefineSetting("autoClickToggleKeyBinding", new KeyBinding(Keys.OemOpenBrackets), 
+                () => "Toggle Double Clicking", 
+                () => "Perform Double Clicks in an interval at the position of the cursor at the time of pressing the key.");
+
+            AutoClickSoundDisabledSetting = settings.DefineSetting("autoClickSoundsDisabled", false, 
+                () => "Disable Clicking Sounds", 
+                () => "Disables the sound alert when an auto click is performed.");
+
+            DodgeJumpKeyBindingSetting = settings.DefineSetting("dodgeJumpKeyBinding", new KeyBinding(ModifierKeys.Ctrl, Keys.Space), 
+                () => "Dodge-Jump", 
+                () => "Perform a dodge roll and a jump simultaneously.");
 
             var controlOptions = settings.AddSubCollection("Movement Keys to Trigger on Dodge-Jump", true, false);
             DodgeKeyBindingSetting = controlOptions.DefineSetting("dodgeKeyBinding", new KeyBinding(Keys.V), () => "Dodge", () => "Do an evasive dodge roll, negating damage, in the direction your character is moving (backward if stationary).");
