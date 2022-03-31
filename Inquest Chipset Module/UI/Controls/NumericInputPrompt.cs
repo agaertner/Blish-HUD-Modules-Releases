@@ -32,20 +32,23 @@ namespace Nekres.Inquest_Module.UI.Controls
         private readonly string _confirmButtonText;
         private readonly string _cancelButtonButtonText;
 
-        private NumericInputPrompt(Action<bool, double> callback, string text, string confirmButtonText, string cancelButtonText)
+        private readonly double _defaultValue;
+
+        private NumericInputPrompt(Action<bool, double> callback, string text, double defaultValue, string confirmButtonText, string cancelButtonText)
         {
             _callback = callback;
             _text = text;
+            _defaultValue = defaultValue;
             _confirmButtonText = confirmButtonText;
             _cancelButtonButtonText = cancelButtonText;
             this.ZIndex = 999;
             GameService.Input.Keyboard.KeyPressed += OnKeyPressed;
         }
 
-        public static void ShowPrompt(Action<bool, double> callback, string text, string confirmButtonText = "Confirm", string cancelButtonText = "Cancel")
+        public static void ShowPrompt(Action<bool, double> callback, string text, double defaultValue = 0, string confirmButtonText = "Confirm", string cancelButtonText = "Cancel")
         {
             if (_singleton != null) return;
-            _singleton = new NumericInputPrompt(callback, text, confirmButtonText, cancelButtonText)
+            _singleton = new NumericInputPrompt(callback, text, defaultValue, confirmButtonText, cancelButtonText)
             {
                 Parent = Graphics.SpriteScreen,
                 Location = Point.Zero,
@@ -64,8 +67,8 @@ namespace Nekres.Inquest_Module.UI.Controls
                     Text = _confirmButtonText,
                     Size = _confirmButtonBounds.Size,
                     Location = _confirmButtonBounds.Location,
-                    Enabled = false
-                };
+                    Enabled = _defaultValue > 0
+            };
                 _confirmButton.Click += (_, _) => this.Confirm();
             }
 
@@ -118,6 +121,7 @@ namespace Nekres.Inquest_Module.UI.Controls
         private void CreateTextInput()
         {
             if (_inputTextBox != null) return;
+            var defaultText = _defaultValue > 0 ? _defaultValue.ToString(CultureInfo.InvariantCulture) : string.Empty;
             _inputTextBox = new TextBox
             {
                 Parent = this,
@@ -125,7 +129,9 @@ namespace Nekres.Inquest_Module.UI.Controls
                 Location = _inputTextBoxBounds.Location,
                 Font = _font,
                 Focused = true,
-                HorizontalAlignment = HorizontalAlignment.Center
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Text = defaultText,
+                CursorIndex = defaultText.Length
             };
             _inputTextBox.TextChanged += (o, _) =>
             {

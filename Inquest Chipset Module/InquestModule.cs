@@ -12,6 +12,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Blish_HUD.Graphics.UI;
+using Gw2Sharp.WebApi.Caching;
 using Nekres.Inquest_Module.UI.Models;
 using Nekres.Inquest_Module.UI.Views;
 
@@ -41,6 +42,10 @@ namespace Nekres.Inquest_Module
         internal SettingEntry<KeyBinding> JumpKeyBindingSetting;
         internal SettingEntry<KeyBinding> DodgeKeyBindingSetting;
         internal SettingEntry<KeyBinding> DodgeJumpKeyBindingSetting;
+
+        // Hidden Settings (Cache)
+        internal SettingEntry<double> AutoClickToggleInterval;
+
         private CornerIcon _moduleIcon;
 
         private AutoClickController _autoClickController;
@@ -81,6 +86,9 @@ namespace Nekres.Inquest_Module
             var controlOptions = settings.AddSubCollection("Movement Keys to Trigger on Dodge-Jump", true, false);
             DodgeKeyBindingSetting = controlOptions.DefineSetting("dodgeKeyBinding", new KeyBinding(Keys.V), () => "Dodge", () => "Do an evasive dodge roll, negating damage, in the direction your character is moving (backward if stationary).");
             JumpKeyBindingSetting = controlOptions.DefineSetting("jumpKeyBinding", new KeyBinding(Keys.Space), () => "Jump", () => "Press to jump over obstacles.");
+
+            var hiddenSettingsCache = settings.AddSubCollection("hiddenSettingsCache", false, false);
+            AutoClickToggleInterval = hiddenSettingsCache.DefineSetting("autoClickToggleInterval", 0.0);
         }
 
         protected override void Initialize()

@@ -94,7 +94,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
             _inTogglePrompt = true;
             _togglePos = Mouse.GetPosition();
             CreateClickIndicator(false, true);
-            NumericInputPrompt.ShowPrompt(OnToggleInputPromptCallback, "Enter an interval in seconds:");
+            NumericInputPrompt.ShowPrompt(OnToggleInputPromptCallback, "Enter an interval in seconds:", InquestModule.ModuleInstance.AutoClickToggleInterval.Value);
         }
 
         private void OnToggleInputPromptCallback(bool confirmed, double input)
@@ -108,6 +108,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
             _toggleActive = true;
             _toggleIntervalMs = Math.Min(300000, Math.Max(250, (int)(input * 1000)));
             _nextToggleClick = DateTime.UtcNow;
+            InquestModule.ModuleInstance.AutoClickToggleInterval.Value = _toggleIntervalMs / 1000.0;
 
             _indicator ??= new TaskIndicator(false)
             {
