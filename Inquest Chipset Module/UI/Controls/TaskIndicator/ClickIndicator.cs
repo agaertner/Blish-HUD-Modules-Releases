@@ -14,9 +14,9 @@ namespace Nekres.Inquest_Module.UI.Controls
 
         public ClickIndicator(bool attachToCursor = true) : base(attachToCursor) { /* NOOP */ }
 
-        public void LeftClick()
+        public void LeftClick(int durationMs = 150)
         {
-            _clickEnd = DateTime.UtcNow.AddMilliseconds(150);
+            _clickEnd = DateTime.UtcNow.AddMilliseconds(durationMs);
         }
 
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds)

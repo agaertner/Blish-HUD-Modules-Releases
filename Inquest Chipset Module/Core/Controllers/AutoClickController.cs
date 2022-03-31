@@ -36,6 +36,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
         private System.Drawing.Point _togglePos;
         private bool _toggleActive;
         private Color _redShift;
+        private bool _inTogglePrompt;
 
         private TaskIndicator _indicator;
         private ClickIndicator _clickIndicator;
@@ -60,22 +61,21 @@ namespace Nekres.Inquest_Module.Core.Controllers
 
         private void OnIsInCombatChanged(object o, ValueEventArgs<bool> e)
         {
-            if (e.Value) DeactivateToggle();
+            if (e.Value) Deactivate();
         }
         private void OnIsInGameChanged(object o, ValueEventArgs<bool> e)
         {
-            if (!e.Value) DeactivateToggle();
+            if (!e.Value) Deactivate();
         }
         private void OnHoldActivated(object o, EventArgs e)
         {
-            if (_toggleActive) DeactivateToggle();
+            if (_toggleActive) Deactivate();
         }
 
-        private void SaveTogglePosition()
+        private void CreateClickIndicator(bool attachToCursor, bool forceRecreation = false)
         {
-            _togglePos = Mouse.GetPosition();
-
-            _clickIndicator ??= new ClickIndicator(false)
+            if (forceRecreation) Deactivate();
+            _clickIndicator ??= new ClickIndicator(attachToCursor)
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 Size = new Point(32, 32),
@@ -87,28 +87,21 @@ namespace Nekres.Inquest_Module.Core.Controllers
         {
             if (_toggleActive || IsBusy())
             {
-                DeactivateToggle();
+                Deactivate();
                 return;
             }
-
-            SaveTogglePosition();
+            _inTogglePrompt = true;
+            _togglePos = Mouse.GetPosition();
+            CreateClickIndicator(false, true);
             NumericInputPrompt.ShowPrompt(OnToggleInputPromptCallback, "Enter an interval in seconds:");
-        }
-
-        private void DeactivateToggle()
-        {
-            _toggleActive = false;
-            _clickIndicator?.Dispose();
-            _clickIndicator = null;
-            _indicator?.Dispose();
-            _indicator = null;
         }
 
         private void OnToggleInputPromptCallback(bool confirmed, double input)
         {
+            _inTogglePrompt = false;
             if (!confirmed)
             {
-                DeactivateToggle();
+                Deactivate();
                 return;
             }
             _toggleActive = true;
@@ -123,9 +116,9 @@ namespace Nekres.Inquest_Module.Core.Controllers
             };
         }
 
-        private bool HoldIsTriggering() => InquestModule.ModuleInstance.HoldKeyWithLeftClickEnabledSetting.Value
+        private bool HoldIsTriggering() => (InquestModule.ModuleInstance.HoldKeyWithLeftClickEnabledSetting.Value
                 ? AutoClickHoldKey.IsTriggering && GameService.Input.Mouse.State.LeftButton == ButtonState.Pressed
-                : AutoClickHoldKey.IsTriggering;
+                : AutoClickHoldKey.IsTriggering) && !_inTogglePrompt;
 
         public void Update()
         {
@@ -154,11 +147,18 @@ namespace Nekres.Inquest_Module.Core.Controllers
                 Mouse.Click(MouseButton.LEFT, _togglePos.X, _togglePos.Y); // WM_BUTTONDBLCLK (0x0203) jams message queue. Unjam with followup click.
                 _nextToggleClick = DateTime.UtcNow.AddMilliseconds(_toggleIntervalMs);
             }
-            else if (HoldIsTriggering() && DateTime.UtcNow > _nextHoldClick && GameService.GameIntegration.Gw2Instance.Gw2HasFocus)
+            else if (HoldIsTriggering())
             {
+                CreateClickIndicator(true);
+                if (DateTime.UtcNow <= _nextHoldClick || !GameService.GameIntegration.Gw2Instance.Gw2HasFocus) return;
+                _clickIndicator.LeftClick(40);
                 if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(SoundVolume, 0, 0);
                 Mouse.DoubleClick(MouseButton.LEFT, -1, -1, true);
                 _nextHoldClick = DateTime.UtcNow.AddMilliseconds(50);
+            }
+            else if (!_inTogglePrompt)
+            {
+                Deactivate();
             }
         }
 
@@ -181,9 +181,18 @@ namespace Nekres.Inquest_Module.Core.Controllers
             return false;
         }
 
+        private void Deactivate()
+        {
+            _toggleActive = false;
+            _clickIndicator?.Dispose();
+            _clickIndicator = null;
+            _indicator?.Dispose();
+            _indicator = null;
+        }
+
         public void Dispose()
         {
-            DeactivateToggle();
+            Deactivate();
             foreach (var sfx in _doubleClickSfx) sfx?.Dispose();
             AutoClickToggleKey.Activated -= OnToggleActivate;
             GameService.Gw2Mumble.PlayerCharacter.IsInCombatChanged -= OnIsInCombatChanged;
