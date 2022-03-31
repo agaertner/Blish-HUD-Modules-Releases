@@ -41,6 +41,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
         private TaskIndicator _indicator;
         private ClickIndicator _clickIndicator;
 
+        private bool _isDisposing;
         public AutoClickController()
         {
             this.SoundVolume = 1;
@@ -117,8 +118,8 @@ namespace Nekres.Inquest_Module.Core.Controllers
         }
 
         private bool HoldIsTriggering() => (InquestModule.ModuleInstance.HoldKeyWithLeftClickEnabledSetting.Value
-                ? AutoClickHoldKey.IsTriggering && GameService.Input.Mouse.State.LeftButton == ButtonState.Pressed
-                : AutoClickHoldKey.IsTriggering) && !_inTogglePrompt;
+            ? AutoClickHoldKey.IsTriggering && GameService.Input.Mouse.State.LeftButton == ButtonState.Pressed
+            : AutoClickHoldKey.IsTriggering) && !_inTogglePrompt && !_isDisposing;
 
         public void Update()
         {
@@ -193,11 +194,12 @@ namespace Nekres.Inquest_Module.Core.Controllers
 
         public void Dispose()
         {
-            Deactivate();
-            foreach (var sfx in _doubleClickSfx) sfx?.Dispose();
+            _isDisposing = true;
             AutoClickToggleKey.Activated -= OnToggleActivate;
             GameService.Gw2Mumble.PlayerCharacter.IsInCombatChanged -= OnIsInCombatChanged;
             GameService.GameIntegration.Gw2Instance.IsInGameChanged -= OnIsInGameChanged;
+            Deactivate();
+            foreach (var sfx in _doubleClickSfx) sfx?.Dispose();
         }
     }
 }
