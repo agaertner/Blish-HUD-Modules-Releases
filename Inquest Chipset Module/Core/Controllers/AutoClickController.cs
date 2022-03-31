@@ -153,7 +153,8 @@ namespace Nekres.Inquest_Module.Core.Controllers
                 if (DateTime.UtcNow <= _nextHoldClick || !GameService.GameIntegration.Gw2Instance.Gw2HasFocus) return;
                 _clickIndicator.LeftClick(40);
                 if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(SoundVolume, 0, 0);
-                Mouse.DoubleClick(MouseButton.LEFT, -1, -1, true);
+                Mouse.DoubleClick(MouseButton.LEFT);
+                Mouse.Click(MouseButton.LEFT);
                 _nextHoldClick = DateTime.UtcNow.AddMilliseconds(50);
             }
             else if (!_inTogglePrompt)
