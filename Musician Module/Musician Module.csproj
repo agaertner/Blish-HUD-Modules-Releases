@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -41,6 +43,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -50,6 +53,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AsyncClipboardService, Version=1.7.1.0, Culture=neutral, processorArchitecture=MSIL">
@@ -169,6 +173,7 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
@@ -188,57 +193,54 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controls\Conveyor.cs" />
-    <Compile Include="Controls\Instrument\Bass\Bass.cs" />
-    <Compile Include="Controls\Instrument\Bass\BassNote.cs" />
-    <Compile Include="Controls\Instrument\Bass\BassPreview.cs" />
-    <Compile Include="Controls\Instrument\Bass\BassSoundRepository.cs" />
-    <Compile Include="Controls\Instrument\Bell2\Bell2.cs" />
-    <Compile Include="Controls\Instrument\Bell2\Bell2Note.cs" />
-    <Compile Include="Controls\Instrument\Bell2\Bell2Preview.cs" />
-    <Compile Include="Controls\Instrument\Bell2\Bell2SoundRepository.cs" />
-    <Compile Include="Controls\Instrument\Bell\Bell.cs" />
-    <Compile Include="Controls\Instrument\Bell\BellNote.cs" />
-    <Compile Include="Controls\Instrument\Bell\BellPreview.cs" />
-    <Compile Include="Controls\Instrument\Bell\BellSoundRepository.cs" />
-    <Compile Include="Controls\Instrument\IInstrumentPreview.cs" />
-    <Compile Include="Controls\Instrument\Flute\Flute.cs" />
-    <Compile Include="Controls\Instrument\Flute\FluteNote.cs" />
-    <Compile Include="Controls\Instrument\Flute\FlutePreview.cs" />
-    <Compile Include="Controls\Instrument\Flute\FluteSoundRepository.cs" />
-    <Compile Include="Controls\Instrument\Harp\Harp.cs" />
-    <Compile Include="Controls\Instrument\Harp\HarpNote.cs" />
-    <Compile Include="Controls\Instrument\Harp\HarpPreview.cs" />
-    <Compile Include="Controls\Instrument\Harp\HarpSoundRepository.cs" />
-    <Compile Include="Controls\Instrument\Horn\Horn.cs" />
-    <Compile Include="Controls\Instrument\Horn\HornNote.cs" />
-    <Compile Include="Controls\Instrument\Horn\HornPreview.cs" />
-    <Compile Include="Controls\Instrument\Horn\HornSoundRepository.cs" />
-    <Compile Include="Controls\Instrument\Instrument.cs" />
-    <Compile Include="Controls\Instrument\Lute\Lute.cs" />
-    <Compile Include="Controls\Instrument\Lute\LuteNote.cs" />
-    <Compile Include="Controls\Instrument\Lute\LutePreview.cs" />
-    <Compile Include="Controls\Instrument\Lute\LuteSoundRepository.cs" />
+    <Compile Include="Core\Instrument\Bass\Bass.cs" />
+    <Compile Include="Core\Instrument\Bass\BassNote.cs" />
+    <Compile Include="Core\Instrument\Bass\BassPreview.cs" />
+    <Compile Include="Core\Instrument\Bass\BassSoundRepository.cs" />
+    <Compile Include="Core\Instrument\Bell2\Bell2.cs" />
+    <Compile Include="Core\Instrument\Bell2\Bell2Note.cs" />
+    <Compile Include="Core\Instrument\Bell2\Bell2Preview.cs" />
+    <Compile Include="Core\Instrument\Bell2\Bell2SoundRepository.cs" />
+    <Compile Include="Core\Instrument\Bell\Bell.cs" />
+    <Compile Include="Core\Instrument\Bell\BellNote.cs" />
+    <Compile Include="Core\Instrument\Bell\BellPreview.cs" />
+    <Compile Include="Core\Instrument\Bell\BellSoundRepository.cs" />
+    <Compile Include="Core\Instrument\IInstrumentPreview.cs" />
+    <Compile Include="Core\Instrument\Flute\Flute.cs" />
+    <Compile Include="Core\Instrument\Flute\FluteNote.cs" />
+    <Compile Include="Core\Instrument\Flute\FlutePreview.cs" />
+    <Compile Include="Core\Instrument\Flute\FluteSoundRepository.cs" />
+    <Compile Include="Core\Instrument\Harp\Harp.cs" />
+    <Compile Include="Core\Instrument\Harp\HarpNote.cs" />
+    <Compile Include="Core\Instrument\Harp\HarpPreview.cs" />
+    <Compile Include="Core\Instrument\Harp\HarpSoundRepository.cs" />
+    <Compile Include="Core\Instrument\Horn\Horn.cs" />
+    <Compile Include="Core\Instrument\Horn\HornNote.cs" />
+    <Compile Include="Core\Instrument\Horn\HornPreview.cs" />
+    <Compile Include="Core\Instrument\Horn\HornSoundRepository.cs" />
+    <Compile Include="Core\Instrument\Instrument.cs" />
+    <Compile Include="Core\Instrument\Lute\Lute.cs" />
+    <Compile Include="Core\Instrument\Lute\LuteNote.cs" />
+    <Compile Include="Core\Instrument\Lute\LutePreview.cs" />
+    <Compile Include="Core\Instrument\Lute\LuteSoundRepository.cs" />
     <Compile Include="Controls\NoteBlock.cs" />
     <Compile Include="Controls\SheetButton.cs" />
+    <Compile Include="Core\Converters\ChordOffsetConverter.cs" />
+    <Compile Include="Core\Converters\MetronomeConverter.cs" />
+    <Compile Include="Core\Domain\Fraction.cs" />
     <Compile Include="UI\Models\MusicSheet.cs" />
-    <Compile Include="Core\Domain\Values\Beat.cs" />
-    <Compile Include="Core\Domain\Values\Chord.cs" />
-    <Compile Include="Core\Domain\Values\ChordOffset.cs" />
-    <Compile Include="Core\Domain\Values\Fraction.cs" />
-    <Compile Include="Core\Domain\Values\MetronomeMark.cs" />
-    <Compile Include="Core\Domain\Values\Note.cs" />
+    <Compile Include="Core\Domain\Beat.cs" />
+    <Compile Include="Core\Domain\Chord.cs" />
+    <Compile Include="Core\Domain\ChordOffset.cs" />
+    <Compile Include="Core\Domain\Metronome.cs" />
+    <Compile Include="Core\Domain\Note.cs" />
     <Compile Include="MusicianModule.cs" />
-    <Compile Include="Core\Domain\Notation\Parsers\ChordParser.cs" />
-    <Compile Include="Core\Domain\Notation\Parsers\MusicSheetParser.cs" />
-    <Compile Include="Core\Domain\Notation\Serializer\ChordOffsetSerializer.cs" />
-    <Compile Include="Core\Domain\Notation\Serializer\ChordSerializer.cs" />
-    <Compile Include="Core\Domain\Notation\Serializer\MusicSheetSerializer.cs" />
-    <Compile Include="Core\Domain\Notation\Serializer\NoteSerializer.cs" />
-    <Compile Include="Player\Algorithms\FavorChordsAlgorithm.cs" />
-    <Compile Include="Player\Algorithms\FavorNotesAlgorithm.cs" />
-    <Compile Include="Player\Algorithms\IPlayAlgorithm.cs" />
-    <Compile Include="Player\MusicPlayer.cs" />
-    <Compile Include="Player\MusicPlayerFactory.cs" />
+    <Compile Include="Core\Models\MusicSheet.cs" />
+    <Compile Include="Core\Player\Algorithms\FavorChordsAlgorithm.cs" />
+    <Compile Include="Core\Player\Algorithms\FavorNotesAlgorithm.cs" />
+    <Compile Include="Core\Player\Algorithms\IPlayAlgorithm.cs" />
+    <Compile Include="Core\Player\MusicPlayer.cs" />
+    <Compile Include="Core\Player\MusicPlayerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -336,10 +338,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File "$(ProjectDir)BuildScripts\CopyRef.ps1" -Project "$(ProjectDir)\" -Output "$(OutDir)\"</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File "$(ProjectDir)BuildScripts\PackageModule.ps1" -Project "$(ProjectDir)\" -Output "$(OutDir)\" -Name "$(ProjectName)"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <ProjectExtensions>
     <VisualStudio>
@@ -353,7 +357,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets'))" />
     <Error Condition="!Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets'))" />
-	<Error Condition="!Exists('packages\BlishHUD.0.11.6\build\BlishHUD.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\BlishHUD.0.11.6\build\BlishHUD.targets'))" />
+    <Error Condition="!Exists('packages\BlishHUD.0.11.6\build\BlishHUD.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\BlishHUD.0.11.6\build\BlishHUD.targets'))" />
   </Target>
   <Import Project="packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets" Condition="Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" />
   <Import Project="packages\BlishHUD.0.11.6\build\BlishHUD.targets" Condition="Exists('packages\BlishHUD.0.11.6\build\BlishHUD.targets')" />

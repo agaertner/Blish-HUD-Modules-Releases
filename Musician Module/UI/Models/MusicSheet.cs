@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using Nekres.Musician_Module.Domain.Values;
+using Nekres.Musician.Core.Domain;
 
 namespace Nekres.Musician_Module.Domain
 {
     public class MusicSheet
     {
-        public MusicSheet(string title, string instrument, MetronomeMark metronomeMark, IEnumerable<ChordOffset> melody)
+        public MusicSheet(string title, string instrument, Metronome metronomeMark, IEnumerable<ChordOffset> melody)
         {
             MetronomeMark = metronomeMark;
             Melody = melody;
@@ -21,7 +21,7 @@ namespace Nekres.Musician_Module.Domain
 
         public string Instrument { get; }
 
-        public MetronomeMark MetronomeMark { get; }
+        public Metronome MetronomeMark { get; }
 
         public IEnumerable<ChordOffset> Melody { get; }
     }

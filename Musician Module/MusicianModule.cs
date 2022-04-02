@@ -10,9 +10,9 @@ using Blish_HUD.Settings;
 using Blish_HUD.Modules.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nekres.Musician.Core.Player;
 using Nekres.Musician_Module.Controls;
 using Nekres.Musician_Module.Notation.Persistance;
-using Nekres.Musician_Module.Player;
 using Nekres.Musician_Module.Controls.Instrument;
 using static Blish_HUD.GameService;
 
