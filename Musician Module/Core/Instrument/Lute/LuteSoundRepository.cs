@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Blish_HUD.Controls.Intern;
-using CSCore.Codecs.OGG;
+using Microsoft.Xna.Framework.Audio;
+using Nekres.Musician_Module;
 
-namespace Nekres.Musician_Module.Controls.Instrument
+namespace Nekres.Musician.Core.Instrument.Lute
 {
     public class LuteSoundRepository : IDisposable
     {

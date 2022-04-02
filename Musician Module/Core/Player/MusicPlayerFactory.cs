@@ -1,9 +1,14 @@
 ﻿using System;
+using Nekres.Musician.Core.Instrument;
+using Nekres.Musician.Core.Instrument.Bass;
+using Nekres.Musician.Core.Instrument.Bell;
+using Nekres.Musician.Core.Instrument.Bell2;
+using Nekres.Musician.Core.Instrument.Flute;
+using Nekres.Musician.Core.Instrument.Harp;
+using Nekres.Musician.Core.Instrument.Horn;
+using Nekres.Musician.Core.Instrument.Lute;
 using Nekres.Musician.Core.Models;
 using Nekres.Musician.Core.Player.Algorithms;
-using Nekres.Musician_Module;
-using Nekres.Musician_Module.Controls.Instrument;
-
 namespace Nekres.Musician.Core.Player
 {
     internal static class MusicPlayerFactory

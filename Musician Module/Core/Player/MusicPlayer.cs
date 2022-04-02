@@ -24,7 +24,7 @@ namespace Nekres.Musician.Core.Player
             OutputDevice.Stop();
         }
 
-        public MusicPlayer(MusicSheet musicSheet, Instrument instrument, IPlayAlgorithm algorithm)
+        public MusicPlayer(MusicSheet musicSheet, Instrument.Instrument instrument, IPlayAlgorithm algorithm)
         {
             Algorithm = algorithm;
             Worker = new Thread(() => algorithm.Play(instrument, musicSheet.Tempo, musicSheet.Melody.ToArray()));

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Nekres.Musician.Core.Domain;
 
-namespace Nekres.Musician_Module.Controls.Instrument
+namespace Nekres.Musician.Core.Instrument.Lute
 {
     public class LuteNote
     {

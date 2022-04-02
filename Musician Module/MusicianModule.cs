@@ -6,17 +6,16 @@ using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Blish_HUD.Modules;
-using Blish_HUD.Settings;
 using Blish_HUD.Modules.Managers;
+using Blish_HUD.Settings;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nekres.Musician.Core.Instrument;
 using Nekres.Musician.Core.Player;
 using Nekres.Musician_Module.Controls;
-using Nekres.Musician_Module.Notation.Persistance;
-using Nekres.Musician_Module.Controls.Instrument;
 using static Blish_HUD.GameService;
 
-namespace Nekres.Musician_Module
+namespace Nekres.Musician
 {
 
     [Export(typeof(Module))]
