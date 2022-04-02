@@ -17,7 +17,7 @@ namespace Nekres.Musician.Core.Models
 
     public enum Instrument
     {
-        [EnumMember(Value="bass")]
+        [EnumMember(Value = "bass")]
         Bass,
         [EnumMember(Value = "bell")]
         Bell,
