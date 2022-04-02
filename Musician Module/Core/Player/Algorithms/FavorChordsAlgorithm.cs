@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Threading;
 using Blish_HUD;
 using Nekres.Musician.Core.Domain;
-using Nekres.Musician_Module.Controls.Instrument;
 
 namespace Nekres.Musician.Core.Player.Algorithms
 {

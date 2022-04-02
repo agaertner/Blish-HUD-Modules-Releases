@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Blish_HUD.Controls.Intern;
 using Nekres.Musician.Core.Instrument.Flute;
 using Nekres.Musician_Module;
-using Nekres.Musician_Module.Controls.Instrument;
 
 namespace Nekres.Musician.Core.Instrument.Bass
 {

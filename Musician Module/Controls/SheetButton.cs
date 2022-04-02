@@ -5,6 +5,7 @@ using Blish_HUD.Controls;
 using Nekres.Musician_Module.Notation.Persistance;
 using Blish_HUD;
 using Blish_HUD.Input;
+using Nekres.Musician;
 
 namespace Nekres.Musician_Module.Controls {
 

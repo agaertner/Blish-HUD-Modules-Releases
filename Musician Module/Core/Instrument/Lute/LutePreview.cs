@@ -1,8 +1,7 @@
 ﻿using System;
 using Blish_HUD.Controls.Intern;
-using Nekres.Musician.Core.Instrument;
-using static Nekres.Musician_Module.MusicianModule;
-namespace Nekres.Musician_Module.Controls.Instrument
+using static Nekres.Musician.MusicianModule;
+namespace Nekres.Musician.Core.Instrument.Lute
 {
     public class LutePreview : IInstrumentPreview
     {

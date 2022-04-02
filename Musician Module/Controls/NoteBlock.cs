@@ -5,8 +5,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Glide;
 using System.Collections.Generic;
 using Blish_HUD.Controls.Intern;
-using Nekres.Musician_Module.Controls.Instrument;
 using Blish_HUD;
+using Nekres.Musician;
+using Nekres.Musician.Core.Instrument;
 
 namespace Nekres.Musician_Module.Controls {
     public class NoteBlock : Control {

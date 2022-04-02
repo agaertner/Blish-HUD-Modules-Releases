@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Blish_HUD.Controls.Intern;
 using Nekres.Musician.Core.Domain;
-using Nekres.Musician_Module.Controls.Instrument;
 
 namespace Nekres.Musician.Core.Instrument.Harp
 {
