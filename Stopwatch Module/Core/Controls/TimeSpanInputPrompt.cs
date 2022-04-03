@@ -1,11 +1,10 @@
-﻿using System;
-using System.Globalization;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.BitmapFonts;
+using System;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -32,9 +31,9 @@ namespace Nekres.Stopwatch.Core.Controls
         private readonly string _confirmButtonText;
         private readonly string _cancelButtonButtonText;
 
-        private readonly double _defaultValue;
+        private readonly string _defaultValue;
 
-        private TimeSpanInputPrompt(Action<bool, TimeSpan> callback, string text, double defaultValue, string confirmButtonText, string cancelButtonText)
+        private TimeSpanInputPrompt(Action<bool, TimeSpan> callback, string text, string defaultValue, string confirmButtonText, string cancelButtonText)
         {
             _callback = callback;
             _text = text;
@@ -45,7 +44,7 @@ namespace Nekres.Stopwatch.Core.Controls
             GameService.Input.Keyboard.KeyPressed += OnKeyPressed;
         }
 
-        public static void ShowPrompt(Action<bool, TimeSpan> callback, string text, double defaultValue = 0, string confirmButtonText = "Confirm", string cancelButtonText = "Cancel")
+        public static void ShowPrompt(Action<bool, TimeSpan> callback, string text, string defaultValue = "", string confirmButtonText = "Confirm", string cancelButtonText = "Cancel")
         {
             if (_singleton != null) return;
             _singleton = new TimeSpanInputPrompt(callback, text, defaultValue, confirmButtonText, cancelButtonText)
@@ -67,7 +66,7 @@ namespace Nekres.Stopwatch.Core.Controls
                     Text = _confirmButtonText,
                     Size = _confirmButtonBounds.Size,
                     Location = _confirmButtonBounds.Location,
-                    Enabled = _defaultValue > 0
+                    Enabled = string.IsNullOrEmpty(_defaultValue) || TimeSpan.TryParse(_defaultValue, out var _)
             };
                 _confirmButton.Click += (_, _) => this.Confirm();
             }
@@ -90,7 +89,7 @@ namespace Nekres.Stopwatch.Core.Controls
         {
             GameService.Input.Keyboard.KeyPressed -= OnKeyPressed;
             GameService.Content.PlaySoundEffectByName("button-click");
-            _callback(true, TimeSpan.Parse(_inputTextBox.Text));
+            _callback(true, string.IsNullOrEmpty(_inputTextBox.Text) ? TimeSpan.Zero : TimeSpan.Parse(_inputTextBox.Text));
             _singleton = null;
             this.Dispose();
         }
@@ -121,7 +120,6 @@ namespace Nekres.Stopwatch.Core.Controls
         private void CreateTextInput()
         {
             if (_inputTextBox != null) return;
-            var defaultText = _defaultValue > 0 ? _defaultValue.ToString(CultureInfo.InvariantCulture) : string.Empty;
             _inputTextBox = new TextBox
             {
                 Parent = this,
@@ -130,12 +128,14 @@ namespace Nekres.Stopwatch.Core.Controls
                 Font = _font,
                 Focused = true,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Text = defaultText,
-                CursorIndex = defaultText.Length
+                Text = _defaultValue,
+                PlaceholderText = "00:00:00.000",
+                CursorIndex = _defaultValue.Length
             };
             _inputTextBox.TextChanged += (o, _) =>
             {
-                _confirmButton.Enabled = TimeSpan.TryParse(((TextBox)o).Text, out var _);
+                var text = ((TextBox)o).Text;
+                _confirmButton.Enabled = string.IsNullOrEmpty(text) || TimeSpan.TryParse(text, out var _);
             };
         }
 
@@ -166,8 +166,9 @@ namespace Nekres.Stopwatch.Core.Controls
             spriteBatch.DrawStringOnCtrl(this, _text, _font, new Rectangle(bgBounds.X + 6, bgBounds.Y + 5, bgBounds.Width - 11, bgBounds.Height), Color.White, true, HorizontalAlignment.Left, VerticalAlignment.Top);
 
             // Set button bounds
-            _confirmButtonBounds = new Rectangle(bgBounds.Left + 5, bgBounds.Bottom - 50, 100, 45);
-            _cancelButtonBounds = new Rectangle(_confirmButtonBounds.Right + 10, _confirmButtonBounds.Y, 100, 45);
+            var btnMaxWith = Math.Min(100, bgBounds.Width / 2 - 10);
+            _confirmButtonBounds = new Rectangle(bgBounds.Left + 5, bgBounds.Bottom - 50, btnMaxWith, 45);
+            _cancelButtonBounds = new Rectangle(_confirmButtonBounds.Right + 10, _confirmButtonBounds.Y, btnMaxWith, 45);
             _inputTextBoxBounds = new Rectangle(_confirmButtonBounds.X, _confirmButtonBounds.Y - 55, bgBounds.Width - 10, 45);
 
             this.CreateTextInput();

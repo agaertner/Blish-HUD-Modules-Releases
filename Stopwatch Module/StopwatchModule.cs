@@ -1,18 +1,17 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Graphics.UI;
+using Blish_HUD.Input;
 using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using Nekres.Stopwatch.Core.Controllers;
 using Nekres.Stopwatch.UI.Models;
 using Nekres.Stopwatch.UI.Views;
 using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
-using Blish_HUD.Input;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Xna.Framework.Input;
-using Nekres.Stopwatch.Core.Controllers;
 
 namespace Stopwatch
 {
@@ -35,10 +34,15 @@ namespace Stopwatch
 
         internal SettingEntry<KeyBinding> Toggle;
         internal SettingEntry<KeyBinding> Reset;
-        internal SettingEntry<KeyBinding> ToggleCountdown;
+        internal SettingEntry<KeyBinding> SetStartTime;
         internal SettingEntry<ContentService.FontSize> FontSize;
+        internal SettingEntry<float> SoundVolume;
+        internal SettingEntry<bool> TickingSoundDisabledSetting;
+
+        // Hidden Internal Settings (Cache)
         internal SettingEntry<Color> FontColor;
         internal SettingEntry<Point> Position;
+        internal SettingEntry<TimeSpan> StartTime;
 
         private StopwatchController _stopwatchController;
 
@@ -46,15 +50,15 @@ namespace Stopwatch
         {
             Toggle = settings.DefineSetting("toggleKey", new KeyBinding(ModifierKeys.Ctrl, Keys.S), 
                 () => "Toggle", 
-                () => "Toggles an active timer on or off");
+                () => "Starts or pauses the stopwatch.");
             
             Reset = settings.DefineSetting("resetKey", new KeyBinding(ModifierKeys.Ctrl, Keys.R), 
                 () => "Reset", 
-                () => "Resets the timer.");
+                () => "Rewinds and stops the stopwatch.");
             
-            ToggleCountdown = settings.DefineSetting("toggleCountdownKey", new KeyBinding(ModifierKeys.Ctrl, Keys.C), 
-                () => "Toggle Countdown", 
-                () => "Toggles a timer starting from a specified time counting down into the negative.");
+            SetStartTime = settings.DefineSetting("setStartTimeKey", new KeyBinding(ModifierKeys.Ctrl, Keys.C), 
+                () => "Set Goal Time",
+                () => "Set a goal time and make the stopwatch count down into the negative.");
             
             FontSize = settings.DefineSetting("fontSize", ContentService.FontSize.Size36, 
                 () => "Font Size",
@@ -64,8 +68,17 @@ namespace Stopwatch
                 () => "Font Color",
                 () => "Sets the font color of the timer.");
 
+            SoundVolume = settings.DefineSetting("soundVolume", 80f, 
+                () => "Audio Volume",
+                () => "Sets the volume of the audio effects");
+
+            TickingSoundDisabledSetting = settings.DefineSetting("tickingSfxDisabled", false,
+                () => "Disable Ticking Sound", 
+                () => "Disables the ticking sounds");
+
             var hiddenSettingsCache = settings.AddSubCollection("hiddenSettingsCache", false, false);
             Position = hiddenSettingsCache.DefineSetting("position", new Point(180, 60));
+            StartTime = hiddenSettingsCache.DefineSetting("startTime", TimeSpan.Zero);
         }
 
         protected override void Initialize()
@@ -73,7 +86,9 @@ namespace Stopwatch
             _stopwatchController = new StopwatchController
             {
                 FontColor = FontColor.Value,
-                FontSize = FontSize.Value
+                FontSize = FontSize.Value,
+                AudioVolume = Math.Min(1, SoundVolume.Value / 1000),
+                Position = Position.Value
             };
         }
 
@@ -90,13 +105,16 @@ namespace Stopwatch
         protected override void OnModuleLoaded(EventArgs e)
         {
             Toggle.Value.Enabled = true;
-            ToggleCountdown.Value.Enabled = true;
+            SetStartTime.Value.Enabled = true;
             Reset.Value.Enabled = true;
 
             Toggle.Value.Activated += OnToggleActivated;
-            ToggleCountdown.Value.Activated += OnToggleCountdownActivated;
+            SetStartTime.Value.Activated += SetStartTimeActivated;
             Reset.Value.Activated += OnResetActivated;
+            SoundVolume.SettingChanged += OnSoundVolumeSettingChanged;
+            FontSize.SettingChanged += OnFontSizeSettingChanged;
             FontColor.SettingChanged += OnFontColorSettingChanged;
+            Position.SettingChanged += OnPositionSettingChanged;
             // Base handler must be called
             base.OnModuleLoaded(e);
         }
@@ -106,7 +124,7 @@ namespace Stopwatch
             _stopwatchController.Toggle();
         }
 
-        private void OnToggleCountdownActivated(object o, EventArgs e)
+        private void SetStartTimeActivated(object o, EventArgs e)
         {
             _stopwatchController.StartAt();
         }
@@ -115,10 +133,24 @@ namespace Stopwatch
         {
             _stopwatchController.Reset();
         }
+        private void OnSoundVolumeSettingChanged(object o, ValueChangedEventArgs<float> e)
+        {
+            _stopwatchController.AudioVolume = e.NewValue / 1000;
+        }
+
+        private void OnFontSizeSettingChanged(object o, ValueChangedEventArgs<ContentService.FontSize> e)
+        {
+            _stopwatchController.FontSize = e.NewValue;
+        }
 
         private void OnFontColorSettingChanged(object o, ValueChangedEventArgs<Color> e)
         {
             _stopwatchController.FontColor = e.NewValue;
+        }
+
+        private void OnPositionSettingChanged(object o, ValueChangedEventArgs<Point> e)
+        {
+            _stopwatchController.Position = e.NewValue;
         }
 
         protected override void Update(GameTime gameTime)
@@ -130,15 +162,16 @@ namespace Stopwatch
         protected override void Unload()
         {
             Toggle.Value.Activated -= OnToggleActivated;
-            ToggleCountdown.Value.Activated -= OnToggleCountdownActivated;
+            SetStartTime.Value.Activated -= SetStartTimeActivated;
             Reset.Value.Activated -= OnResetActivated;
+            SoundVolume.SettingChanged -= OnSoundVolumeSettingChanged;
+            FontSize.SettingChanged -= OnFontSizeSettingChanged;
             FontColor.SettingChanged -= OnFontColorSettingChanged;
+            Position.SettingChanged -= OnPositionSettingChanged;
             // Unload here
             _stopwatchController?.Dispose();
             // All static members must be manually unset
             ModuleInstance = null;
         }
-
     }
-
 }

@@ -1,13 +1,12 @@
-﻿using System;
-using System.Linq;
-using Blish_HUD;
-using Blish_HUD.Controls;
+﻿using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
 using Blish_HUD.Settings.UI.Views;
 using Microsoft.Xna.Framework;
 using Nekres.Stopwatch.UI.Models;
 using Nekres.Stopwatch.UI.Presenters;
+using System;
+using System.Linq;
 
 namespace Nekres.Stopwatch.UI.Views
 {

@@ -1,11 +1,11 @@
 {
   "name": "Stopwatch",
-  "version": "0.1.5.c1",
+  "version": "0.1.6",
   "namespace": "Nekres.Stopwatch",
   "package": "Stopwatch.dll",
   "manifest_version": 1,
 
-  "description": "Description of your module. Visit https://github.com/blish-hud/manifest.json/blob/master/manifest-v1.md for details about the manifest format.",
+  "description": "A stopwatch for the thrill seekers out there. Supports counting down from a given time.",
   "dependencies": {
     "bh.blishhud": ">=0.11.6"
   },
