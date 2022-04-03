@@ -38,7 +38,7 @@ namespace Nekres.Stopwatch.UI.Presenters
         {
             var tempSizeSetting = new SettingEntry<Point>
             {
-                Value = new Point(300, 250)
+                Value = new Point(400, 100)
             };
 
             var choseLocation = new SpriteScreenMover(new ScreenRegion("Stopwatch", StopwatchModule.ModuleInstance.Position, tempSizeSetting));
