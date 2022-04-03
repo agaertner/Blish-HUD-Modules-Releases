@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-namespace Nekres.Regions_Of_Tyria.Utils
+namespace Nekres.Regions_Of_Tyria
 {
     /**
      * Author: Jon Skeet (Oct 9 2008)

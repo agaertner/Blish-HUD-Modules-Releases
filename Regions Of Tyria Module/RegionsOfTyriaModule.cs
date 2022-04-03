@@ -5,7 +5,6 @@ using Blish_HUD.Settings;
 using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Nekres.Regions_Of_Tyria.Geometry;
-using Nekres.Regions_Of_Tyria.Utils;
 using RBush;
 using System;
 using System.Collections.Generic;
@@ -22,7 +21,7 @@ namespace Nekres.Regions_Of_Tyria
     [Export(typeof(Module))]
     public class RegionsOfTyriaModule : Module
     {
-        private static readonly Logger Logger = Logger.GetLogger(typeof(RegionsOfTyriaModule));
+        internal static readonly Logger Logger = Logger.GetLogger(typeof(RegionsOfTyriaModule));
 
         internal static RegionsOfTyriaModule ModuleInstance;
 

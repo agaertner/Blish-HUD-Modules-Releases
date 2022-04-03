@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-namespace Nekres.Regions_Of_Tyria.Utils
+
+namespace Nekres.Regions_Of_Tyria
 {
     public class AsyncCache<TKey, TValue>
     {
