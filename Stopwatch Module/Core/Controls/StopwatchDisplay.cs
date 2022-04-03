@@ -40,6 +40,13 @@ namespace Nekres.Stopwatch.Core.Controls
             set => SetProperty(ref _color, value);
         }
 
+        private float _backgroundOpacity;
+        public float BackgroundOpacity
+        {
+            get => _backgroundOpacity;
+            set => SetProperty(ref _backgroundOpacity, value);
+        }
+
         public StopwatchDisplay()
         {
             _font = Content.GetFont(ContentService.FontFace.Menomonia, StopwatchModule.ModuleInstance.FontSize.Value, ContentService.FontStyle.Regular);
@@ -49,7 +56,9 @@ namespace Nekres.Stopwatch.Core.Controls
 
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds)
         {
-            spriteBatch.DrawStringOnCtrl(this, _text, _font, bounds, this.Color, false, true,1, HorizontalAlignment.Center);
+            spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, bounds, Color.Black * BackgroundOpacity);
+            var size = _font.MeasureString(_text);
+            spriteBatch.DrawStringOnCtrl(this, _text, _font, new Rectangle((bounds.Width - (int)size.Width) / 2, (bounds.Height - (int)size.Height) / 2, (int)size.Width, (int)size.Height), this.Color, false, true,2, HorizontalAlignment.Center, VerticalAlignment.Top);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Stopwatch
     [Export(typeof(Module))]
     public class StopwatchModule : Module
     {
-        private static readonly Logger Logger = Logger.GetLogger<StopwatchModule>();
+        internal static readonly Logger Logger = Logger.GetLogger<StopwatchModule>();
 
         internal static StopwatchModule ModuleInstance { get; private set; }
 
@@ -33,9 +33,11 @@ namespace Stopwatch
         public StopwatchModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) => ModuleInstance = this;
 
         internal SettingEntry<KeyBinding> Toggle;
+        internal SettingEntry<bool> StartOnMovementEnabled;
         internal SettingEntry<KeyBinding> Reset;
         internal SettingEntry<KeyBinding> SetStartTime;
         internal SettingEntry<ContentService.FontSize> FontSize;
+        internal SettingEntry<float> BackgroundOpacity;
         internal SettingEntry<float> SoundVolume;
         internal SettingEntry<bool> TickingSoundDisabledSetting;
         internal SettingEntry<bool> BeepSoundDisabledSetting;
@@ -49,15 +51,19 @@ namespace Stopwatch
 
         protected override void DefineSettings(SettingCollection settings)
         {
-            Toggle = settings.DefineSetting("toggleKey", new KeyBinding(ModifierKeys.Ctrl, Keys.S), 
+            Toggle = settings.DefineSetting("toggleKey", new KeyBinding(Keys.LeftAlt), 
                 () => "Toggle", 
                 () => "Starts or pauses the stopwatch.");
-            
-            Reset = settings.DefineSetting("resetKey", new KeyBinding(ModifierKeys.Ctrl, Keys.R), 
+
+            StartOnMovementEnabled = settings.DefineSetting("startOnMovement", false, 
+                () => "Wait for Character Movement", 
+                () => "When you activate the stopwatch it will delay its start until the moment you move from where you toggled it.");
+
+            Reset = settings.DefineSetting("resetKey", new KeyBinding(ModifierKeys.Alt, Keys.R), 
                 () => "Reset", 
                 () => "Rewinds and stops the stopwatch.");
             
-            SetStartTime = settings.DefineSetting("setStartTimeKey", new KeyBinding(ModifierKeys.Ctrl, Keys.C), 
+            SetStartTime = settings.DefineSetting("setStartTimeKey", new KeyBinding(ModifierKeys.Alt, Keys.C), 
                 () => "Set Goal Time",
                 () => "Set a goal time and make the stopwatch count down into the negative.");
             
@@ -68,6 +74,10 @@ namespace Stopwatch
             FontColor = settings.DefineSetting("fontColor", Color.White,
                 () => "Font Color",
                 () => "Sets the font color of the timer.");
+
+            BackgroundOpacity = settings.DefineSetting("backgroundOpacity", 30f, 
+                () => "Background Opacity",
+                () => "Sets the transparency of the background.");
 
             SoundVolume = settings.DefineSetting("soundVolume", 80f, 
                 () => "Audio Volume",
@@ -92,6 +102,7 @@ namespace Stopwatch
             {
                 FontColor = FontColor.Value,
                 FontSize = FontSize.Value,
+                BackgroundOpacity = BackgroundOpacity.Value / 100,
                 AudioVolume = Math.Min(1, SoundVolume.Value / 1000),
                 Position = Position.Value
             };
@@ -119,6 +130,7 @@ namespace Stopwatch
             SoundVolume.SettingChanged += OnSoundVolumeSettingChanged;
             FontSize.SettingChanged += OnFontSizeSettingChanged;
             FontColor.SettingChanged += OnFontColorSettingChanged;
+            BackgroundOpacity.SettingChanged += OnBackgroundOpacitySettingChanged;
             Position.SettingChanged += OnPositionSettingChanged;
             // Base handler must be called
             base.OnModuleLoaded(e);
@@ -140,6 +152,7 @@ namespace Stopwatch
         {
             _stopwatchController.Reset();
         }
+
         private void OnSoundVolumeSettingChanged(object o, ValueChangedEventArgs<float> e)
         {
             _stopwatchController.AudioVolume = e.NewValue / 1000;
@@ -153,6 +166,11 @@ namespace Stopwatch
         private void OnFontColorSettingChanged(object o, ValueChangedEventArgs<Color> e)
         {
             _stopwatchController.FontColor = e.NewValue;
+        }
+
+        private void OnBackgroundOpacitySettingChanged(object o, ValueChangedEventArgs<float> e)
+        {
+            _stopwatchController.BackgroundOpacity = e.NewValue / 100;
         }
 
         private void OnPositionSettingChanged(object o, ValueChangedEventArgs<Point> e)
@@ -174,6 +192,7 @@ namespace Stopwatch
             SoundVolume.SettingChanged -= OnSoundVolumeSettingChanged;
             FontSize.SettingChanged -= OnFontSizeSettingChanged;
             FontColor.SettingChanged -= OnFontColorSettingChanged;
+            BackgroundOpacity.SettingChanged -= OnBackgroundOpacitySettingChanged;
             Position.SettingChanged -= OnPositionSettingChanged;
             // Unload here
             _stopwatchController?.Dispose();

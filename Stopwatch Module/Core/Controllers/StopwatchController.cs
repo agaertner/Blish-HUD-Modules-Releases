@@ -63,12 +63,25 @@ namespace Nekres.Stopwatch.Core.Controllers
             }
         }
 
+        private float _backgroundOpacity;
+        public float BackgroundOpacity
+        {
+            get => _backgroundOpacity;
+            set
+            {
+                _backgroundOpacity = value;
+                if (_display == null) return;
+                _display.BackgroundOpacity = value;
+            }
+        }
+
         public float AudioVolume { get; set; }
 
         private Color _redShift;
 
         private bool _inInputPrompt;
 
+        private Vector3 PlayerPosition;
         public StopwatchController()
         {
             _rewindSfx = new[]
@@ -116,10 +129,11 @@ namespace Nekres.Stopwatch.Core.Controllers
             _display ??= new StopwatchDisplay
             {
                 Parent = GameService.Graphics.SpriteScreen,
-                Size = new Point(300, 250),
+                Size = new Point(400, 100),
                 Location = this.Position,
                 Color = this.FontColor,
-                FontSize = this.FontSize
+                FontSize = this.FontSize,
+                BackgroundOpacity = this.BackgroundOpacity
             };
 
             if (start.HasValue)
@@ -129,8 +143,16 @@ namespace Nekres.Stopwatch.Core.Controllers
             }
 
             _startSfx.Play(AudioVolume, 0, 0);
-            _stopwatch.Start();
             _prevTick = TimeSpan.Zero;
+
+            if (StopwatchModule.ModuleInstance.StartOnMovementEnabled.Value)
+            {
+                PlayerPosition = GameService.Gw2Mumble.PlayerCharacter.Position;
+                _display.Text = $"Awaiting movement...\nX:{PlayerPosition.X:F} Y:{PlayerPosition.Y:F} Z:{PlayerPosition.Z:F}";
+                return;
+            }
+
+            _stopwatch.Start();
         }
 
         public void Stop()
@@ -150,7 +172,16 @@ namespace Nekres.Stopwatch.Core.Controllers
 
         public void Update()
         {
-            if (_display == null) return;
+            if (!PlayerPosition.Equals(Vector3.Zero))
+            {
+                if (!PlayerPosition.Equals(GameService.Gw2Mumble.PlayerCharacter.Position))
+                {
+                    PlayerPosition = Vector3.Zero;
+                    _stopwatch.Start();
+                }
+            }
+
+            if (_display == null || !_stopwatch.IsRunning) return;
 
             if (!StopwatchModule.ModuleInstance.TickingSoundDisabledSetting.Value && _stopwatch.Elapsed.Subtract(_prevTick).TotalMilliseconds > 500)
             {

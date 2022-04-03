@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Win32;
+using Stopwatch;
 
 namespace Nekres.Stopwatch
 {
@@ -46,7 +48,17 @@ namespace Nekres.Stopwatch
             {
                 WorkingDirectory = Path.GetDirectoryName(exe) ?? Directory.GetCurrentDirectory()
             };
-            Process.Start(psi);
+
+            try
+            {
+                Process.Start(psi);
+            }
+            catch (Exception e) when (e is IOException or Win32Exception)
+            {
+                StopwatchModule.Logger.Warn($"Failed to run '{exe}' with arguments '{argString}': {e.Message}");
+                Process.Start(url);
+                return;
+            }
 
             var title = await TryFetchWebPageTitle(url);
             await Task.Delay(200).ContinueWith(t => {
