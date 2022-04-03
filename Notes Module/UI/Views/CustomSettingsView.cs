@@ -2,6 +2,7 @@
 using System.Linq;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
+using Blish_HUD.Input;
 using Blish_HUD.Settings.UI.Views;
 using Microsoft.Xna.Framework;
 using Nekres.Notes.UI.Models;
@@ -10,7 +11,7 @@ namespace Nekres.Notes.UI.Views
 {
     public class CustomSettingsView : View<CustomSettingsPresenter>
     {
-        public event EventHandler<EventArgs> SocialButtonClicked;
+        public event EventHandler<EventArgs> BrowserButtonClick;
 
         public event EventHandler<EventArgs> LoginButtonClicked;
 
@@ -74,29 +75,25 @@ namespace Nekres.Notes.UI.Views
                 Parent = buildPanel
             };
 
-            foreach (CustomSettingsModel.Social social in Enum.GetValues(typeof(CustomSettingsModel.Social)))
+            var donateBtn = new StandardButton
             {
-                var tex = Presenter.Model.GetSocialLogo(social);
-                var btn = new Image
-                {
-                    Parent = _socialFlowPanel,
-                    Texture = tex,
-                    Size = Blish_HUD.PointExtensions.ResizeKeepAspect(tex.Bounds.Size, 54, _socialFlowPanel.Height - (int)_socialFlowPanel.ControlPadding.Y * 2),
-                    BasicTooltipText = Presenter.Model.GetSocialUrl(social)
-                };
-                btn.Click += OnSocialButtonClick;
-                btn.MouseEntered += OnSocialButtonMouseEntered;
-                btn.MouseLeft += OnSocialButtonMouseLeft;
-            }
+                Parent = _socialFlowPanel,
+                Size = new Point(160, 46),
+                Text = "Support Me on Ko-Fi",
+                Icon = this.Presenter.Model.GetSocialLogo(CustomSettingsModel.Social.KoFi),
+                ResizeIcon = true,
+                BasicTooltipText = this.Presenter.Model.GetSocialUrl(CustomSettingsModel.Social.KoFi)
+            };
+            donateBtn.Click += OnBrowserButtonClick;
 
-            _loginButton = new StandardButton
+            /*_loginButton = new StandardButton
             {
                 Parent = buildPanel,
                 Size = new Point(100, 50),
                 Location = new Point(0, _socialFlowPanel.Height),
                 Text = "Login with GW2Auth"
             };
-            _loginButton.Click += OnLoginButtonClick;
+            _loginButton.Click += OnLoginButtonClick;*/
 
             _settingFlowPanel = new FlowPanel
             {
@@ -134,19 +131,9 @@ namespace Nekres.Notes.UI.Views
             }
         }
 
-        private void OnSocialButtonClick(object sender, Blish_HUD.Input.MouseEventArgs e)
+        private void OnBrowserButtonClick(object sender, MouseEventArgs e)
         {
-            this.SocialButtonClicked?.Invoke(sender, e);
-        }
-
-        private void OnSocialButtonMouseEntered(object sender, Blish_HUD.Input.MouseEventArgs e)
-        {
-            ((Image)sender).Tint = Color.Gray;
-        }
-
-        private void OnSocialButtonMouseLeft(object sender, Blish_HUD.Input.MouseEventArgs e)
-        {
-            ((Image)sender).Tint = Color.White;
+            this.BrowserButtonClick?.Invoke(sender, e);
         }
 
         private void OnLoginButtonClick(object sender, Blish_HUD.Input.MouseEventArgs e)
@@ -155,13 +142,7 @@ namespace Nekres.Notes.UI.Views
         }
         protected override void Unload()
         {
-            foreach (var btn in _socialFlowPanel.Children)
-            {
-                btn.Click -= OnSocialButtonClick;
-                btn.MouseEntered -= OnSocialButtonMouseEntered;
-                btn.MouseLeft -= OnSocialButtonMouseLeft;
-            }
-            _loginButton.Click -= OnLoginButtonClick;
+            //_loginButton.Click -= OnLoginButtonClick;
         }
     }
 }

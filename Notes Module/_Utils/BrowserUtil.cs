@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -45,7 +46,17 @@ namespace Nekres.Notes
             {
                 WorkingDirectory = Path.GetDirectoryName(exe) ?? Directory.GetCurrentDirectory()
             };
-            Process.Start(psi);
+
+            try
+            {
+                Process.Start(psi);
+            }
+            catch (Exception e) when (e is IOException or Win32Exception)
+            {
+                NotesModule.Logger.Warn($"Failed to run '{exe}' with arguments '{argString}': {e.Message}");
+                Process.Start(url);
+                return;
+            }
 
             var title = await TryFetchWebPageTitle(url);
             await Task.Delay(200).ContinueWith(t => {
