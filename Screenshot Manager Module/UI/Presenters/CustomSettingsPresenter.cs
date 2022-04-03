@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Nekres.Screenshot_Manager.UI.Models;
@@ -13,18 +14,19 @@ namespace Nekres.Screenshot_Manager.UI.Presenters
 
         protected override Task<bool> Load(IProgress<string> progress)
         {
-            this.View.SocialButtonClicked += View_SocialButtonClicked;
+            this.View.BrowserButtonClick += View_BrowserButtonClicked;
             return base.Load(progress);
         }
 
         protected override void Unload()
         {
-            this.View.SocialButtonClicked -= View_SocialButtonClicked;
+            this.View.BrowserButtonClick -= View_BrowserButtonClicked;
         }
 
-        private void View_SocialButtonClicked(object sender, EventArgs e)
+        private void View_BrowserButtonClicked(object o, EventArgs e)
         {
-            BrowserUtil.OpenInDefaultBrowser(((Control)sender).BasicTooltipText);
+            GameService.Overlay.BlishHudWindow.Hide();
+            BrowserUtil.OpenInDefaultBrowser(((Control)o).BasicTooltipText);
         }
     }
 }

@@ -9,14 +9,7 @@ namespace Nekres.Screenshot_Manager.UI.Models
     {
         public enum Social
         {
-            KoFi,
-            Discord,
-            GitHub,
-            Instagram,
-            Twitch,
-            Twitter,
-            YouTube,
-            //Patreon
+            KoFi
         }
 
         private readonly Dictionary<Social, string> _socialUrls;
@@ -30,25 +23,11 @@ namespace Nekres.Screenshot_Manager.UI.Models
             Settings = settings;
             _socialUrls = new Dictionary<Social, string>
             {
-                {Social.KoFi, "https://ko-fi.com/TypoTiger"},
-                {Social.Discord, "discord://https://discord.gg/Ch3vz4pDyV"},
-                {Social.GitHub, "https://github.com/agaertner"},
-                {Social.Instagram, "https://www.instagram.com/typo_tiger"},
-                {Social.Twitch, "https://www.twitch.tv/TypoTiger"},
-                {Social.Twitter, "https://twitter.com/TypoTiger"},
-                {Social.YouTube, "https://www.youtube.com/channel/UCfCefS0ouN40thChtwi-IGg"},
-                //{Social.Patreon, ""}
+                {Social.KoFi, "https://ko-fi.com/TypoTiger"}
             };
             _socialLogos = new Dictionary<Social, Texture2D>
             {
-                {Social.KoFi, ContentsManager.GetTexture(@"socials\ko-fi-logo.png")},
-                {Social.Discord, ContentsManager.GetTexture(@"socials\discord-logo.png")},
-                {Social.GitHub, ContentsManager.GetTexture(@"socials\github-logo.png")},
-                {Social.Instagram, ContentsManager.GetTexture(@"socials\instagram-logo.png")},
-                {Social.Twitch, ContentsManager.GetTexture(@"socials\twitch-logo.png")},
-                {Social.Twitter, ContentsManager.GetTexture(@"socials\twitter-logo.png")},
-                {Social.YouTube, ContentsManager.GetTexture(@"socials\youtube-logo.png")},
-                //{Social.Patreon, @"socials\ypatreon-logo.png"}
+                {Social.KoFi, ContentsManager.GetTexture(@"socials\ko-fi-logo.png")}
             };
         }
 
