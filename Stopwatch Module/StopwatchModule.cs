@@ -38,6 +38,7 @@ namespace Stopwatch
         internal SettingEntry<ContentService.FontSize> FontSize;
         internal SettingEntry<float> SoundVolume;
         internal SettingEntry<bool> TickingSoundDisabledSetting;
+        internal SettingEntry<bool> BeepSoundDisabledSetting;
 
         // Hidden Internal Settings (Cache)
         internal SettingEntry<Color> FontColor;
@@ -75,6 +76,10 @@ namespace Stopwatch
             TickingSoundDisabledSetting = settings.DefineSetting("tickingSfxDisabled", false,
                 () => "Disable Ticking Sound", 
                 () => "Disables the ticking sounds");
+
+            BeepSoundDisabledSetting = settings.DefineSetting("beepSfxDisabled", false,
+                () => "Disable Beep Alerts",
+                () => "Disables the beeping alerts during a count from three to zero.");
 
             var hiddenSettingsCache = settings.AddSubCollection("hiddenSettingsCache", false, false);
             Position = hiddenSettingsCache.DefineSetting("position", new Point(180, 60));
@@ -121,11 +126,13 @@ namespace Stopwatch
 
         private void OnToggleActivated(object o, EventArgs e)
         {
+            if (!GameService.GameIntegration.Gw2Instance.Gw2HasFocus || GameService.Gw2Mumble.UI.IsTextInputFocused) return;
             _stopwatchController.Toggle();
         }
 
         private void SetStartTimeActivated(object o, EventArgs e)
         {
+            if (!GameService.GameIntegration.Gw2Instance.Gw2HasFocus || GameService.Gw2Mumble.UI.IsTextInputFocused) return;
             _stopwatchController.StartAt();
         }
 

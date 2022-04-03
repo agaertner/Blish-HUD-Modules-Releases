@@ -22,6 +22,7 @@ namespace Nekres.Stopwatch.Core.Controllers
 
         private SoundEffect _beepSfx;
         private SoundEffect _longBeepSfx;
+        private TimeSpan _prevBeep;
 
         private SoundEffect _tickSfx;
         private TimeSpan _prevTick;
@@ -67,6 +68,7 @@ namespace Nekres.Stopwatch.Core.Controllers
         private Color _redShift;
 
         private bool _inInputPrompt;
+
         public StopwatchController()
         {
             _rewindSfx = new[]
@@ -89,7 +91,6 @@ namespace Nekres.Stopwatch.Core.Controllers
         {
             var prevValue = StopwatchModule.ModuleInstance.StartTime.Value;
             _inInputPrompt = true;
-            Reset();
             TimeSpanInputPrompt.ShowPrompt(TimeSpanInputPromptCallback, "Enter a start time:", 
                 prevValue.Equals(TimeSpan.Zero) ? string.Empty : prevValue.ToString(@"hh\:mm\:ss\.fff"));
         }
@@ -100,7 +101,7 @@ namespace Nekres.Stopwatch.Core.Controllers
             if (_stopwatch.IsRunning)
                 _stopwatch.Stop();
             else
-                Start();
+                Start(StopwatchModule.ModuleInstance.StartTime.Value);
         }
 
         private void TimeSpanInputPromptCallback(bool confirmed, TimeSpan time)
@@ -108,7 +109,7 @@ namespace Nekres.Stopwatch.Core.Controllers
             _inInputPrompt = false;
             if (!confirmed) return;
             StopwatchModule.ModuleInstance.StartTime.Value = time;
-            Start(time);
+            Reset();
         }
         private void Start(TimeSpan? start = null)
         {
@@ -122,7 +123,10 @@ namespace Nekres.Stopwatch.Core.Controllers
             };
 
             if (start.HasValue)
+            {
                 _startTime = start.Value;
+                _prevBeep = TimeSpan.Zero;
+            }
 
             _startSfx.Play(AudioVolume, 0, 0);
             _stopwatch.Start();
@@ -161,8 +165,21 @@ namespace Nekres.Stopwatch.Core.Controllers
             }
 
             var current = _startTime.Subtract(_stopwatch.Elapsed);
-            _display.Text = (current.Ticks < 0 ? "-" : "") + _startTime.Subtract(_stopwatch.Elapsed).ToString(@"hh\:mm\:ss\.fff");
+
+            _display.Text = (current.Ticks < 0 ? "-" : "") + current.ToString(@"hh\:mm\:ss\.fff");
             _display.Color = Color.Lerp(Color.White, _redShift, _stopwatch.ElapsedMilliseconds / (float)_startTime.TotalMilliseconds);
+
+            if (StopwatchModule.ModuleInstance.BeepSoundDisabledSetting.Value) return;
+            if (current.TotalSeconds is > -0.1 and < 3 && Math.Abs(current.TotalSeconds - _prevBeep.TotalSeconds) > 1)
+            {
+                _prevBeep = current;
+                if (current.Ticks > 0)
+                    _beepSfx.Play(AudioVolume, 0, 0);
+                else
+                {
+                    _longBeepSfx.Play(AudioVolume, 0, 0);
+                }
+            }
         }
 
         public void Dispose()
