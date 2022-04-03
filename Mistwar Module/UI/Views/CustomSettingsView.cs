@@ -4,13 +4,14 @@ using Blish_HUD.Settings.UI.Views;
 using Microsoft.Xna.Framework;
 using System;
 using System.Linq;
+using Blish_HUD.Input;
 using Nekres.Mistwar.UI.Models;
 using Nekres.Mistwar.UI.Presenters;
 namespace Nekres.Mistwar.UI.Views
 {
     public class CustomSettingsView : View<CustomSettingsPresenter>
     {
-        public event EventHandler<EventArgs> SocialButtonClicked;
+        public event EventHandler<EventArgs> BrowserButtonClick;
 
         #region SettingsView Defaults
 
@@ -70,20 +71,16 @@ namespace Nekres.Mistwar.UI.Views
                 Parent = buildPanel
             };
 
-            foreach (CustomSettingsModel.Social social in Enum.GetValues(typeof(CustomSettingsModel.Social)))
+            var donateBtn = new StandardButton
             {
-                var tex = Presenter.Model.GetSocialLogo(social);
-                var btn = new Image
-                {
-                    Parent = _socialFlowPanel,
-                    Texture = tex,
-                    Size = Blish_HUD.PointExtensions.ResizeKeepAspect(tex.Bounds.Size, 54, _socialFlowPanel.Height - (int)_socialFlowPanel.ControlPadding.Y * 2),
-                    BasicTooltipText = Presenter.Model.GetSocialUrl(social)
-                };
-                btn.Click += _bttn_Click;
-                btn.MouseEntered += _bttn_MouseEntered;
-                btn.MouseLeft += _bttn_MouseLeft;
-            }
+                Parent = _socialFlowPanel,
+                Size = new Point(160, 46),
+                Text = "Support Me on Ko-Fi",
+                Icon = this.Presenter.Model.GetSocialLogo(CustomSettingsModel.Social.KoFi),
+                ResizeIcon = true,
+                BasicTooltipText = this.Presenter.Model.GetSocialUrl(CustomSettingsModel.Social.KoFi)
+            };
+            donateBtn.Click += OnBrowserButtonClick;
 
             _settingFlowPanel = new FlowPanel()
             {
@@ -121,29 +118,13 @@ namespace Nekres.Mistwar.UI.Views
             }
         }
 
-        private void _bttn_Click(object sender, Blish_HUD.Input.MouseEventArgs e)
+        private void OnBrowserButtonClick(object sender, MouseEventArgs e)
         {
-            this.SocialButtonClicked?.Invoke(sender, e);
-        }
-
-        private void _bttn_MouseEntered(object sender, Blish_HUD.Input.MouseEventArgs e)
-        {
-            ((Image)sender).Tint = Color.Gray;
-        }
-
-        private void _bttn_MouseLeft(object sender, Blish_HUD.Input.MouseEventArgs e)
-        {
-            ((Image)sender).Tint = Color.White;
+            this.BrowserButtonClick?.Invoke(sender, e);
         }
 
         protected override void Unload()
         {
-            foreach (var btn in _socialFlowPanel.Children)
-            {
-                btn.Click -= _bttn_Click;
-                btn.MouseEntered -= _bttn_MouseEntered;
-                btn.MouseLeft -= _bttn_MouseLeft;
-            }
         }
     }
 }
