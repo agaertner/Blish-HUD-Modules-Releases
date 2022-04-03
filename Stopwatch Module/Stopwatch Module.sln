@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32228.343
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stopwatch Module", "Stopwatch Module.csproj", "{CCDAC33C-5FB7-42DF-B1DD-69DAAF18F345}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CCDAC33C-5FB7-42DF-B1DD-69DAAF18F345}.Debug|x64.ActiveCfg = Debug|x64
+		{CCDAC33C-5FB7-42DF-B1DD-69DAAF18F345}.Debug|x64.Build.0 = Debug|x64
+		{CCDAC33C-5FB7-42DF-B1DD-69DAAF18F345}.Release|x64.ActiveCfg = Release|x64
+		{CCDAC33C-5FB7-42DF-B1DD-69DAAF18F345}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0228F53F-1B78-4B2A-9F20-FD9D0E354B8D}
+	EndGlobalSection
+EndGlobal
