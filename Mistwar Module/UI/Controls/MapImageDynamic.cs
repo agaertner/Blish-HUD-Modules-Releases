@@ -103,12 +103,24 @@ namespace Nekres.Mistwar.UI.Controls
                         // Unfortunately, the source of Monogame Extension's FillRectangle just scales a single white pixel and doesn't offer a rectangle to transform.
                         var aWidth = 1.6f * tDest.Width;
                         var aHeight = 1.6f * tDest.Height;
-                        var shapeDiamond = new[]
+                        Vector2[] shapeDiamond;
+                        for (int i = 100; i >= 0; i--)
+                        {
+                            var j = i / 100f;
+
+                            shapeDiamond = new[]
+                            {
+                                new Vector2(j * aWidth, j * (aWidth / 2)), new Vector2(j * (aWidth / 2), 0),
+                                new Vector2(0, j * (aWidth / 2)), new Vector2(j * (aWidth / 2), j * aWidth)
+                            };
+                            spriteBatch.DrawPolygon(new Vector2(tDest.X - j * (aWidth / 2), tDest.Y - j * (aHeight / 2)), shapeDiamond, teamColor);
+                        }
+                        shapeDiamond = new[]
                         {
                             new Vector2( aWidth, aWidth / 2), new Vector2(aWidth / 2, 0),
                             new Vector2(0, aWidth / 2), new Vector2(aWidth / 2, aWidth)
                         };
-                        spriteBatch.DrawPolygonFill(new Vector2(tDest.X - aWidth / 2, tDest.Y - aHeight / 2), shapeDiamond, Color.Black);
+                        spriteBatch.DrawPolygon(new Vector2(tDest.X - aWidth / 2, tDest.Y - aHeight / 2), shapeDiamond, Color.Black);
                         break;
                     default:
                         // draw circle
