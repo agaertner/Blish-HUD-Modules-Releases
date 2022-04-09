@@ -59,7 +59,7 @@ namespace Nekres.Screenshot_Manager
                         await textureStream.ReadAsync(buffer, 0, buffer.Length);
                         return Texture2D.FromStream(GameService.Graphics.GraphicsDevice, textureStream);
                     }
-                    catch (Exception e) when (e is ShellException or IOException or UnauthorizedAccessException or SecurityException)
+                    catch (Exception e) when (e is ShellException or IOException or UnauthorizedAccessException or SecurityException or InvalidOperationException)
                     {
                         if (DateTime.UtcNow < timeout) continue;
                         ScreenshotManagerModule.Logger.Error(e, e.Message);
@@ -98,7 +98,7 @@ namespace Nekres.Screenshot_Manager
                         await textureStream.ReadAsync(buffer, 0, buffer.Length);
                         return Texture2D.FromStream(GameService.Graphics.GraphicsDevice, textureStream);
                     }
-                    catch (Exception e) when (e is IOException or UnauthorizedAccessException or SecurityException)
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException or SecurityException or InvalidOperationException)
                     {
                         if (DateTime.UtcNow < timeout) continue;
                         ScreenshotManagerModule.Logger.Error(e, e.Message);
