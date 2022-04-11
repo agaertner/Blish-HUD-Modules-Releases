@@ -2,9 +2,9 @@
 using Blish_HUD.Controls.Intern;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Input;
 using Nekres.Inquest_Module.UI.Controls;
 using System;
+using ButtonState = Microsoft.Xna.Framework.Input.ButtonState;
 using Color = Microsoft.Xna.Framework.Color;
 using Mouse = Blish_HUD.Controls.Intern.Mouse;
 using Point = Microsoft.Xna.Framework.Point;
@@ -92,7 +92,7 @@ namespace Nekres.Inquest_Module.Core.Controllers
                 return;
             }
             _inTogglePrompt = true;
-            _togglePos = Mouse.GetPosition();
+            _togglePos = WindowUtil.GetCursorPosition(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle);
             CreateClickIndicator(false, true);
             NumericInputPrompt.ShowPrompt(OnToggleInputPromptCallback, "Enter an interval in seconds:", InquestModule.ModuleInstance.AutoClickToggleInterval.Value);
         }
@@ -155,8 +155,9 @@ namespace Nekres.Inquest_Module.Core.Controllers
                 if (DateTime.UtcNow <= _nextHoldClick || !GameService.GameIntegration.Gw2Instance.Gw2HasFocus) return;
                 _clickIndicator.LeftClick(40);
                 if (!InquestModule.ModuleInstance.AutoClickSoundDisabledSetting.Value) DoubleClickSfx.Play(SoundVolume, 0, 0);
-                Mouse.DoubleClick(MouseButton.LEFT);
-                Mouse.Click(MouseButton.LEFT);
+                var pos = WindowUtil.GetCursorPosition(GameService.GameIntegration.Gw2Instance.Gw2WindowHandle);
+                Mouse.DoubleClick(MouseButton.LEFT, pos.X, pos.Y);
+                Mouse.Click(MouseButton.LEFT, pos.X, pos.Y);
                 _nextHoldClick = DateTime.UtcNow.AddMilliseconds(50);
             }
             else if (!_inTogglePrompt)
