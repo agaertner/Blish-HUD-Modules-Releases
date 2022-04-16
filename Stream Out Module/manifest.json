@@ -1,20 +1,20 @@
 {
   "name": "Stream Out",
-  "version": "0.5.8",
+  "version": "0.6.0",
   "namespace": "Nekres.Stream_Out",
   "package": "StreamOut.dll",
   "manifest_version": 1,
   "description": "Outputs current game information so that it can be used as a dynamic source in broadcasting software that has\nfile monitoring capabilities.\nA guild's Message of the Day can contain text enclosed in [public]text here[/public] to signal this module permission to export it.\nIf the [public] region is not found or set incorrectly the 'guild_motd.txt' will not contain any text.\nSimilarly, other exported text and image files will also be cleared to reflect specific toggles and changes (eg. not representing a guild will clear 'guild_emblem.png', not commanding a squad will clear 'commander_icon.png',\nand so on).",
   "dependencies": {
-    "bh.blishhud": ">=0.11.5-ci.68"
+    "bh.blishhud": ">=0.11.6"
   },
   "url": "https://github.com/agaertner/Blish-HUD-Modules-Releases",
   "directories": [ "stream_out" ],
   "enabled_without_gw2": false,
   "contributors": [
     {
-      "name": "TypoTiger",
-      "username": "TypoTiger.8352"
+      "name": "Nekres",
+      "username": "Nekres.1943"
     }
   ],
   "api_permissions": {

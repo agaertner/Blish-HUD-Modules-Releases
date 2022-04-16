@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Nekres.Stream_Out
 {
@@ -91,13 +91,14 @@ namespace Nekres.Stream_Out
                 case true:
                     source.RotateFlip(RotateFlipType.RotateNoneFlipX);
                     break;
+                default: break;
             }
 
             if (yFlip)
                 source.RotateFlip(RotateFlipType.RotateNoneFlipY);
         }
 
-        public static void SaveOnNetworkShare(this Image image, string fileName, ImageFormat imageFormat)
+        public static async Task SaveOnNetworkShare(this Image image, string fileName, ImageFormat imageFormat)
         {
             try {
                 using var lMemoryStream = new MemoryStream();
@@ -106,7 +107,7 @@ namespace Nekres.Stream_Out
                 using var lFileStream = new FileStream(fileName, FileMode.Create);
                 lMemoryStream.Position = 0;
 
-                lMemoryStream.CopyTo(lFileStream);
+                await lMemoryStream.CopyToAsync(lFileStream);
             }
             catch (Exception ex) when (ex is ExternalException or UnauthorizedAccessException or IOException)
             {
