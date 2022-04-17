@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Blish_HUD;
+using Blish_HUD.Modules.Managers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Blish_HUD;
-using Blish_HUD.Modules.Managers;
 
 namespace Nekres.Stream_Out.Core.Services
 {
-    internal class KillProofService : IExportService, IDisposable
+    internal class KillProofService : IExportService
     {
         private Logger Logger => StreamOutModule.Logger;
         private DirectoriesManager DirectoriesManager => StreamOutModule.ModuleInstance?.DirectoriesManager;
@@ -21,7 +20,6 @@ namespace Nekres.Stream_Out.Core.Services
 
         public KillProofService()
         {
-
         }
 
         public async Task Initialize()
@@ -32,9 +30,8 @@ namespace Nekres.Stream_Out.Core.Services
             ContentsManager.ExtractIcons("unstable_fractal_essence.png", Path.Combine($@"{moduleDir}\static", "unstable_fractal_essence.png"));
         }
 
-        public Task ResetDaily()
+        public async Task ResetDaily()
         {
-            return Task.CompletedTask;
         }
 
         public async Task Update()

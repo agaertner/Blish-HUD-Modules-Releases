@@ -1,28 +1,27 @@
-﻿using System;
+﻿using Blish_HUD;
+using Blish_HUD.Modules.Managers;
+using Blish_HUD.Settings;
+using Gw2Sharp.WebApi.Exceptions;
+using Gw2Sharp.WebApi.V2.Models;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Blish_HUD;
-using Blish_HUD.Modules.Managers;
-using Blish_HUD.Settings;
-using Gw2Sharp.WebApi.Exceptions;
-using Gw2Sharp.WebApi.V2.Models;
 using static Blish_HUD.GameService;
 namespace Nekres.Stream_Out.Core.Services
 {
-    internal class CharacterService : IExportService, IDisposable
+    internal class CharacterService : IExportService
     {
         private Logger Logger => StreamOutModule.Logger;
-        private static Gw2ApiManager Gw2ApiManager => StreamOutModule.ModuleInstance.Gw2ApiManager;
-        private DirectoriesManager DirectoriesManager => StreamOutModule.ModuleInstance.DirectoriesManager;
-        private ContentsManager ContentsManager => StreamOutModule.ModuleInstance.ContentsManager;
-        private SettingEntry<int> SessionDeathsWvW => StreamOutModule.ModuleInstance.SessionDeathsWvW;
-        private SettingEntry<int> TotalDeathsAtResetWvW => StreamOutModule.ModuleInstance.TotalDeathsAtResetWvW;
-        private SettingEntry<int> SessionDeathsDaily => StreamOutModule.ModuleInstance.SessionDeathsDaily;
-        private SettingEntry<int> TotalDeathsAtResetDaily => StreamOutModule.ModuleInstance.TotalDeathsAtResetDaily;
-        private StreamOutModule.UnicodeSigning UnicodeSigning => StreamOutModule.ModuleInstance.AddUnicodeSymbols.Value;
+        private static Gw2ApiManager Gw2ApiManager => StreamOutModule.ModuleInstance?.Gw2ApiManager;
+        private DirectoriesManager DirectoriesManager => StreamOutModule.ModuleInstance?.DirectoriesManager;
+        private ContentsManager ContentsManager => StreamOutModule.ModuleInstance?.ContentsManager;
+        private SettingEntry<int> SessionDeathsWvW => StreamOutModule.ModuleInstance?.SessionDeathsWvW;
+        private SettingEntry<int> TotalDeathsAtResetWvW => StreamOutModule.ModuleInstance?.TotalDeathsAtResetWvW;
+        private SettingEntry<int> SessionDeathsDaily => StreamOutModule.ModuleInstance?.SessionDeathsDaily;
+        private SettingEntry<int> TotalDeathsAtResetDaily => StreamOutModule.ModuleInstance?.TotalDeathsAtResetDaily;
+        private StreamOutModule.UnicodeSigning UnicodeSigning => StreamOutModule.ModuleInstance?.AddUnicodeSymbols.Value ?? StreamOutModule.UnicodeSigning.Suffixed;
 
         private const string CHARACTER_NAME = "character_name.txt";
         private const string PROFESSION_ICON = "profession_icon.png";
@@ -55,8 +54,9 @@ namespace Nekres.Stream_Out.Core.Services
 
             var moduleDir = DirectoriesManager.GetFullDirectoryPath("stream_out");
             ContentsManager.ExtractIcons(UseCatmanderTag.Value ? "catmander_tag_white.png" : "commander_tag_white.png", Path.Combine(moduleDir, COMMANDER_ICON));
-            if (!Gw2Mumble.PlayerCharacter.IsCommander)
-                TextureUtil.ClearImage($"{moduleDir}/{COMMANDER_ICON}");
+            
+            if (Gw2Mumble.PlayerCharacter.IsCommander) return;
+            await TextureUtil.ClearImage($"{moduleDir}/{COMMANDER_ICON}");
         }
 
         private async void OnNameChanged(object o, ValueEventArgs<string> e)
@@ -68,7 +68,7 @@ namespace Nekres.Stream_Out.Core.Services
         {
             if (e.Value <= 0)
             {
-                TextureUtil.ClearImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{PROFESSION_ICON}");
+                await TextureUtil.ClearImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{PROFESSION_ICON}");
                 return;
             }
 
@@ -88,7 +88,7 @@ namespace Nekres.Stream_Out.Core.Services
         {
             if (!e.Value)
             {
-                TextureUtil.ClearImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{COMMANDER_ICON}");
+                await TextureUtil.ClearImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{COMMANDER_ICON}");
                 return;
             }
             await SaveCommanderIcon(UseCatmanderTag.Value);
@@ -119,10 +119,8 @@ namespace Nekres.Stream_Out.Core.Services
 
         private async void OnUseCatmanderTagSettingChanged(object o, ValueChangedEventArgs<bool> e)
         {
-            if (Gw2Mumble.PlayerCharacter.IsCommander)
-            {
-                await SaveCommanderIcon(e.NewValue);
-            }
+            if (!Gw2Mumble.PlayerCharacter.IsCommander) return;
+            await SaveCommanderIcon(e.NewValue);
         }
 
         public static async Task<int> RequestTotalDeaths()

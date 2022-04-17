@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Nekres.Stream_Out.Core.Services
 {
-    internal class PvpService : IExportService, IDisposable
+    internal class PvpService : IExportService
     {
         private Logger Logger => StreamOutModule.Logger;
         private Gw2ApiManager Gw2ApiManager => StreamOutModule.ModuleInstance?.Gw2ApiManager;
@@ -29,6 +29,10 @@ namespace Nekres.Stream_Out.Core.Services
 
         private const string SWORDS = "\u2694"; // ⚔
 
+        public PvpService()
+        {
+        }
+
         public async Task Initialize()
         {
             await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{PVP_RANK}", "Bronze I", false);
@@ -43,6 +47,8 @@ namespace Nekres.Stream_Out.Core.Services
 
         private async Task<int> RequestTotalKillsForPvP()
         {
+            if (!Gw2ApiManager.HasPermissions(new[] { TokenPermission.Account, TokenPermission.Progression }))
+                return -1;
             return await Gw2ApiManager.Gw2ApiClient.V2.Account.Achievements.GetAsync().ContinueWith(response =>
             {
                 if (response.IsFaulted) return -1;
@@ -154,9 +160,6 @@ namespace Nekres.Stream_Out.Core.Services
         {
             await UpdateStandingsForPvP();
             await UpdateStatsForPvp();
-
-            if (!Gw2ApiManager.HasPermissions(new[] { TokenPermission.Account, TokenPermission.Progression }))
-                return;
 
             var prefixKills = UnicodeSigning == StreamOutModule.UnicodeSigning.Prefixed ? SWORDS : string.Empty;
             var suffixKills = UnicodeSigning == StreamOutModule.UnicodeSigning.Suffixed ? SWORDS : string.Empty;

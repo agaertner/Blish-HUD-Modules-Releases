@@ -1,13 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.Modules.Managers;
 using Gw2Sharp.WebApi.V2.Models;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nekres.Stream_Out.Core.Services
 {
-    internal class WalletService : IExportService, IDisposable
+    internal class WalletService : IExportService
     {
         private Logger Logger => StreamOutModule.Logger;
         private Gw2ApiManager Gw2ApiManager => StreamOutModule.ModuleInstance?.Gw2ApiManager;
@@ -18,8 +17,6 @@ namespace Nekres.Stream_Out.Core.Services
 
         public WalletService()
         {
-            Task.Run(() => Gw2Util.GenerateCoinsImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_COINS}", 10000000, false));
-            Task.Run(() => Gw2Util.GenerateKarmaImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_KARMA}", 10000000, false));
         }
 
         public async Task Update()
@@ -27,14 +24,14 @@ namespace Nekres.Stream_Out.Core.Services
             await UpdateWallet();
         }
 
-        public Task Initialize()
+        public async Task Initialize()
         {
-            return Task.CompletedTask;
+            await Gw2Util.GenerateCoinsImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_COINS}", 10000000, false);
+            await Gw2Util.GenerateKarmaImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_KARMA}", 10000000, false);
         }
 
-        public Task ResetDaily()
+        public async Task ResetDaily()
         {
-            return Task.CompletedTask;
         }
 
         private async Task UpdateWallet()
@@ -46,10 +43,10 @@ namespace Nekres.Stream_Out.Core.Services
             {
                 if (task.IsFaulted) return;
                 var coins = task.Result.First(x => x.Id == 1).Value; // Coins
-                await Task.Run(() => Gw2Util.GenerateCoinsImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_COINS}", coins));
+                await Gw2Util.GenerateCoinsImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_COINS}", coins);
 
                 var karma = task.Result.First(x => x.Id == 2).Value; // Karma
-                await Task.Run(() => Gw2Util.GenerateKarmaImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_KARMA}", karma));
+                await Gw2Util.GenerateKarmaImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_KARMA}", karma);
             });
         }
 

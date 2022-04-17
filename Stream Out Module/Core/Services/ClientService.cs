@@ -7,7 +7,7 @@ using static Blish_HUD.GameService;
 
 namespace Nekres.Stream_Out.Core.Services
 {
-    internal class ClientService : IExportService, IDisposable
+    internal class ClientService : IExportService
     {
         private Logger Logger => StreamOutModule.Logger;
         private DirectoriesManager DirectoriesManager => StreamOutModule.ModuleInstance?.DirectoriesManager;
@@ -31,19 +31,16 @@ namespace Nekres.Stream_Out.Core.Services
             }
         }
 
-        public Task Initialize()
+        public async Task Initialize()
         {
-            return Task.CompletedTask;
         }
 
-        public Task ResetDaily()
+        public async Task ResetDaily()
         {
-            return Task.CompletedTask;
         }
 
         public void Dispose()
         {
-
         }
     }
 }

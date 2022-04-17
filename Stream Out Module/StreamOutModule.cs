@@ -136,10 +136,16 @@ namespace Nekres.Stream_Out
 
             await ResetDaily();
 
-            if (!HasSubToken || _prevApiRequestTime.HasValue && DateTime.UtcNow.Subtract(_prevApiRequestTime.Value).TotalSeconds < 300) return;
+            if (_prevApiRequestTime.HasValue && DateTime.UtcNow.Subtract(_prevApiRequestTime.Value).TotalSeconds < 300) return;
             _prevApiRequestTime = DateTime.UtcNow;
-
             foreach (var service in _allExportServices) await service.Update();
+        }
+
+        private async Task ResetDaily()
+        {
+            if (ResetTimeDaily.Value.HasValue && DateTime.UtcNow < ResetTimeDaily.Value) return;
+            ResetTimeDaily.Value = Gw2Util.GetDailyResetTime();
+            foreach (var service in _allExportServices) await service.ResetDaily();
         }
 
         /// <inheritdoc />
@@ -147,17 +153,8 @@ namespace Nekres.Stream_Out
         {
             Gw2ApiManager.SubtokenUpdated -= SubTokenUpdated;
             foreach (var service in _allExportServices) service?.Dispose();
-
             // All static members must be manually unset
             ModuleInstance = null;
-        }
-
-        private async Task ResetDaily()
-        {
-            if (ResetTimeDaily.Value.HasValue && DateTime.UtcNow < ResetTimeDaily.Value) return;
-
-            foreach (var service in _allExportServices) await service.ResetDaily();
-            ResetTimeDaily.Value = Gw2Util.GetDailyResetTime();
         }
     }
 }

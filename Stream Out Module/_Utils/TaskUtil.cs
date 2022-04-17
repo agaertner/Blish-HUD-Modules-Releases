@@ -1,11 +1,8 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
+﻿using Flurl.Http;
+using Newtonsoft.Json;
+using System;
 using System.Net;
 using System.Threading.Tasks;
-using Flurl.Http;
-using Newtonsoft.Json;
 using static Nekres.Stream_Out.StreamOutModule;
 namespace Nekres.Stream_Out
 {

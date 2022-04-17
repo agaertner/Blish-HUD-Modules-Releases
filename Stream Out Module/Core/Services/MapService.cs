@@ -11,7 +11,7 @@ using static Blish_HUD.GameService;
 
 namespace Nekres.Stream_Out.Core.Services
 {
-    internal class MapService : IExportService, IDisposable
+    internal class MapService : IExportService
     {
         private Logger Logger => StreamOutModule.Logger;
         private Gw2ApiManager Gw2ApiManager => StreamOutModule.ModuleInstance?.Gw2ApiManager;
@@ -99,19 +99,16 @@ namespace Nekres.Stream_Out.Core.Services
             await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{MAP_TYPE}", type);
         }
 
-        public Task Update()
+        public async Task Update()
         {
-            return Task.CompletedTask;
         }
 
-        public Task Initialize()
+        public async Task Initialize()
         {
-            return Task.CompletedTask;
         }
 
-        public Task ResetDaily()
+        public async Task ResetDaily()
         {
-            return Task.CompletedTask;
         }
 
         public void Dispose()

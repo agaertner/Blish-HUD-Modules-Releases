@@ -1,4 +1,5 @@
-﻿using Blish_HUD.Modules.Managers;
+﻿using Blish_HUD;
+using Blish_HUD.Modules.Managers;
 using Gw2Sharp.WebApi.V2.Models;
 using System;
 using System.Collections.Generic;
@@ -8,12 +9,11 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Blish_HUD;
 using static Blish_HUD.GameService;
 
 namespace Nekres.Stream_Out.Core.Services
 {
-    internal class GuildService : IExportService, IDisposable
+    internal class GuildService : IExportService
     {
         private Logger Logger => StreamOutModule.Logger;
         private Gw2ApiManager Gw2ApiManager => StreamOutModule.ModuleInstance?.Gw2ApiManager;
@@ -25,6 +25,10 @@ namespace Nekres.Stream_Out.Core.Services
         private const string GUILD_MOTD = "guild_motd.txt";
 
         private Regex GUILD_MOTD_PUBLIC = new Regex(@"(?<=\[public\]).*(?=\[\/public\])", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+        public GuildService()
+        {
+        }
 
         private async Task UpdateGuild()
         {
@@ -38,7 +42,7 @@ namespace Nekres.Stream_Out.Core.Services
                 await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{GUILD_NAME}", string.Empty);
                 await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{GUILD_TAG}", string.Empty);
                 await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{GUILD_MOTD}", string.Empty);
-                TextureUtil.ClearImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{GUILD_EMBLEM}");
+                await TextureUtil.ClearImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{GUILD_EMBLEM}");
                 return;
             }
 
@@ -57,7 +61,7 @@ namespace Nekres.Stream_Out.Core.Services
                 var emblem = task.Result.Emblem;
                 if (emblem == null)
                 {
-                    TextureUtil.ClearImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{GUILD_EMBLEM}");
+                    await TextureUtil.ClearImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{GUILD_EMBLEM}");
                     return;
                 }
 
@@ -78,7 +82,7 @@ namespace Nekres.Stream_Out.Core.Services
                 }
                 if (!layers.Any())
                 {
-                    TextureUtil.ClearImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{GUILD_EMBLEM}");
+                    await TextureUtil.ClearImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{GUILD_EMBLEM}");
                     return;
                 }
 
@@ -120,19 +124,17 @@ namespace Nekres.Stream_Out.Core.Services
             });
         }
 
-        public Task Update()
+        public async Task Update()
         {
-            return Task.CompletedTask;
+            await UpdateGuild();
         }
 
-        public Task Initialize()
+        public async Task Initialize()
         {
-            return Task.CompletedTask;
         }
 
-        public Task ResetDaily()
+        public async Task ResetDaily()
         {
-            return Task.CompletedTask;
         }
 
         public void Dispose()

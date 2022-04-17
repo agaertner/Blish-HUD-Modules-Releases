@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Nekres.Stream_Out.Core.Services
 {
-    internal class WvwService : IExportService, IDisposable
+    internal class WvwService : IExportService
     {
         private Logger Logger => StreamOutModule.Logger;
         private Gw2ApiManager Gw2ApiManager => StreamOutModule.ModuleInstance?.Gw2ApiManager;
@@ -102,12 +102,7 @@ namespace Nekres.Stream_Out.Core.Services
 
         private async Task<DateTime?> GetWvWResetTime(int worldId)
         {
-            return await Gw2ApiManager.Gw2ApiClient.V2.Wvw.Matches.World(worldId).GetAsync().ContinueWith(r =>
-            {
-                if (r.IsFaulted)
-                    return new DateTime?();
-                return r.Result.EndTime.UtcDateTime;
-            });
+            return await Gw2ApiManager.Gw2ApiClient.V2.Wvw.Matches.World(worldId).GetAsync().ContinueWith(r => r.IsFaulted ? new DateTime?() : r.Result.EndTime.UtcDateTime);
         }
 
         public async Task ResetDaily()
