@@ -4,9 +4,8 @@ using Blish_HUD.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Blish_HUD.Controls.Intern;
+using Nekres.Musician_Module.Controls.Instrument;
 using Blish_HUD;
-using Nekres.Musician;
-using Nekres.Musician.Core.Instrument;
 
 namespace Nekres.Musician_Module.Controls {
 

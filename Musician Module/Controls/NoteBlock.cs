@@ -5,9 +5,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Glide;
 using System.Collections.Generic;
 using Blish_HUD.Controls.Intern;
+using Nekres.Musician_Module.Controls.Instrument;
 using Blish_HUD;
-using Nekres.Musician;
-using Nekres.Musician.Core.Instrument;
 
 namespace Nekres.Musician_Module.Controls {
     public class NoteBlock : Control {
@@ -57,7 +56,7 @@ namespace Nekres.Musician_Module.Controls {
         }
 
         protected override CaptureType CapturesInput() {
-            return CaptureType.Keyboard;
+            return CaptureType.DoNotBlock;
         }
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
             spriteBatch.DrawOnCtrl(this, this.NoteSprite, new Rectangle(0, 0, 56, 20), null, this.SpriteColor, 0f, Vector2.Zero, SpriteEffects.None);

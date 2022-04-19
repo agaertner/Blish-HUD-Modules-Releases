@@ -4,24 +4,28 @@ using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Blish_HUD;
 using Blish_HUD.Controls;
+using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
 using Blish_HUD.Modules;
-using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
+using Blish_HUD.Modules.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nekres.Musician.Core.Instrument;
-using Nekres.Musician.Core.Player;
 using Nekres.Musician_Module.Controls;
+using Nekres.Musician_Module.Notation.Persistance;
+using Nekres.Musician_Module.Player;
+using Nekres.Musician_Module.Controls.Instrument;
+using Nekres.Musician_Module.UI.Models;
+using Nekres.Musician_Module.UI.Views;
 using static Blish_HUD.GameService;
 
-namespace Nekres.Musician
+namespace Nekres.Musician_Module
 {
 
     [Export(typeof(Module))]
     public class MusicianModule : Module
     {
-        //private static readonly Logger Logger = Logger.GetLogger(typeof(MusicianModule));
+        internal static readonly Logger Logger = Logger.GetLogger(typeof(MusicianModule));
 
         internal static MusicianModule ModuleInstance;
 
@@ -87,6 +91,11 @@ namespace Nekres.Musician
             settingBackgroundPlayback = settingsManager.DefineSetting("backgroundPlayback", false, "No background playback", "Stop key emulation when GW2 is in the background");
         }
 
+        public override IView GetSettingsView()
+        {
+            return new CustomSettingsView(new CustomSettingsModel(this.SettingsManager.ModuleSettings));
+        }
+
         #endregion
 
         protected override void Initialize()
@@ -105,7 +114,7 @@ namespace Nekres.Musician
 
             _stopButton.Click += StopPlayback;
 
-            GameIntegration.Gw2LostFocus += OnGw2LostFocus;
+            GameIntegration.Gw2Instance.Gw2LostFocus += OnGw2LostFocus;
         }
 
         protected override async Task LoadAsync()
@@ -359,7 +368,7 @@ namespace Nekres.Musician
             {
                 Size = new Point(150, 20),
                 Location = new Point(titleArtistLabel.Left + titleArtistLabel.Width + 20, userLabel.Top),
-                PlaceholderText = "User (Nekres.1038)",
+                PlaceholderText = "User.####",
                 Parent = composerPanel
             };
             var ddInstrumentSelection = new Dropdown()

@@ -1,7 +1,7 @@
 {
   "name": "Musician",
   "version": "0.6.3",
-  "namespace": "Nekres.Musician",
+  "namespace": "Nekres.Musician_Module",
   "package": "Musician Module.dll",
   "manifest_version": 1,
 
@@ -12,8 +12,8 @@
   },
   "contributors": [
     {
-      "name": "TypoTiger",
-      "username": "TypoTiger.8352"
+      "name": "Nekres",
+      "username": "Nekres.1943"
     }
   ],
   "directories": [ "musician" ],
