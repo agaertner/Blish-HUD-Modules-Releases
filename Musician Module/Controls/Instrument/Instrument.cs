@@ -3,6 +3,9 @@ using Nekres.Musician_Module.Domain.Values;
 using Blish_HUD.Controls.Intern;
 using System.Collections.Generic;
 using Blish_HUD.Controls.Extern;
+using Blish_HUD.Input;
+using Microsoft.Xna.Framework.Input;
+using Keyboard = Blish_HUD.Controls.Intern.Keyboard;
 
 namespace Nekres.Musician_Module.Controls.Instrument
 {
@@ -24,19 +27,36 @@ namespace Nekres.Musician_Module.Controls.Instrument
 
     public abstract class Instrument : IDisposable
     {
-        protected static readonly Dictionary<GuildWarsControls, VirtualKeyShort> VirtualKeyShorts = new Dictionary<GuildWarsControls, VirtualKeyShort>
+
+        public Keys GetKeyBinding(GuildWarsControls key)
         {
-            {GuildWarsControls.WeaponSkill1, VirtualKeyShort.KEY_1},
-            {GuildWarsControls.WeaponSkill2, VirtualKeyShort.KEY_2},
-            {GuildWarsControls.WeaponSkill3, VirtualKeyShort.KEY_3},
-            {GuildWarsControls.WeaponSkill4, VirtualKeyShort.KEY_4},
-            {GuildWarsControls.WeaponSkill5, VirtualKeyShort.KEY_5},
-            {GuildWarsControls.HealingSkill, VirtualKeyShort.KEY_6},
-            {GuildWarsControls.UtilitySkill1, VirtualKeyShort.KEY_7},
-            {GuildWarsControls.UtilitySkill2, VirtualKeyShort.KEY_8},
-            {GuildWarsControls.UtilitySkill3, VirtualKeyShort.KEY_9},
-            {GuildWarsControls.EliteSkill, VirtualKeyShort.KEY_0}
-        };
+            switch (key)
+            {
+                case GuildWarsControls.SwapWeapons:
+                    return MusicianModule.ModuleInstance.keySwapWeapons.Value.PrimaryKey;
+                case GuildWarsControls.WeaponSkill1:
+                    return MusicianModule.ModuleInstance.keyWeaponSkill1.Value.PrimaryKey;
+                case GuildWarsControls.WeaponSkill2:
+                    return MusicianModule.ModuleInstance.keyWeaponSkill2.Value.PrimaryKey;
+                case GuildWarsControls.WeaponSkill3:
+                    return MusicianModule.ModuleInstance.keyWeaponSkill3.Value.PrimaryKey;
+                case GuildWarsControls.WeaponSkill4:
+                    return MusicianModule.ModuleInstance.keyWeaponSkill4.Value.PrimaryKey;
+                case GuildWarsControls.WeaponSkill5:
+                    return MusicianModule.ModuleInstance.keyWeaponSkill5.Value.PrimaryKey;
+                case GuildWarsControls.HealingSkill:
+                    return MusicianModule.ModuleInstance.keyHealingSkill.Value.PrimaryKey;
+                case GuildWarsControls.UtilitySkill1:
+                    return MusicianModule.ModuleInstance.keyUtilitySkill1.Value.PrimaryKey;
+                case GuildWarsControls.UtilitySkill2:
+                    return MusicianModule.ModuleInstance.keyUtilitySkill2.Value.PrimaryKey;
+                case GuildWarsControls.UtilitySkill3:
+                    return MusicianModule.ModuleInstance.keyUtilitySkill3.Value.PrimaryKey;
+                case GuildWarsControls.EliteSkill:
+                    return MusicianModule.ModuleInstance.keyEliteSkill.Value.PrimaryKey;
+                default: return Keys.None;
+            }
+        }
 
         protected IInstrumentPreview Preview;
         public InstrumentMode Mode { get; set; }
@@ -64,8 +84,7 @@ namespace Nekres.Musician_Module.Controls.Instrument
 
             } else if (Mode == InstrumentMode.Emulate) {
 
-                Keyboard.Press(VirtualKeyShorts[key]);
-                Keyboard.Release(VirtualKeyShorts[key]);
+                Keyboard.Stroke((VirtualKeyShort)GetKeyBinding(key));
 
             } else if (Mode == InstrumentMode.Preview) {
 

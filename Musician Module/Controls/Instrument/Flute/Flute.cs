@@ -4,6 +4,7 @@ using System.Threading;
 using Nekres.Musician_Module.Domain.Values;
 using Blish_HUD.Controls.Intern;
 using Blish_HUD;
+using Blish_HUD.Controls.Extern;
 
 namespace Nekres.Musician_Module.Controls.Instrument
 {
@@ -161,8 +162,7 @@ namespace Nekres.Musician_Module.Controls.Instrument
 
             } else if (Mode == InstrumentMode.Emulate) {
 
-                Keyboard.Press(VirtualKeyShorts[key]);
-                Keyboard.Release(VirtualKeyShorts[key]);
+                Keyboard.Stroke((VirtualKeyShort)GetKeyBinding(key));
 
             } else if (Mode == InstrumentMode.Preview) {
 
@@ -170,7 +170,6 @@ namespace Nekres.Musician_Module.Controls.Instrument
 
             }
         }
-
 
         public override void Dispose() {
             Preview?.Dispose();

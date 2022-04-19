@@ -11,6 +11,7 @@ using Blish_HUD.Settings;
 using Blish_HUD.Modules.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Nekres.Musician_Module.Controls;
 using Nekres.Musician_Module.Notation.Persistance;
 using Nekres.Musician_Module.Player;
@@ -85,10 +86,36 @@ namespace Nekres.Musician_Module
         #region Settings
 
         private SettingEntry<bool> settingBackgroundPlayback;
+        internal SettingEntry<KeyBinding> keySwapWeapons;
+        internal SettingEntry<KeyBinding> keyWeaponSkill1;
+        internal SettingEntry<KeyBinding> keyWeaponSkill2;
+        internal SettingEntry<KeyBinding> keyWeaponSkill3;
+        internal SettingEntry<KeyBinding> keyWeaponSkill4;
+        internal SettingEntry<KeyBinding> keyWeaponSkill5;
+        internal SettingEntry<KeyBinding> keyHealingSkill;
+        internal SettingEntry<KeyBinding> keyUtilitySkill1;
+        internal SettingEntry<KeyBinding> keyUtilitySkill2;
+        internal SettingEntry<KeyBinding> keyUtilitySkill3;
+        internal SettingEntry<KeyBinding> keyEliteSkill;
 
         protected override void DefineSettings(SettingCollection settingsManager)
         {
-            settingBackgroundPlayback = settingsManager.DefineSetting("backgroundPlayback", false, "No background playback", "Stop key emulation when GW2 is in the background");
+            settingBackgroundPlayback = settingsManager.DefineSetting("backgroundPlayback", false,
+                () => "No background playback",
+                () => "Stop key emulation when GW2 is in the background");
+
+            var skillKeyBindingsCollection = settingsManager.AddSubCollection("Skills", true, false);
+            keySwapWeapons = skillKeyBindingsCollection.DefineSetting("keySwapWeapons", new KeyBinding(Keys.OemPipe), () => "Swap Weapons");
+            keyWeaponSkill1 = skillKeyBindingsCollection.DefineSetting("keyWeaponSkill1", new KeyBinding(Keys.D1), () => "Weapon Skill 1");
+            keyWeaponSkill2 = skillKeyBindingsCollection.DefineSetting("keyWeaponSkill2", new KeyBinding(Keys.D2), () => "Weapon Skill 2");
+            keyWeaponSkill3 = skillKeyBindingsCollection.DefineSetting("keyWeaponSkill3", new KeyBinding(Keys.D3), () => "Weapon Skill 3");
+            keyWeaponSkill4 = skillKeyBindingsCollection.DefineSetting("keyWeaponSkill4", new KeyBinding(Keys.D4), () => "Weapon Skill 4");
+            keyWeaponSkill5 = skillKeyBindingsCollection.DefineSetting("keyWeaponSkill5", new KeyBinding(Keys.D5), () => "Weapon Skill 5");
+            keyHealingSkill = skillKeyBindingsCollection.DefineSetting("keyHealingSkill", new KeyBinding(Keys.D6), () => "Healing Skill");
+            keyUtilitySkill1 = skillKeyBindingsCollection.DefineSetting("keyUtilitySkill1", new KeyBinding(Keys.D7), () => "Utility Skill 1");
+            keyUtilitySkill2 = skillKeyBindingsCollection.DefineSetting("keyUtilitySkill2", new KeyBinding(Keys.D8), () => "Utility Skill 2");
+            keyUtilitySkill3 = skillKeyBindingsCollection.DefineSetting("keyUtilitySkill3", new KeyBinding(Keys.D9), () => "Utility Skill 3");
+            keyEliteSkill = skillKeyBindingsCollection.DefineSetting("keyEliteSkill", new KeyBinding(Keys.D0), () => "Elite Skill");
         }
 
         public override IView GetSettingsView()
