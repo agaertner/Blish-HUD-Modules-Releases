@@ -1,10 +1,9 @@
 {
   "name": "Musician",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "namespace": "Nekres.Musician_Module",
   "package": "Musician Module.dll",
   "manifest_version": 1,
-
   "description": "Create, share and play sheet music.",
   "url": "https://github.com/blish-hud/",
   "dependencies": {
@@ -17,6 +16,5 @@
     }
   ],
   "directories": [ "musician" ],
-  "enabled_without_gw2": false,
-  "api_permissions": {}
+  "enabled_without_gw2": false
 }
