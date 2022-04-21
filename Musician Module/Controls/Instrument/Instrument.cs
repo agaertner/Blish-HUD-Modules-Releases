@@ -1,10 +1,9 @@
-﻿using System;
-using Nekres.Musician_Module.Domain.Values;
+﻿using Blish_HUD.Controls.Extern;
 using Blish_HUD.Controls.Intern;
-using System.Collections.Generic;
-using Blish_HUD.Controls.Extern;
-using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Input;
+using Nekres.Musician_Module.Domain.Values;
+using System;
+using System.Threading;
 using Keyboard = Blish_HUD.Controls.Intern.Keyboard;
 
 namespace Nekres.Musician_Module.Controls.Instrument
@@ -28,7 +27,40 @@ namespace Nekres.Musician_Module.Controls.Instrument
     public abstract class Instrument : IDisposable
     {
 
-        public Keys GetKeyBinding(GuildWarsControls key)
+        protected IInstrumentPreview Preview;
+        public InstrumentMode Mode { get; set; }
+
+        protected virtual void PressKey(GuildWarsControls key, string octave)
+        {
+            if (Mode == InstrumentMode.Practice)
+            {
+                InstrumentSkillType noteType;
+                switch (key) {
+                    case GuildWarsControls.EliteSkill:
+                        noteType = InstrumentSkillType.IncreaseOctave;
+                        break;
+                    case GuildWarsControls.UtilitySkill3:
+                        noteType = InstrumentSkillType.DecreaseOctave;
+                        break;
+                    default:
+                        noteType = InstrumentSkillType.Note;
+                        break;
+                }
+                MusicianModule.ModuleInstance.Conveyor.SpawnNoteBlock(key, noteType, Note.OctaveColors[octave]);
+
+            } else if (Mode == InstrumentMode.Emulate) {
+
+                Keyboard.Press((VirtualKeyShort)GetKeyBinding(key));
+                Thread.Sleep(TimeSpan.FromMilliseconds(1));
+                Keyboard.Release((VirtualKeyShort)GetKeyBinding(key));
+
+            } else if (Mode == InstrumentMode.Preview) {
+
+                Preview.PlaySoundByKey(key);
+
+            }
+        }
+        private Keys GetKeyBinding(GuildWarsControls key)
         {
             switch (key)
             {
@@ -58,40 +90,6 @@ namespace Nekres.Musician_Module.Controls.Instrument
             }
         }
 
-        protected IInstrumentPreview Preview;
-        public InstrumentMode Mode { get; set; }
-
-        public bool IsInstrument(string instrument) {
-            return string.Equals(GetType().Name, instrument, StringComparison.OrdinalIgnoreCase);
-        }
-        protected virtual void PressKey(GuildWarsControls key, string octave)
-        {
-            if (Mode == InstrumentMode.Practice)
-            {
-                InstrumentSkillType noteType;
-                switch (key) {
-                    case GuildWarsControls.EliteSkill:
-                        noteType = InstrumentSkillType.IncreaseOctave;
-                        break;
-                    case GuildWarsControls.UtilitySkill3:
-                        noteType = InstrumentSkillType.DecreaseOctave;
-                        break;
-                    default:
-                        noteType = InstrumentSkillType.Note;
-                        break;
-                }
-                MusicianModule.ModuleInstance.Conveyor.SpawnNoteBlock(key, noteType, Note.OctaveColors[octave]);
-
-            } else if (Mode == InstrumentMode.Emulate) {
-
-                Keyboard.Stroke((VirtualKeyShort)GetKeyBinding(key));
-
-            } else if (Mode == InstrumentMode.Preview) {
-
-                Preview.PlaySoundByKey(key);
-
-            }
-        }
         public abstract void PlayNote(Note note);
         public abstract void GoToOctave(Note note);
         public abstract void Dispose();

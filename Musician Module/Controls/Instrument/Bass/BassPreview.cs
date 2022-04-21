@@ -21,7 +21,6 @@ namespace Nekres.Musician_Module.Controls.Instrument
                 case GuildWarsControls.HealingSkill:
                 case GuildWarsControls.UtilitySkill1:
                 case GuildWarsControls.UtilitySkill2:
-                    ModuleInstance.MusicPlayer.StopSound();
                     ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, _octave));
                     break;
                 case GuildWarsControls.UtilitySkill3:

@@ -1,12 +1,13 @@
+using Blish_HUD.Controls.Intern;
+using Microsoft.Xna.Framework.Audio;
 using System;
 using System.Collections.Generic;
-using Blish_HUD.Controls.Intern;
-using CSCore.Codecs.OGG;
+
 namespace Nekres.Musician_Module.Controls.Instrument
 {
     public class BellSoundRepository : IDisposable
     {
-        private readonly Dictionary<string, string> Map = new Dictionary<string, string>
+        private readonly Dictionary<string, string> _map = new()
         {
             // Low Octave
             {$"{GuildWarsControls.WeaponSkill1}{BellNote.Octaves.Low}", "D4"},
@@ -38,49 +39,46 @@ namespace Nekres.Musician_Module.Controls.Instrument
         };
 
 
-        private readonly Dictionary<string, OggSource> Sound = new Dictionary<string, OggSource>
+        private readonly Dictionary<string, SoundEffectInstance> _sound = new()
         {
-            {"D4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\D4.ogg"))},
-            {"E4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\E4.ogg"))},
-            {"F4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\F4.ogg"))},
-            {"G4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\G4.ogg"))},
-            {"A4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\A4.ogg"))},
-            {"B4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\B4.ogg"))},
-            {"C5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\C5.ogg"))},
-            {"D5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\D5.ogg"))},
-            {"E5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\E5.ogg"))},
-            {"F5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\F5.ogg"))},
-            {"G5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\G5.ogg"))},
-            {"A5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\A5.ogg"))},
-            {"B5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\B5.ogg"))},
-            {"C6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\C6.ogg"))},
-            {"D6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\D6.ogg"))},
-            {"E6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\E6.ogg"))},
-            {"F6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\F6.ogg"))},
-            {"G6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\G6.ogg"))},
-            {"A6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\A6.ogg"))},
-            {"B6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\B6.ogg"))},
-            {"C7", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\C7.ogg"))},
-            {"D7", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\D7.ogg"))}
+            {"D4", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\D4.wav").CreateInstance()},
+            {"E4", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\E4.wav").CreateInstance()},
+            {"F4", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\F4.wav").CreateInstance()},
+            {"G4", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\G4.wav").CreateInstance()},
+            {"A4", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\A4.wav").CreateInstance()},
+            {"B4", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\B4.wav").CreateInstance()},
+            {"C5", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\C5.wav").CreateInstance()},
+            {"D5", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\D5.wav").CreateInstance()},
+            {"E5", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\E5.wav").CreateInstance()},
+            {"F5", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\F5.wav").CreateInstance()},
+            {"G5", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\G5.wav").CreateInstance()},
+            {"A5", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\A5.wav").CreateInstance()},
+            {"B5", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\B5.wav").CreateInstance()},
+            {"C6", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\C6.wav").CreateInstance()},
+            {"D6", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\D6.wav").CreateInstance()},
+            {"E6", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\E6.wav").CreateInstance()},
+            {"F6", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\F6.wav").CreateInstance()},
+            {"G6", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\G6.wav").CreateInstance()},
+            {"A6", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\A6.wav").CreateInstance()},
+            {"B6", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\B6.wav").CreateInstance()},
+            {"C7", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\C7.wav").CreateInstance()},
+            {"D7", MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\D7.wav").CreateInstance()}
 
         };
 
-
-        public OggSource Get(string id)
+        public SoundEffectInstance Get(string id)
         {
-            return Sound[id];
+            return _sound[id];
         }
 
-
-        public OggSource Get(GuildWarsControls key, BellNote.Octaves octave)
+        public SoundEffectInstance Get(GuildWarsControls key, BellNote.Octaves octave)
         {
-            return Sound[Map[$"{key}{octave}"]];
+            return _sound[_map[$"{key}{octave}"]];
         }
-
 
         public void Dispose() {
-            Map?.Clear();
-            foreach (var snd in Sound)
+            _map?.Clear();
+            foreach (var snd in _sound)
                 snd.Value?.Dispose();
         }
     }

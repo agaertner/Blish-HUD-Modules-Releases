@@ -86,6 +86,7 @@ namespace Nekres.Musician_Module
         #region Settings
 
         private SettingEntry<bool> settingBackgroundPlayback;
+        internal SettingEntry<float> audioVolume;
         internal SettingEntry<KeyBinding> keySwapWeapons;
         internal SettingEntry<KeyBinding> keyWeaponSkill1;
         internal SettingEntry<KeyBinding> keyWeaponSkill2;
@@ -103,6 +104,8 @@ namespace Nekres.Musician_Module
             settingBackgroundPlayback = settingsManager.DefineSetting("backgroundPlayback", false,
                 () => "No background playback",
                 () => "Stop key emulation when GW2 is in the background");
+
+            audioVolume = settingsManager.DefineSetting("audioVolume", 80f, () => "Audio Volume");
 
             var skillKeyBindingsCollection = settingsManager.AddSubCollection("Skills", true, false);
             keySwapWeapons = skillKeyBindingsCollection.DefineSetting("keySwapWeapons", new KeyBinding(Keys.OemPipe), () => "Swap Weapons");
@@ -297,9 +300,6 @@ namespace Nekres.Musician_Module
                     }
                     if (melody.MouseOverPreview)
                     {
-                        //TODO: Emulation using CSCore
-                        ScreenNotification.ShowNotification("Preview is not yet implemented.", ScreenNotification.NotificationType.Info);
-                        /*
                         if (melody.IsPreviewing)
                             StopPlayback(null, null);
                         else
@@ -311,7 +311,7 @@ namespace Nekres.Musician_Module
                                 InstrumentMode.Preview
                             );
                             MusicPlayer.Worker.Start();
-                        }*/
+                        }
                     }
                 };
             }

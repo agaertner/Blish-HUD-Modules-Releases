@@ -1,11 +1,11 @@
-﻿using System.Linq;
-using System.Threading;
+﻿using Microsoft.Xna.Framework.Audio;
 using Nekres.Musician_Module.Controls.Instrument;
 using Nekres.Musician_Module.Domain;
 using Nekres.Musician_Module.Player.Algorithms;
-using CSCore;
-using CSCore.SoundOut;
 using System;
+using System.Linq;
+using System.Threading;
+using NAudio.Wave;
 
 namespace Nekres.Musician_Module.Player
 {
@@ -13,33 +13,34 @@ namespace Nekres.Musician_Module.Player
     {
         public Thread Worker { get; private set; }
         public IPlayAlgorithm Algorithm { get; private set; }
-        public WasapiOut OutputDevice { get; private set; }
 
-        public void PlaySound(ISampleSource sampleSource) {
-            StopSound();
-            OutputDevice.Initialize(sampleSource.ToWaveSource().Loop());
-            OutputDevice.Play();
+        private SoundEffectInstance _activeSfx;
+
+        private float _audioVolume => MusicianModule.ModuleInstance.audioVolume.Value / 1000;
+        public void PlaySound(SoundEffectInstance sfx, bool loops = false) {
+            if (loops) {
+                StopSound();
+                sfx.IsLooped = true;
+            }
+            _activeSfx = sfx;
+            sfx.Volume = _audioVolume;
+            sfx.Play();
         }
-
 
         public void StopSound() {
-            OutputDevice.Stop();
+            _activeSfx?.Stop();
         }
-
-
 
         public MusicPlayer(MusicSheet musicSheet, Instrument instrument, IPlayAlgorithm algorithm)
         {
             Algorithm = algorithm;
             Worker = new Thread(() => algorithm.Play(instrument, musicSheet.MetronomeMark, musicSheet.Melody.ToArray()));
-
-            OutputDevice = new WasapiOut();
         }
 
-
-        public void Dispose() {
+        public void Dispose()
+        {
+            StopSound();
             Algorithm.Dispose();
-            OutputDevice.Dispose();
         }
     }
 }

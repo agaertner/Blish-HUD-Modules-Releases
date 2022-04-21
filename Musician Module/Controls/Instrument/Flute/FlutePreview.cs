@@ -21,8 +21,7 @@ namespace Nekres.Musician_Module.Controls.Instrument
                 case GuildWarsControls.HealingSkill:
                 case GuildWarsControls.UtilitySkill1:
                 case GuildWarsControls.UtilitySkill2:
-                    ModuleInstance.MusicPlayer.StopSound();
-                    ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, _octave));
+                    ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, _octave), true);
                     break;
                 case GuildWarsControls.UtilitySkill3:
                     if (_octave == FluteNote.Octaves.Low)
