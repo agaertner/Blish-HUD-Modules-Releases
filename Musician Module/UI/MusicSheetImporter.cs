@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Nekres.Musician.Core.Models;
+using Nekres.Musician.UI;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Nekres.Musician.Core.Models;
-using Nekres.Musician.UI;
 
 namespace Nekres.Musician
 {
@@ -26,14 +26,14 @@ namespace Nekres.Musician
             _loadingIndicator = loadingIndicator;
             _xmlWatcher = new FileSystemWatcher(sheetService.CacheDir)
             {
-                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
+                NotifyFilter = NotifyFilters.LastWrite,
                 Filter = "*.xml",
                 EnableRaisingEvents = true
             };
             _xmlWatcher.Created += OnXmlCreated;
         }
 
-        private async void OnXmlCreated(object sender, FileSystemEventArgs e) => await ConvertXml(e.FullPath);
+        private async void OnXmlCreated(object sender, FileSystemEventArgs e) => await ImportFromFile(e.FullPath);
 
         public void Init()
         {
@@ -49,32 +49,55 @@ namespace Nekres.Musician
         {
             this.IsLoading = true;
             var initialFiles = Directory.EnumerateFiles(_sheetService.CacheDir).Where(s => Path.GetExtension(s).Equals(".xml"));
-            foreach (var filePath in initialFiles) await ConvertXml(filePath, true);
+            foreach (var filePath in initialFiles)
+            {
+                if (!MusicianModule.ModuleInstance.Loaded) break;
+                await ImportFromFile(filePath, true);
+            }
             this.IsLoading = false;
             this.Log = null;
             _loadingIndicator.Report(null);
         }
 
-        private async Task ConvertXml(string filePath, bool silent = false)
+        private async Task ImportFromFile(string filePath, bool silent = false)
         {
             var log = $"Importing {Path.GetFileName(filePath)}..";
             System.Diagnostics.Debug.WriteLine(log);
             MusicianModule.Logger.Info(log);
             this.Log = log;
             _loadingIndicator.Report(log);
-            var musicSheet = MusicSheet.FromXml(filePath);
-            if (musicSheet == null) return;
+            var sheet = MusicSheet.FromXml(filePath);
+            if (sheet == null) return;
             await FileUtil.DeleteAsync(filePath);
-            await _sheetService.AddOrUpdate(musicSheet, silent);
+            await AddToDatabase(sheet, silent);
+        }
+
+        internal async Task ImportFromStream(Stream stream, bool silent = false)
+        {
+            var buffer = new byte[stream.Length];
+            var read = await stream.ReadAsync(buffer, 0, buffer.Length);
+            var content = System.Text.Encoding.UTF8.GetString(buffer);
+            if (!MusicSheet.TryParseXml(content, out var sheet)) return;
+            await AddToDatabase(sheet, silent);
+            stream.Dispose();
+        }
+
+        private async Task AddToDatabase(MusicSheet sheet, bool silent)
+        {
+            try
+            {
+                await _sheetService.AddOrUpdate(sheet, silent);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Module was unloaded
+            }
         }
 
         public void Dispose()
         {
             _xmlWatcher.Created -= OnXmlCreated;
-            _xmlWatcher.Changed -= OnXmlCreated;
-            _xmlWatcher.Dispose();
             _xmlWatcher?.Dispose();
-            _sheetService?.Dispose();
         }
     }
 }

@@ -150,7 +150,7 @@ namespace Nekres.Musician.Core.Models
                 }
                 catch (Exception e) when (e is XmlException or FormatException)
                 {
-                    MusicianModule.Logger.Warn(e, e.Message);
+                    MusicianModule.Logger.Info(e, $"Invalid format or corrupted data: {Path.GetFileName(path)}");
                     break;
                 }
             }

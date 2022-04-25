@@ -77,7 +77,7 @@ namespace Nekres.Musician.Controls
             Artist = sheet.Artist;
             User = sheet.User;
             Title = sheet.Title;
-            Icon = sheet.Instrument.GetIcon();
+            Icon = MusicianModule.ModuleInstance.InstrumentIcons[sheet.Instrument];
             Instrument = sheet.Instrument;
             Size = new Point(SHEETBUTTON_WIDTH, SHEETBUTTON_HEIGHT);
         }
@@ -91,13 +91,13 @@ namespace Nekres.Musician.Controls
         protected override void OnClick(MouseEventArgs e)
         {
             base.OnClick(e);
-            if (_mouseOverPractice)
+            /*if (_mouseOverPractice)
             {
                 OnPracticeClick?.Invoke(this, EventArgs.Empty);
                 GameService.Content.PlaySoundEffectByName("error");
                 ScreenNotification.ShowNotification("Not yet implemented!");
             }
-            else if (_mouseOverEmulate)
+            else */if (_mouseOverEmulate)
             {
                 OnEmulateClick?.Invoke(this, EventArgs.Empty);
                 GameService.Content.PlaySoundEffectByName("button-click");
@@ -140,6 +140,8 @@ namespace Nekres.Musician.Controls
                 this.Parent.BasicTooltipText = "Emulate keys (Autoplay)";
             else if (_mouseOverPreview)
                 this.Parent.BasicTooltipText = "Preview";
+            else if (_mouseOverDelete)
+                this.Parent.BasicTooltipText = "Delete";
             else
                 this.Parent.BasicTooltipText = string.Empty;
         }
@@ -163,16 +165,17 @@ namespace Nekres.Musician.Controls
             else
                 spriteBatch.DrawOnCtrl(this, _stopSprite, _previewButtonBounds, Color.White);
 
-
+            /*
             // Draw practice button
             _practiceButtonBounds = new Rectangle(_previewButtonBounds.Left - LEFT_PADDING - 32, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32);
             if (_mouseOverPractice)
                 spriteBatch.DrawOnCtrl(this, _glowBeatManiaSprite, _practiceButtonBounds, Color.White);
             else
                 spriteBatch.DrawOnCtrl(this, _beatManiaSprite, _practiceButtonBounds, Color.White);
+            */
 
             // Draw emulate button
-            _emulateButtonBounds = new Rectangle(_practiceButtonBounds.Left - LEFT_PADDING - 32, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32);
+            _emulateButtonBounds = new Rectangle(_previewButtonBounds.Left - LEFT_PADDING - 32, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32);
             if (_mouseOverEmulate)
                 spriteBatch.DrawOnCtrl(this, _glowAutoplaySprite, _emulateButtonBounds, Color.White);
             else

@@ -47,7 +47,6 @@ namespace Nekres.Musician.Core.Instrument
         }
 
         public void Dispose() {
-            _map?.Clear();
             if (_sound == null) return;
             foreach (var snd in _sound)
                 snd.Value?.Dispose();

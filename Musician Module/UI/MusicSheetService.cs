@@ -1,8 +1,8 @@
 ﻿using Blish_HUD;
+using LiteDB.Async;
 using Microsoft.Xna.Framework.Audio;
 using Nekres.Musician.Core.Models;
 using Nekres.Musician.UI.Models;
-using SQLite;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,10 +16,12 @@ namespace Nekres.Musician.UI
 
         public string CacheDir { get; private set; }
 
-        private SQLiteAsyncConnection _db;
+        private LiteDatabaseAsync _db;
+        private ILiteCollectionAsync<MusicSheetModel> _ctx;
 
         private SoundEffect[] _deleteSfx;
         public SoundEffect DeleteSfx => _deleteSfx[RandomUtil.GetRandom(0, 1)];
+
         public MusicSheetService(string cacheDir)
         {
             _deleteSfx = new []
@@ -37,26 +39,17 @@ namespace Nekres.Musician.UI
 
         private async Task LoadDatabase()
         {
-            var filePath = Path.Combine(this.CacheDir, "db.sqlite");
-            _db = new SQLiteAsyncConnection(filePath);
-            await _db.CreateTableAsync<MusicSheetModel>();
+            var filePath = Path.Combine(this.CacheDir, "data.db");
+            _db = new LiteDatabaseAsync(filePath);
+            _ctx = _db.GetCollection<MusicSheetModel>("music_sheets");
         }
 
         public async Task AddOrUpdate(MusicSheet musicSheet, bool silent = false)
         {
-            
-            var sheet = await _db.Table<MusicSheetModel>().FirstOrDefaultAsync(x => x.Id.Equals(musicSheet.Id));
-
-            if (sheet == null)
-            {
-                await _db.InsertAsync(musicSheet.ToModel());
-            }
-            else
-            {
-                var model = musicSheet.ToModel();
-                await _db.UpdateAsync(model);
-                OnSheetUpdated?.Invoke(this, new ValueEventArgs<MusicSheetModel>(model));
-            }
+            var model = musicSheet.ToModel();
+            await _ctx.UpsertAsync(model);
+            await _ctx.EnsureIndexAsync(x => x.Id);
+            OnSheetUpdated?.Invoke(this, new ValueEventArgs<MusicSheetModel>(model));
 
             if (silent) return;
             GameService.Content.PlaySoundEffectByName("color-change");
@@ -65,22 +58,23 @@ namespace Nekres.Musician.UI
         public async Task Delete(Guid key)
         {
             DeleteSfx.Play(GameService.GameIntegration.Audio.Volume, 0, 0);
-            await _db.Table<MusicSheetModel>().DeleteAsync(x => x.Id.Equals(key));
+            await _ctx.DeleteManyAsync(x => x.Id.Equals(key));
         }
 
         public void Dispose()
         {
             foreach (var sfx in _deleteSfx) sfx?.Dispose();
+            _db?.Dispose();
         }
 
         public async Task<MusicSheetModel> GetById(Guid id)
         {
-            return await _db.Table<MusicSheetModel>().FirstOrDefaultAsync(x => x.Id.Equals(id));
+           return await _ctx.FindOneAsync(x => x.Id.Equals(id));
         }
 
         public async Task<IEnumerable<MusicSheetModel>> GetAll()
         {
-            return await _db.Table<MusicSheetModel>().ToListAsync();
+            return await _ctx.FindAllAsync();
         }
     }
 }

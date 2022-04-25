@@ -12,8 +12,12 @@ using Nekres.Musician.UI;
 using Nekres.Musician.UI.Models;
 using Nekres.Musician.UI.Views;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Threading.Tasks;
+using Blish_HUD.Content;
+using Nekres.Musician.Core.Models;
 using static Blish_HUD.GameService;
 
 namespace Nekres.Musician
@@ -50,7 +54,9 @@ namespace Nekres.Musician
         internal SettingEntry<KeyBinding> keyUtilitySkill3;
         internal SettingEntry<KeyBinding> keyEliteSkill;
 
+        // Self Managed
         internal SettingEntry<string> SheetFilter;
+        internal SettingEntry<bool> DefaultSheetsImported;
         #endregion
 
         private CornerIcon _moduleIcon;
@@ -62,6 +68,8 @@ namespace Nekres.Musician
         internal MusicSheetService MusicSheetService { get; private set; }
 
         internal MusicSheetImporter MusicSheetImporter { get; private set; }
+
+        internal Dictionary<Instrument, AsyncTexture2D> InstrumentIcons;
 
         [ImportingConstructor]
         public MusicianModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { ModuleInstance = this; }
@@ -85,13 +93,14 @@ namespace Nekres.Musician
 
             var selfManagedSettings = settingsManager.AddSubCollection("selfManaged", false, false);
             SheetFilter = selfManagedSettings.DefineSetting("sheetFilter", "Title");
+            DefaultSheetsImported = selfManagedSettings.DefineSetting("defaultSheetsImported", false);
             GameIntegration.Gw2Instance.IsInGameChanged += OnIsInGameChanged;
         }
 
         private void OnIsInGameChanged(object o, ValueEventArgs<bool> e)
         {
             _moduleIcon.Visible = e.Value;
-            if (!e.Value) _moduleWindow.Hide();
+            if (!e.Value) _moduleWindow?.Hide();
         }
 
         protected override void Initialize()
@@ -99,6 +108,10 @@ namespace Nekres.Musician
             _moduleIcon = new CornerIcon(ContentsManager.GetTexture("corner_icon.png"), this.Name);
             MusicSheetService = new MusicSheetService(DirectoriesManager.GetFullDirectoryPath("musician"));
             MusicPlayer = new MusicPlayer();
+
+            InstrumentIcons = new Dictionary<Instrument, AsyncTexture2D>();
+            foreach (var instrument in Enum.GetValues(typeof(Instrument)).Cast<Instrument>())
+                InstrumentIcons.Add(instrument, new AsyncTexture2D());
         }
 
         public override IView GetSettingsView() => new CustomSettingsView(new CustomSettingsModel(this.SettingsManager.ModuleSettings));
@@ -107,10 +120,55 @@ namespace Nekres.Musician
         {
             await MusicSheetService.LoadAsync();
             this.MusicSheetImporter = new MusicSheetImporter(this.MusicSheetService, GetModuleProgressHandler());
+
+            // Load icons
+            await Task.Run(() =>
+            {
+                foreach (var (instrument, icon) in InstrumentIcons)
+                    icon.SwapTexture(ContentsManager.GetTexture($@"instruments\{instrument.ToString().ToLowerInvariant()}.png"));
+            });
+
+            if (DefaultSheetsImported.Value) return;
+            var sheets = new[]
+            {
+                "Age of Empires 2 - Main Theme.xml",
+                "Alan Menken - A Whole New World.xml",
+                "Fall Out Boy - Centuries.xml",
+                "Family Guy - Stewie Follows a Fat Guy With a Tuba.xml",
+                "Howard Shore - Concerning Hobbits.xml",
+                "Jeremy Soul - Fear Not This Night.xml",
+                "Jeremy Soul - The Tengu Wall.xml",
+                "Joseph Mohr and Franz Xaver Gruber - Silent Night.xml",
+                "Junichi Masuda - Jigglypuff's Song.xml",
+                "Junichi Masuda - Pokémon Center Theme.xml",
+                "Kirby - Gourmet Race.xml",
+                "Kris Wu Yi Fan - Time Boils the Rain.xml",
+                "Maclaine Diemer - Bash the Dragon.xml",
+                "Masayoshi Minoshima - Bad Apple.xml",
+                "Michael Jackson - Smooth Criminal.xml",
+                "Mulan - I'll Make A Man Out Of You.xml",
+                "Phoenix Legend - Most Dazzling Folk Style.xml",
+                "Tetris - Main Theme.xml",
+                "The Legend of Zelda - Gerudo Valley.xml",
+                "The Legend of Zelda - Kakariko Village.xml",
+                "The Legend of Zelda - Lost Woods.xml",
+                "The Legend of Zelda - Song of Healing.xml",
+                "The Legend of Zelda - Song of Time.xml",
+                "The Legend of Zelda - Zelda's Lullaby.xml",
+                "Westworld - Main Theme.xml",
+                "Yiruma - River Flows in You.xml"
+            };
+            await Task.Run(async () =>
+            {
+                foreach (var sheet in sheets)
+                    await MusicSheetImporter.ImportFromStream(ContentsManager.GetFileStream($@"notesheets\{sheet}"), true);
+            });
+            DefaultSheetsImported.Value = true;
         }
 
         private void UpdateModuleLoading(string loadingMessage)
         {
+            if (_moduleIcon == null) return;
             _moduleIcon.LoadingMessage = loadingMessage;
         }
 

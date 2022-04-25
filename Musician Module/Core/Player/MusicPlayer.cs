@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Blish_HUD;
+using Blish_HUD.Controls;
+using Blish_HUD.Input;
 
 namespace Nekres.Musician.Core.Player
 {
@@ -19,6 +22,8 @@ namespace Nekres.Musician.Core.Player
         private SoundEffectInstance _activeSfx;
 
         private Guid _activeMusicSheet;
+
+        private HealthPoolButton _stopButton;
 
         private float _audioVolume => MusicianModule.ModuleInstance.audioVolume.Value / 1000;
 
@@ -39,6 +44,8 @@ namespace Nekres.Musician.Core.Player
         public void Dispose()
         {
             foreach (var (_, soundRepo) in _soundRepositories) soundRepo.Dispose();
+            this.Stop();
+            _stopButton?.Dispose();
         }
 
         public void PlaySound(SoundEffectInstance sfx, bool loops = false)
@@ -53,10 +60,7 @@ namespace Nekres.Musician.Core.Player
             sfx.Play();
         }
 
-        public void StopSound()
-        {
-            _activeSfx?.Stop();
-        }
+        public void StopSound() => _activeSfx?.Stop();
 
         public bool IsMySongPlaying(Guid id) => _activeMusicSheet.Equals(id);
 
@@ -71,7 +75,15 @@ namespace Nekres.Musician.Core.Player
             var worker = new Thread(() => _algorithm?.Play(musicSheet.Tempo, musicSheet.Melody.ToArray()));
             worker.Start();
             _activeMusicSheet = musicSheet.Id;
+            _stopButton = new HealthPoolButton
+            {
+                Parent = GameService.Graphics.SpriteScreen,
+                Text = "Click to Stop"
+            };
+            _stopButton.Click += ClickStopButton;
         }
+
+        private void ClickStopButton(object o, MouseEventArgs e) => this.Stop();
 
         public void Stop()
         {
@@ -79,6 +91,7 @@ namespace Nekres.Musician.Core.Player
             _activeMusicSheet = Guid.Empty;
             _algorithm?.Dispose();
             _algorithm = null;
+            _stopButton?.Dispose();
         }
 
         private InstrumentBase GetInstrumentEmulate(Models.Instrument instrument)
