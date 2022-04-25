@@ -8,7 +8,8 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Win32;
-namespace Nekres.Musician_Module
+
+namespace Nekres.Musician
 {
     internal class BrowserUtil
     {

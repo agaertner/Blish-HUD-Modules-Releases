@@ -5,10 +5,10 @@ using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
 using Blish_HUD.Settings.UI.Views;
 using Microsoft.Xna.Framework;
-using Nekres.Musician_Module.UI.Models;
-using Nekres.Musician_Module.UI.Presenters;
+using Nekres.Musician.UI.Models;
+using Nekres.Musician.UI.Presenters;
 
-namespace Nekres.Musician_Module.UI.Views
+namespace Nekres.Musician.UI.Views
 {
     public class CustomSettingsView : View<CustomSettingsPresenter>
     {
@@ -80,6 +80,17 @@ namespace Nekres.Musician_Module.UI.Views
                 BasicTooltipText = this.Presenter.Model.GetSocialUrl(CustomSettingsModel.Social.KoFi)
             };
             donateBtn.Click += OnBrowserButtonClick;
+
+            var twitch = new StandardButton
+            {
+                Parent = _socialFlowPanel,
+                Size = new Point(100, 46),
+                Text = "twitch",
+                Icon = this.Presenter.Model.GetSocialLogo(CustomSettingsModel.Social.Twitch),
+                ResizeIcon = true,
+                BasicTooltipText = this.Presenter.Model.GetSocialUrl(CustomSettingsModel.Social.Twitch)
+            };
+            twitch.Click += OnBrowserButtonClick;
 
             _settingFlowPanel = new FlowPanel
             {

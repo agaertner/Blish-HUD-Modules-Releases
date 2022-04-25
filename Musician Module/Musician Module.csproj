@@ -7,7 +7,7 @@
     <ProjectGuid>{6DECE0BA-3D4B-47E0-AB9D-66F31917D201}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Nekres.Musician_Module</RootNamespace>
+    <RootNamespace>Nekres.Musician</RootNamespace>
     <AssemblyName>Musician Module</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -81,7 +81,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
@@ -97,6 +97,7 @@
       <HintPath>packages\Microsoft.IdentityModel.Tokens.6.14.1\lib\net472\Microsoft.IdentityModel.Tokens.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="MonoGame.Extended, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\MonoGame.Extended.3.8.0\lib\netstandard2.0\MonoGame.Extended.dll</HintPath>
       <Private>False</Private>
@@ -130,44 +131,44 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.4.0.1\lib\net45\SharpDX.dll</HintPath>
+      <HintPath>..\packages\SharpDX.4.0.1\lib\net45\SharpDX.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.Direct2D1, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.Direct2D1.4.0.1\lib\net45\SharpDX.Direct2D1.dll</HintPath>
+      <HintPath>..\packages\SharpDX.Direct2D1.4.0.1\lib\net45\SharpDX.Direct2D1.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.Direct3D11, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.Direct3D11.4.0.1\lib\net45\SharpDX.Direct3D11.dll</HintPath>
+      <HintPath>..\packages\SharpDX.Direct3D11.4.0.1\lib\net45\SharpDX.Direct3D11.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.Direct3D9, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.Direct3D9.4.0.1\lib\net45\SharpDX.Direct3D9.dll</HintPath>
+      <HintPath>..\packages\SharpDX.Direct3D9.4.0.1\lib\net45\SharpDX.Direct3D9.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.DXGI, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.DXGI.4.0.1\lib\net45\SharpDX.DXGI.dll</HintPath>
+      <HintPath>..\packages\SharpDX.DXGI.4.0.1\lib\net45\SharpDX.DXGI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.Mathematics, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.Mathematics.4.0.1\lib\net45\SharpDX.Mathematics.dll</HintPath>
+      <HintPath>..\packages\SharpDX.Mathematics.4.0.1\lib\net45\SharpDX.Mathematics.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.MediaFoundation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.MediaFoundation.4.0.1\lib\net45\SharpDX.MediaFoundation.dll</HintPath>
+      <HintPath>..\packages\SharpDX.MediaFoundation.4.0.1\lib\net45\SharpDX.MediaFoundation.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.XAudio2, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.XAudio2.4.0.1\lib\net45\SharpDX.XAudio2.dll</HintPath>
+      <HintPath>..\packages\SharpDX.XAudio2.4.0.1\lib\net45\SharpDX.XAudio2.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.XInput, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>packages\SharpDX.XInput.4.0.1\lib\net45\SharpDX.XInput.dll</HintPath>
+      <HintPath>..\packages\SharpDX.XInput.4.0.1\lib\net45\SharpDX.XInput.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Collections.Immutable, Version=1.2.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -176,20 +177,23 @@
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=6.14.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\System.IdentityModel.Tokens.Jwt.6.14.1\lib\net472\System.IdentityModel.Tokens.Jwt.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Resources.Extensions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -197,24 +201,25 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
-    <Reference Include="System.Text.Encodings.Web, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Text.Encodings.Web.5.0.0\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+    <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Text.Json, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Text.Json.5.0.0\lib\net461\System.Text.Json.dll</HintPath>
+    <Reference Include="System.Text.Json, Version=5.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.5.0.2\lib\net461\System.Text.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
@@ -222,73 +227,75 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\Conveyor.cs" />
-    <Compile Include="Controls\Instrument\Bass\Bass.cs" />
-    <Compile Include="Controls\Instrument\Bass\BassNote.cs" />
-    <Compile Include="Controls\Instrument\Bass\BassPreview.cs" />
-    <Compile Include="Controls\Instrument\Bass\BassSoundRepository.cs" />
-    <Compile Include="Controls\Instrument\Bell2\Bell2.cs" />
-    <Compile Include="Controls\Instrument\Bell2\Bell2Note.cs" />
-    <Compile Include="Controls\Instrument\Bell2\Bell2Preview.cs" />
-    <Compile Include="Controls\Instrument\Bell2\Bell2SoundRepository.cs" />
-    <Compile Include="Controls\Instrument\Bell\Bell.cs" />
-    <Compile Include="Controls\Instrument\Bell\BellNote.cs" />
-    <Compile Include="Controls\Instrument\Bell\BellPreview.cs" />
-    <Compile Include="Controls\Instrument\Bell\BellSoundRepository.cs" />
-    <Compile Include="Controls\Instrument\Flute\Flute.cs" />
-    <Compile Include="Controls\Instrument\Flute\FluteNote.cs" />
-    <Compile Include="Controls\Instrument\Flute\FlutePreview.cs" />
-    <Compile Include="Controls\Instrument\Flute\FluteSoundRepository.cs" />
-    <Compile Include="Controls\Instrument\Harp\Harp.cs" />
-    <Compile Include="Controls\Instrument\Harp\HarpNote.cs" />
-    <Compile Include="Controls\Instrument\Harp\HarpPreview.cs" />
-    <Compile Include="Controls\Instrument\Harp\HarpSoundRepository.cs" />
-    <Compile Include="Controls\Instrument\Horn\Horn.cs" />
-    <Compile Include="Controls\Instrument\Horn\HornNote.cs" />
-    <Compile Include="Controls\Instrument\Horn\HornPreview.cs" />
-    <Compile Include="Controls\Instrument\Horn\HornSoundRepository.cs" />
-    <Compile Include="Controls\Instrument\IInstrumentPreview.cs" />
-    <Compile Include="Controls\Instrument\Instrument.cs" />
-    <Compile Include="Controls\Instrument\Lute\Lute.cs" />
-    <Compile Include="Controls\Instrument\Lute\LuteNote.cs" />
-    <Compile Include="Controls\Instrument\Lute\LutePreview.cs" />
-    <Compile Include="Controls\Instrument\Lute\LuteSoundRepository.cs" />
-    <Compile Include="Controls\NoteBlock.cs" />
-    <Compile Include="Controls\SheetButton.cs" />
-    <Compile Include="Domain\MusicSheet.cs" />
-    <Compile Include="Domain\Values\Beat.cs" />
-    <Compile Include="Domain\Values\Chord.cs" />
-    <Compile Include="Domain\Values\ChordOffset.cs" />
-    <Compile Include="Domain\Values\Fraction.cs" />
-    <Compile Include="Domain\Values\MetronomeMark.cs" />
-    <Compile Include="Domain\Values\Note.cs" />
+    <Compile Include="UI\MusicSheetImporter.cs" />
+    <Compile Include="SQLite.cs" />
+    <Compile Include="SQLiteAsync.cs" />
+    <Compile Include="UI\Controls\ClipboardButton.cs" />
+    <Compile Include="UI\Models\MusicSheetModel.cs" />
+    <Compile Include="UI\MusicSheetService.cs" />
+    <Compile Include="Core\Instrument\Bass\Bass.cs" />
+    <Compile Include="Core\Instrument\Bass\BassNote.cs" />
+    <Compile Include="Core\Instrument\Bass\BassPreview.cs" />
+    <Compile Include="Core\Instrument\Bass\BassSoundRepository.cs" />
+    <Compile Include="Core\Instrument\Bell2\Bell2.cs" />
+    <Compile Include="Core\Instrument\Bell2\Bell2Note.cs" />
+    <Compile Include="Core\Instrument\Bell2\Bell2Preview.cs" />
+    <Compile Include="Core\Instrument\Bell2\Bell2SoundRepository.cs" />
+    <Compile Include="Core\Instrument\Bell\Bell.cs" />
+    <Compile Include="Core\Instrument\Bell\BellNote.cs" />
+    <Compile Include="Core\Instrument\Bell\BellPreview.cs" />
+    <Compile Include="Core\Instrument\Bell\BellSoundRepository.cs" />
+    <Compile Include="Core\Instrument\Flute\Flute.cs" />
+    <Compile Include="Core\Instrument\Flute\FluteNote.cs" />
+    <Compile Include="Core\Instrument\Flute\FlutePreview.cs" />
+    <Compile Include="Core\Instrument\Flute\FluteSoundRepository.cs" />
+    <Compile Include="Core\Instrument\Harp\Harp.cs" />
+    <Compile Include="Core\Instrument\Harp\HarpNote.cs" />
+    <Compile Include="Core\Instrument\Harp\HarpPreview.cs" />
+    <Compile Include="Core\Instrument\Harp\HarpSoundRepository.cs" />
+    <Compile Include="Core\Instrument\Horn\Horn.cs" />
+    <Compile Include="Core\Instrument\Horn\HornNote.cs" />
+    <Compile Include="Core\Instrument\Horn\HornPreview.cs" />
+    <Compile Include="Core\Instrument\Horn\HornSoundRepository.cs" />
+    <Compile Include="Core\Instrument\InstrumentBase.cs" />
+    <Compile Include="Core\Instrument\NoteBase.cs" />
+    <Compile Include="Core\Instrument\ISoundRepository.cs" />
+    <Compile Include="Core\Instrument\Lute\Lute.cs" />
+    <Compile Include="Core\Instrument\Lute\LuteNote.cs" />
+    <Compile Include="Core\Instrument\Lute\LutePreview.cs" />
+    <Compile Include="Core\Instrument\Lute\LuteSoundRepository.cs" />
+    <Compile Include="UI\Controls\SheetButton.cs" />
+    <Compile Include="Core\Converters\ChordOffsetConverter.cs" />
+    <Compile Include="Core\Converters\MetronomeConverter.cs" />
+    <Compile Include="Core\Domain\Fraction.cs" />
+    <Compile Include="UI\Models\CustomSettingsModel.cs" />
+    <Compile Include="Core\Domain\Beat.cs" />
+    <Compile Include="Core\Domain\Chord.cs" />
+    <Compile Include="Core\Domain\ChordOffset.cs" />
+    <Compile Include="Core\Domain\Metronome.cs" />
+    <Compile Include="Core\Domain\RealNote.cs" />
     <Compile Include="MusicianModule.cs" />
-    <Compile Include="Notation\Parsers\ChordParser.cs" />
-    <Compile Include="Notation\Parsers\MusicSheetParser.cs" />
-    <Compile Include="Notation\Parsers\NoteParser.cs" />
-    <Compile Include="Notation\Persistance\RawMusicSheet.cs" />
-    <Compile Include="Notation\Persistance\XmlMusicSheetReader.cs" />
-    <Compile Include="Notation\Persistance\XmlMusicSheetWriter.cs" />
-    <Compile Include="Notation\Serializer\ChordOffsetSerializer.cs" />
-    <Compile Include="Notation\Serializer\ChordSerializer.cs" />
-    <Compile Include="Notation\Serializer\MusicSheetSerializer.cs" />
-    <Compile Include="Notation\Serializer\NoteSerializer.cs" />
-    <Compile Include="Player\Algorithms\FavorChordsAlgorithm.cs" />
-    <Compile Include="Player\Algorithms\FavorNotesAlgorithm.cs" />
-    <Compile Include="Player\Algorithms\IPlayAlgorithm.cs" />
-    <Compile Include="Player\MusicPlayer.cs" />
-    <Compile Include="Player\MusicPlayerFactory.cs" />
+    <Compile Include="Core\Models\MusicSheet.cs" />
+    <Compile Include="Core\Player\Algorithms\FavorChordsAlgorithm.cs" />
+    <Compile Include="Core\Player\Algorithms\FavorNotesAlgorithm.cs" />
+    <Compile Include="Core\Player\Algorithms\PlayAlgorithmBase.cs" />
+    <Compile Include="Core\Player\MusicPlayer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="UI\Models\CustomSettingsModel.cs" />
+    <Compile Include="UI\Models\LibraryModel.cs" />
     <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
+    <Compile Include="UI\Presenters\LibraryPresenter.cs" />
     <Compile Include="UI\Views\CustomSettingsView.cs" />
+    <Compile Include="UI\Views\LibraryView.cs" />
     <Compile Include="_Extensions\DictionaryExtension.cs" />
+    <Compile Include="_Extensions\InstrumentExtensions.cs" />
+    <Compile Include="_Extensions\KeyValuePairExtensions.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
+    <Compile Include="_Utils\FileUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -370,7 +377,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ref\" />
-    <Folder Include="UI\Controls\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildScripts\_DoNotModify.txt" />
@@ -384,21 +390,20 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets'))" />
-    <Error Condition="!Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets'))" />
-    <Error Condition="!Exists('packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets'))" />
-    <Error Condition="!Exists('packages\BlishHUD.0.11.6\build\BlishHUD.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\BlishHUD.0.11.6\build\BlishHUD.targets'))" />
-  </Target>
-  <Import Project="packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets" Condition="Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" />
   <ProjectExtensions>
     <VisualStudio>
       <UserProperties manifest_1json__JsonSchema="" />
     </VisualStudio>
   </ProjectExtensions>
   <Import Project="packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets" Condition="Exists('packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets'))" />
+    <Error Condition="!Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets'))" />
+    <Error Condition="!Exists('packages\BlishHUD.0.11.6\build\BlishHUD.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\BlishHUD.0.11.6\build\BlishHUD.targets'))" />
+  </Target>
+  <Import Project="packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets" Condition="Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" />
   <Import Project="packages\BlishHUD.0.11.6\build\BlishHUD.targets" Condition="Exists('packages\BlishHUD.0.11.6\build\BlishHUD.targets')" />
 </Project>

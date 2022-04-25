@@ -3,12 +3,10 @@ using System.Threading.Tasks;
 using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
-using Blish_HUD.Settings;
-using Microsoft.Xna.Framework;
-using Nekres.Musician_Module.UI.Models;
-using Nekres.Musician_Module.UI.Views;
+using Nekres.Musician.UI.Models;
+using Nekres.Musician.UI.Views;
 
-namespace Nekres.Musician_Module.UI.Presenters
+namespace Nekres.Musician.UI.Presenters
 {
     public class CustomSettingsPresenter : Presenter<CustomSettingsView, CustomSettingsModel>
     {
