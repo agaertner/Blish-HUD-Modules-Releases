@@ -106,14 +106,10 @@ namespace Nekres.Musician.Controls
             {
                 OnPreviewClick?.Invoke(this, new ValueEventArgs<bool>(!MusicianModule.ModuleInstance.MusicPlayer.IsMySongPlaying(this.Id)));
                 GameService.Content.PlaySoundEffectByName("button-click");
-            } else if (_mouseOverDelete) 
+            } else if (_mouseOverDelete) {
+                OnDelete?.Invoke(this, new ValueEventArgs<Guid>(this.Id));
                 this.Dispose();
-        }
-
-        protected override void DisposeControl()
-        {
-            OnDelete?.Invoke(this, new ValueEventArgs<Guid>(this.Id));
-            base.DisposeControl();
+            }
         }
 
         protected override CaptureType CapturesInput() {
