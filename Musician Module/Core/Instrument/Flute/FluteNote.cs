@@ -1,86 +1,45 @@
-﻿using System.Collections.Generic;
+﻿using Blish_HUD.Controls.Intern;
 using Nekres.Musician.Core.Domain;
+using System.Collections.Generic;
 
-namespace Nekres.Musician.Core.Instrument.Flute
+namespace Nekres.Musician.Core.Instrument
 {
-    public class FluteNote
+    public class FluteNote : NoteBase
     {
-        public enum Keys
+        private static readonly Dictionary<string, FluteNote> Map = new()
         {
-            None,
-            Note1,
-            Note2,
-            Note3,
-            Note4,
-            Note5,
-            Note6,
-            Note7,
-            Note8
-        }
-
-        public enum Octaves
-        {
-            None,
-            Low,
-            High
-        }
-
-        private static readonly Dictionary<string, FluteNote> Map = new Dictionary<string, FluteNote>
-        {
-            {$"{Note.Keys.None}{Note.Octaves.None}", new FluteNote(Keys.None, Octaves.None)},
-
             // Low Octave
-            {$"{Note.Keys.E}{Note.Octaves.Low}", new FluteNote(Keys.Note1, Octaves.Low)},
-            {$"{Note.Keys.F}{Note.Octaves.Low}", new FluteNote(Keys.Note2, Octaves.Low)},
-            {$"{Note.Keys.G}{Note.Octaves.Low}", new FluteNote(Keys.Note3, Octaves.Low)},
-            {$"{Note.Keys.A}{Note.Octaves.Low}", new FluteNote(Keys.Note4, Octaves.Low)},
-            {$"{Note.Keys.B}{Note.Octaves.Low}", new FluteNote(Keys.Note5, Octaves.Low)},
-            {$"{Note.Keys.C}{Note.Octaves.Middle}", new FluteNote(Keys.Note6, Octaves.Low)},
-            {$"{Note.Keys.D}{Note.Octaves.Middle}", new FluteNote(Keys.Note7, Octaves.Low)},
-            {$"{Note.Keys.E}{Note.Octaves.Middle}", new FluteNote(Keys.Note8, Octaves.Low)},
+            {$"{Note.E}{Octave.Low}", new FluteNote(GuildWarsControls.WeaponSkill1, Octave.Low)},
+            {$"{Note.F}{Octave.Low}", new FluteNote(GuildWarsControls.WeaponSkill2, Octave.Low)},
+            {$"{Note.G}{Octave.Low}", new FluteNote(GuildWarsControls.WeaponSkill3, Octave.Low)},
+            {$"{Note.A}{Octave.Low}", new FluteNote(GuildWarsControls.WeaponSkill4, Octave.Low)},
+            {$"{Note.B}{Octave.Low}", new FluteNote(GuildWarsControls.WeaponSkill5, Octave.Low)},
+            {$"{Note.C}{Octave.Middle}", new FluteNote(GuildWarsControls.HealingSkill, Octave.Low)},
+            {$"{Note.D}{Octave.Middle}", new FluteNote(GuildWarsControls.UtilitySkill1, Octave.Low)},
+            {$"{Note.E}{Octave.Middle}", new FluteNote(GuildWarsControls.UtilitySkill2, Octave.Low)},
 
             // High Octave
-            {$"{Note.Keys.F}{Note.Octaves.Middle}", new FluteNote(Keys.Note2, Octaves.High)},
-            {$"{Note.Keys.G}{Note.Octaves.Middle}", new FluteNote(Keys.Note3, Octaves.High)},
-            {$"{Note.Keys.A}{Note.Octaves.Middle}", new FluteNote(Keys.Note4, Octaves.High)},
-            {$"{Note.Keys.B}{Note.Octaves.Middle}", new FluteNote(Keys.Note5, Octaves.High)},
+            {$"{Note.F}{Octave.Middle}", new FluteNote(GuildWarsControls.WeaponSkill2, Octave.High)},
+            {$"{Note.G}{Octave.Middle}", new FluteNote(GuildWarsControls.WeaponSkill3, Octave.High)},
+            {$"{Note.A}{Octave.Middle}", new FluteNote(GuildWarsControls.WeaponSkill4, Octave.High)},
+            {$"{Note.B}{Octave.Middle}", new FluteNote(GuildWarsControls.WeaponSkill5, Octave.High)},
 
             // Highest Octave
-            {$"{Note.Keys.C}{Note.Octaves.High}", new FluteNote(Keys.Note6, Octaves.High)},
-            {$"{Note.Keys.D}{Note.Octaves.High}", new FluteNote(Keys.Note7, Octaves.High)},
-            {$"{Note.Keys.E}{Note.Octaves.High}", new FluteNote(Keys.Note8, Octaves.High)}
+            {$"{Note.C}{Octave.High}", new FluteNote(GuildWarsControls.HealingSkill, Octave.High)},
+            {$"{Note.D}{Octave.High}", new FluteNote(GuildWarsControls.UtilitySkill1, Octave.High)},
+            {$"{Note.E}{Octave.High}", new FluteNote(GuildWarsControls.UtilitySkill2, Octave.High)}
         };
 
-        public Keys Key { get; }
-        public Octaves Octave { get; }
-
-        public FluteNote(Keys key, Octaves octave)
+        public FluteNote(GuildWarsControls key, Octave octave) : base(key, octave)
         {
-            Key = key;
-            Octave = octave;
+            /* NOOP */
         }
 
-        public static FluteNote From(Note note)
+        public static FluteNote From(RealNote note)
         {
-            return Map[$"{note.Key}{note.Octave}"];
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals((FluteNote) obj);
-        }
-
-        protected bool Equals(FluteNote other)
-        {
-            return Key == other.Key && Octave == other.Octave;
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((int) Key*397) ^ (int) Octave;
-            }
+            if (note.Note == Note.Z) 
+                return new FluteNote(GuildWarsControls.None, note.Octave);
+            return Map[$"{note.Note}{note.Octave}"];
         }
     }
 }

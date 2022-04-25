@@ -134,10 +134,20 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Services\CharacterService.cs" />
+    <Compile Include="Core\Services\ClientService.cs" />
+    <Compile Include="Core\Services\GuildService.cs" />
+    <Compile Include="Core\Services\KillProofService.cs" />
+    <Compile Include="Core\Services\MapService.cs" />
+    <Compile Include="Core\Services\PvpService.cs" />
+    <Compile Include="Core\Services\WalletService.cs" />
+    <Compile Include="Core\Services\WvwService.cs" />
+    <Compile Include="Core\Services\IExportService.cs" />
     <Compile Include="StreamOutModule.cs" />
     <Compile Include="UI\Models\CustomSettingsModel.cs" />
     <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
     <Compile Include="UI\Views\CustomSettingsView.cs" />
+    <Compile Include="_Extensions\ContentsManagerExtensions.cs" />
     <Compile Include="_Utils\Gw2Util.cs" />
     <Compile Include="_Utils\TaskUtil.cs" />
     <Compile Include="_Extensions\BitmapExtensions.cs" />
@@ -151,10 +161,11 @@
     <Compile Include="_Extensions\StringExtensions.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
     <Compile Include="_Utils\CommonStrings.cs" />
+    <Compile Include="_Utils\TextureUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Blish HUD, Version=0.11.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>.\packages\BlishHUD.0.11.5-ci.68\lib\net472\Blish HUD.exe</HintPath>
+      <HintPath>packages\BlishHUD.0.11.6\lib\net472\Blish HUD.exe</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="CSCore, Version=1.2.1.2, Culture=neutral, PublicKeyToken=5a08f2b6f4415dea, processorArchitecture=MSIL">
@@ -305,9 +316,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ref\_instructions.txt" />
+    <Folder Include="ref\" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
@@ -324,13 +334,13 @@
     </PropertyGroup>
     <Error Condition="!Exists('packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\MonoGame.Framework.WindowsDX.3.8.0.1641\build\MonoGame.Framework.WindowsDX.targets'))" />
     <Error Condition="!Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets'))" />
-    <Error Condition="!Exists('packages\BlishHUD.0.11.5-ci.68\build\BlishHUD.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\BlishHUD.0.11.5-ci.68\build\BlishHUD.targets'))" />
+    <Error Condition="!Exists('packages\BlishHUD.0.11.6\build\BlishHUD.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\BlishHUD.0.11.6\build\BlishHUD.targets'))" />
   </Target>
   <Import Project="packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets" Condition="Exists('packages\System.Resources.Extensions.6.0.0\buildTransitive\net461\System.Resources.Extensions.targets')" />
-  <Import Project="packages\BlishHUD.0.11.5-ci.68\build\BlishHUD.targets" Condition="Exists('packages\BlishHUD.0.11.5-ci.68\build\BlishHUD.targets')" />
   <ProjectExtensions>
     <VisualStudio>
       <UserProperties manifest_1json__JsonSchema="" />
     </VisualStudio>
   </ProjectExtensions>
+  <Import Project="packages\BlishHUD.0.11.6\build\BlishHUD.targets" Condition="Exists('packages\BlishHUD.0.11.6\build\BlishHUD.targets')" />
 </Project>

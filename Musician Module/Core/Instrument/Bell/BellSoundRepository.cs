@@ -1,88 +1,177 @@
-using System;
-using System.Collections.Generic;
 using Blish_HUD.Controls.Intern;
-using Nekres.Musician_Module;
+using Microsoft.Xna.Framework.Audio;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Nekres.Musician.Core.Domain;
 
-namespace Nekres.Musician.Core.Instrument.Bell
+namespace Nekres.Musician.Core.Instrument
 {
-    public class BellSoundRepository : IDisposable
+    public class BellSoundRepository : ISoundRepository
     {
-        private readonly Dictionary<string, string> Map = new Dictionary<string, string>
+        private readonly Dictionary<string, string> _map = new()
         {
             // Low Octave
-            {$"{GuildWarsControls.WeaponSkill1}{BellNote.Octaves.Low}", "D4"},
-            {$"{GuildWarsControls.WeaponSkill2}{BellNote.Octaves.Low}", "E4"},
-            {$"{GuildWarsControls.WeaponSkill3}{BellNote.Octaves.Low}", "F4"},
-            {$"{GuildWarsControls.WeaponSkill4}{BellNote.Octaves.Low}", "G4"},
-            {$"{GuildWarsControls.WeaponSkill5}{BellNote.Octaves.Low}", "A4"},
-            {$"{GuildWarsControls.HealingSkill}{BellNote.Octaves.Low}", "B4"},
-            {$"{GuildWarsControls.UtilitySkill1}{BellNote.Octaves.Low}", "C5"},
-            {$"{GuildWarsControls.UtilitySkill2}{BellNote.Octaves.Low}", "D5"},
+            {$"{GuildWarsControls.WeaponSkill1}{Octave.Low}", "D4"},
+            {$"{GuildWarsControls.WeaponSkill2}{Octave.Low}", "E4"},
+            {$"{GuildWarsControls.WeaponSkill3}{Octave.Low}", "F4"},
+            {$"{GuildWarsControls.WeaponSkill4}{Octave.Low}", "G4"},
+            {$"{GuildWarsControls.WeaponSkill5}{Octave.Low}", "A4"},
+            {$"{GuildWarsControls.HealingSkill}{Octave.Low}", "B4"},
+            {$"{GuildWarsControls.UtilitySkill1}{Octave.Low}", "C5"},
+            {$"{GuildWarsControls.UtilitySkill2}{Octave.Low}", "D5"},
             // Middle Octave
-            {$"{GuildWarsControls.WeaponSkill1}{BellNote.Octaves.Middle}", "D5"},
-            {$"{GuildWarsControls.WeaponSkill2}{BellNote.Octaves.Middle}", "E5"},
-            {$"{GuildWarsControls.WeaponSkill3}{BellNote.Octaves.Middle}", "F5"},
-            {$"{GuildWarsControls.WeaponSkill4}{BellNote.Octaves.Middle}", "G5"},
-            {$"{GuildWarsControls.WeaponSkill5}{BellNote.Octaves.Middle}", "A5"},
-            {$"{GuildWarsControls.HealingSkill}{BellNote.Octaves.Middle}", "B5"},
-            {$"{GuildWarsControls.UtilitySkill1}{BellNote.Octaves.Middle}", "C6"},
-            {$"{GuildWarsControls.UtilitySkill2}{BellNote.Octaves.Middle}", "D6"},
+            {$"{GuildWarsControls.WeaponSkill1}{Octave.Middle}", "D5"},
+            {$"{GuildWarsControls.WeaponSkill2}{Octave.Middle}", "E5"},
+            {$"{GuildWarsControls.WeaponSkill3}{Octave.Middle}", "F5"},
+            {$"{GuildWarsControls.WeaponSkill4}{Octave.Middle}", "G5"},
+            {$"{GuildWarsControls.WeaponSkill5}{Octave.Middle}", "A5"},
+            {$"{GuildWarsControls.HealingSkill}{Octave.Middle}", "B5"},
+            {$"{GuildWarsControls.UtilitySkill1}{Octave.Middle}", "C6"},
+            {$"{GuildWarsControls.UtilitySkill2}{Octave.Middle}", "D6"},
             // High Octave
-            {$"{GuildWarsControls.WeaponSkill1}{BellNote.Octaves.High}", "D6"},
-            {$"{GuildWarsControls.WeaponSkill2}{BellNote.Octaves.High}", "E6"},
-            {$"{GuildWarsControls.WeaponSkill3}{BellNote.Octaves.High}", "F6"},
-            {$"{GuildWarsControls.WeaponSkill4}{BellNote.Octaves.High}", "G6"},
-            {$"{GuildWarsControls.WeaponSkill5}{BellNote.Octaves.High}", "A6"},
-            {$"{GuildWarsControls.HealingSkill}{BellNote.Octaves.High}", "B6"},
-            {$"{GuildWarsControls.UtilitySkill1}{BellNote.Octaves.High}", "C7"},
-            {$"{GuildWarsControls.UtilitySkill2}{BellNote.Octaves.High}", "D7"}
+            {$"{GuildWarsControls.WeaponSkill1}{Octave.High}", "D6"},
+            {$"{GuildWarsControls.WeaponSkill2}{Octave.High}", "E6"},
+            {$"{GuildWarsControls.WeaponSkill3}{Octave.High}", "F6"},
+            {$"{GuildWarsControls.WeaponSkill4}{Octave.High}", "G6"},
+            {$"{GuildWarsControls.WeaponSkill5}{Octave.High}", "A6"},
+            {$"{GuildWarsControls.HealingSkill}{Octave.High}", "B6"},
+            {$"{GuildWarsControls.UtilitySkill1}{Octave.High}", "C7"},
+            {$"{GuildWarsControls.UtilitySkill2}{Octave.High}", "D7"}
         };
 
+        private Dictionary<string, SoundEffectInstance> _sound;
 
-        private readonly Dictionary<string, OggSource> Sound = new Dictionary<string, OggSource>
+        public SoundEffectInstance Get(GuildWarsControls key, Octave octave)
         {
-            {"D4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\D4.ogg"))},
-            {"E4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\E4.ogg"))},
-            {"F4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\F4.ogg"))},
-            {"G4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\G4.ogg"))},
-            {"A4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\A4.ogg"))},
-            {"B4", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\B4.ogg"))},
-            {"C5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\C5.ogg"))},
-            {"D5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\D5.ogg"))},
-            {"E5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\E5.ogg"))},
-            {"F5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\F5.ogg"))},
-            {"G5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\G5.ogg"))},
-            {"A5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\A5.ogg"))},
-            {"B5", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\B5.ogg"))},
-            {"C6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\C6.ogg"))},
-            {"D6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\D6.ogg"))},
-            {"E6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\E6.ogg"))},
-            {"F6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\F6.ogg"))},
-            {"G6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\G6.ogg"))},
-            {"A6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\A6.ogg"))},
-            {"B6", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\B6.ogg"))},
-            {"C7", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\C7.ogg"))},
-            {"D7", new OggSource(MusicianModule.ModuleInstance.ContentsManager.GetFileStream(@"instruments\Bell\D7.ogg"))}
-
-        };
-
-
-        public OggSource Get(string id)
-        {
-            return Sound[id];
+            return _sound[_map[$"{key}{octave}"]];
         }
-
-
-        public OggSource Get(GuildWarsControls key, BellNote.Octaves octave)
-        {
-            return Sound[Map[$"{key}{octave}"]];
-        }
-
 
         public void Dispose() {
-            Map?.Clear();
-            foreach (var snd in Sound)
+            _map?.Clear();
+            if (_sound == null) return;
+            foreach (var snd in _sound)
                 snd.Value?.Dispose();
+        }
+
+        public async Task<ISoundRepository> Initialize()
+        {
+            return await Task.Run(() =>
+            {
+                _sound ??= new Dictionary<string, SoundEffectInstance>
+                {
+                    {
+                        "D4",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\D4.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "E4",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\E4.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "F4",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\F4.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "G4",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\G4.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "A4",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\A4.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "B4",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\B4.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "C5",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\C5.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "D5",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\D5.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "E5",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\E5.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "F5",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\F5.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "G5",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\G5.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "A5",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\A5.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "B5",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\B5.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "C6",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\C6.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "D6",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\D6.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "E6",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\E6.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "F6",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\F6.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "G6",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\G6.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "A6",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\A6.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "B6",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\B6.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "C7",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\C7.wav")
+                            .CreateInstance()
+                    },
+                    {
+                        "D7",
+                        MusicianModule.ModuleInstance.ContentsManager.GetSound(@"instruments\Bell\D7.wav")
+                            .CreateInstance()
+                    }
+                };
+                return this;
+            });
         }
     }
 }

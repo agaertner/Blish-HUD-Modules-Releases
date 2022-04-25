@@ -1,94 +1,47 @@
-﻿using System.Collections.Generic;
+﻿using Blish_HUD.Controls.Intern;
 using Nekres.Musician.Core.Domain;
+using System.Collections.Generic;
 
-namespace Nekres.Musician.Core.Instrument.Horn
+namespace Nekres.Musician.Core.Instrument
 {
-    public class HornNote
+    public class HornNote : NoteBase
     {
-        public enum Keys
+        private static readonly Dictionary<string, HornNote> Map = new ()
         {
-            None,
-            Note1,
-            Note2,
-            Note3,
-            Note4,
-            Note5,
-            Note6,
-            Note7,
-            Note8
-        }
-
-        public enum Octaves
-        {
-            None,
-            Low,
-            Middle,
-            High
-        }
-
-        private static readonly Dictionary<string, HornNote> Map = new Dictionary<string, HornNote>
-        {
-            {$"{Note.Keys.None}{Note.Octaves.None}", new HornNote(Keys.None, Octaves.None)},
-
-            // Low Octave
-            {$"{Note.Keys.E}{Note.Octaves.Lowest}", new HornNote(Keys.Note1, Octaves.Low)},
-            {$"{Note.Keys.F}{Note.Octaves.Lowest}", new HornNote(Keys.Note2, Octaves.Low)},
-            {$"{Note.Keys.G}{Note.Octaves.Lowest}", new HornNote(Keys.Note3, Octaves.Low)},
-            {$"{Note.Keys.A}{Note.Octaves.Lowest}", new HornNote(Keys.Note4, Octaves.Low)},
-            {$"{Note.Keys.B}{Note.Octaves.Lowest}", new HornNote(Keys.Note5, Octaves.Low)},
-            {$"{Note.Keys.C}{Note.Octaves.Low}", new HornNote(Keys.Note6, Octaves.Low)},
-            {$"{Note.Keys.D}{Note.Octaves.Low}", new HornNote(Keys.Note7, Octaves.Low)},
-            //{$"{Note.Keys.E}{Note.Octaves.Low}", new HornNote(Keys.Note8, Octaves.Low)}, // Note to optimize at runtime.
-            // Middle Octave
-            {$"{Note.Keys.E}{Note.Octaves.Low}", new HornNote(Keys.Note1, Octaves.Middle)},
-            {$"{Note.Keys.F}{Note.Octaves.Low}", new HornNote(Keys.Note2, Octaves.Middle)},
-            {$"{Note.Keys.G}{Note.Octaves.Low}", new HornNote(Keys.Note3, Octaves.Middle)},
-            {$"{Note.Keys.A}{Note.Octaves.Low}", new HornNote(Keys.Note4, Octaves.Middle)},
-            {$"{Note.Keys.B}{Note.Octaves.Low}", new HornNote(Keys.Note5, Octaves.Middle)},
-            {$"{Note.Keys.C}{Note.Octaves.Middle}", new HornNote(Keys.Note6, Octaves.Middle)},
-            {$"{Note.Keys.D}{Note.Octaves.Middle}", new HornNote(Keys.Note7, Octaves.Middle)},
-            //{$"{Note.Keys.E}{Note.Octaves.Middle}", new HornNote(Keys.Note8, Octaves.Middle)}, // Note to optimize at runtime.
-            // High Octave
-            {$"{Note.Keys.E}{Note.Octaves.Middle}", new HornNote(Keys.Note1, Octaves.High)},
-            {$"{Note.Keys.F}{Note.Octaves.Middle}", new HornNote(Keys.Note2, Octaves.High)},
-            {$"{Note.Keys.G}{Note.Octaves.Middle}", new HornNote(Keys.Note3, Octaves.High)},
-            {$"{Note.Keys.A}{Note.Octaves.Middle}", new HornNote(Keys.Note4, Octaves.High)},
-            {$"{Note.Keys.B}{Note.Octaves.Middle}", new HornNote(Keys.Note5, Octaves.High)},
-            {$"{Note.Keys.C}{Note.Octaves.High}", new HornNote(Keys.Note6, Octaves.High)},
-            {$"{Note.Keys.D}{Note.Octaves.High}", new HornNote(Keys.Note7, Octaves.High)},
-            {$"{Note.Keys.E}{Note.Octaves.High}", new HornNote(Keys.Note8, Octaves.High)},
+            {$"{Note.E}{Octave.Lowest}", new HornNote(GuildWarsControls.WeaponSkill1, Octave.Low)},
+            {$"{Note.F}{Octave.Lowest}", new HornNote(GuildWarsControls.WeaponSkill2, Octave.Low)},
+            {$"{Note.G}{Octave.Lowest}", new HornNote(GuildWarsControls.WeaponSkill3, Octave.Low)},
+            {$"{Note.A}{Octave.Lowest}", new HornNote(GuildWarsControls.WeaponSkill4, Octave.Low)},
+            {$"{Note.B}{Octave.Lowest}", new HornNote(GuildWarsControls.WeaponSkill5, Octave.Low)},
+            {$"{Note.C}{Octave.Low}", new HornNote(GuildWarsControls.HealingSkill, Octave.Low)},
+            {$"{Note.D}{Octave.Low}", new HornNote(GuildWarsControls.UtilitySkill1, Octave.Low)},
+            {$"{Note.E}{Octave.Low}", new HornNote(GuildWarsControls.WeaponSkill1, Octave.Middle)},
+            {$"{Note.F}{Octave.Low}", new HornNote(GuildWarsControls.WeaponSkill2, Octave.Middle)},
+            {$"{Note.G}{Octave.Low}", new HornNote(GuildWarsControls.WeaponSkill3, Octave.Middle)},
+            {$"{Note.A}{Octave.Low}", new HornNote(GuildWarsControls.WeaponSkill4, Octave.Middle)},
+            {$"{Note.B}{Octave.Low}", new HornNote(GuildWarsControls.WeaponSkill5, Octave.Middle)},
+            {$"{Note.C}{Octave.Middle}", new HornNote(GuildWarsControls.HealingSkill, Octave.Middle)},
+            {$"{Note.D}{Octave.Middle}", new HornNote(GuildWarsControls.UtilitySkill1, Octave.Middle)},
+            {$"{Note.E}{Octave.Middle}", new HornNote(GuildWarsControls.WeaponSkill1, Octave.High)},
+            {$"{Note.F}{Octave.Middle}", new HornNote(GuildWarsControls.WeaponSkill2, Octave.High)},
+            {$"{Note.G}{Octave.Middle}", new HornNote(GuildWarsControls.WeaponSkill3, Octave.High)},
+            {$"{Note.A}{Octave.Middle}", new HornNote(GuildWarsControls.WeaponSkill4, Octave.High)},
+            {$"{Note.B}{Octave.Middle}", new HornNote(GuildWarsControls.WeaponSkill5, Octave.High)},
+            {$"{Note.C}{Octave.High}", new HornNote(GuildWarsControls.HealingSkill, Octave.High)},
+            {$"{Note.D}{Octave.High}", new HornNote(GuildWarsControls.UtilitySkill1, Octave.High)},
+            {$"{Note.E}{Octave.High}", new HornNote(GuildWarsControls.UtilitySkill2, Octave.High)},
         };
 
-        public Keys Key { get; }
-        public Octaves Octave { get; }
-
-        public HornNote(Keys key, Octaves octave)
+        public HornNote(GuildWarsControls key, Octave octave) : base(key, octave)
         {
-            Key = key;
-            Octave = octave;
+            /* NOOP */
         }
 
-        public static HornNote From(Note note)
+        public static HornNote From(RealNote note)
         {
-            return Map[$"{note.Key}{note.Octave}"];
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals((HornNote) obj);
-        }
-
-        protected bool Equals(HornNote other)
-        {
-            return Key == other.Key && Octave == other.Octave;
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((int) Key*397) ^ (int) Octave;
-            }
+            if (note.Note == Note.Z)
+                return new HornNote(GuildWarsControls.None, note.Octave);
+            return Map[$"{note.Note}{note.Octave}"];
         }
     }
 }

@@ -1,15 +1,65 @@
 ﻿using System;
 using Blish_HUD.Controls.Intern;
-using static Nekres.Musician.MusicianModule;
-namespace Nekres.Musician.Core.Instrument.Harp
+using Nekres.Musician.Core.Domain;
+using static Blish_HUD.Controls.Intern.GuildWarsControls;
+namespace Nekres.Musician.Core.Instrument
 {
-    public class HarpPreview : IInstrumentPreview
+    internal class HarpPreview : InstrumentBase
     {
-        private HarpNote.Octaves _octave = HarpNote.Octaves.Middle;
+        private readonly ISoundRepository _soundRepository;
 
-        private readonly HarpSoundRepository _soundRepository = new HarpSoundRepository();
+        public HarpPreview(ISoundRepository soundRepo)
+        {
+            this.CurrentOctave = Octave.Middle;
+            _soundRepository = soundRepo;
+        }
 
-        public void PlaySoundByKey(GuildWarsControls key)
+        protected override NoteBase ConvertNote(RealNote note) => HarpNote.From(note);
+
+        protected override NoteBase OptimizeNote(NoteBase note)
+        {
+            if (note.Equals(new HarpNote(WeaponSkill1, Octave.Middle)) && CurrentOctave == Octave.Low)
+                note = new HarpNote(UtilitySkill2, Octave.Low);
+            else if (note.Equals(new HarpNote(WeaponSkill1, Octave.High)) && CurrentOctave == Octave.Middle)
+                note = new HarpNote(UtilitySkill2, Octave.Middle);
+            return note;
+        }
+
+        protected override void IncreaseOctave()
+        {
+            switch (this.CurrentOctave)
+            {
+                case Octave.Low:
+                    this.CurrentOctave = Octave.Middle;
+                    break;
+                case Octave.Middle:
+                    this.CurrentOctave = Octave.High;
+                    break;
+                case Octave.High:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        protected override void DecreaseOctave()
+        {
+            switch (this.CurrentOctave)
+            {
+                case Octave.Low:
+                    break;
+                case Octave.Middle:
+                    this.CurrentOctave = Octave.Low;
+                    break;
+                case Octave.High:
+                    this.CurrentOctave = Octave.Middle;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        protected override void PressKey(GuildWarsControls key)
         {
             switch (key)
             {
@@ -21,7 +71,7 @@ namespace Nekres.Musician.Core.Instrument.Harp
                 case GuildWarsControls.HealingSkill:
                 case GuildWarsControls.UtilitySkill1:
                 case GuildWarsControls.UtilitySkill2:
-                    ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, _octave));
+                    MusicianModule.ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, this.CurrentOctave));
                     break;
                 case GuildWarsControls.UtilitySkill3:
                     DecreaseOctave();
@@ -34,49 +84,7 @@ namespace Nekres.Musician.Core.Instrument.Harp
             }
         }
 
-
-        private void IncreaseOctave()
-        {
-            switch (_octave)
-            {
-                case HarpNote.Octaves.None:
-                    break;
-                case HarpNote.Octaves.Low:
-                    _octave = HarpNote.Octaves.Middle;
-                    break;
-                case HarpNote.Octaves.Middle:
-                    _octave = HarpNote.Octaves.High;
-                    break;
-                case HarpNote.Octaves.High:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-
-        private void DecreaseOctave()
-        {
-            switch (_octave)
-            {
-                case HarpNote.Octaves.None:
-                    break;
-                case HarpNote.Octaves.Low:
-                    break;
-                case HarpNote.Octaves.Middle:
-                    _octave = HarpNote.Octaves.Low;
-                    break;
-                case HarpNote.Octaves.High:
-                    _octave = HarpNote.Octaves.Middle;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-
-        public void Dispose() {
-            _soundRepository?.Dispose();
+        public override void Dispose() {
         }
     }
 }

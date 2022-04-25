@@ -1,15 +1,58 @@
 ﻿using System;
 using Blish_HUD.Controls.Intern;
-using static Nekres.Musician.MusicianModule;
-namespace Nekres.Musician.Core.Instrument.Bell2
+using Nekres.Musician.Core.Domain;
+using static Blish_HUD.Controls.Intern.GuildWarsControls;
+namespace Nekres.Musician.Core.Instrument
 {
-    public class Bell2Preview : IInstrumentPreview
+    internal class Bell2Preview : InstrumentBase
     {
-        private Bell2Note.Octaves _octave = Bell2Note.Octaves.Low;
+        private readonly ISoundRepository _soundRepository;
 
-        private readonly Bell2SoundRepository _soundRepository = new Bell2SoundRepository();
+        public Bell2Preview(ISoundRepository soundRepo)
+        {
+            this.CurrentOctave = Octave.Low;
+            _soundRepository = soundRepo;
+        }
 
-        public void PlaySoundByKey(GuildWarsControls key)
+        protected override NoteBase ConvertNote(RealNote note) => Bell2Note.From(note);
+
+        protected override NoteBase OptimizeNote(NoteBase note)
+        {
+            if (note.Equals(new Bell2Note(WeaponSkill1, Octave.High)) && CurrentOctave == Octave.Low)
+                note = new Bell2Note(UtilitySkill2, Octave.Low);
+            else if (note.Equals(new Bell2Note(UtilitySkill2, Octave.Low)) && CurrentOctave == Octave.High)
+                note = new Bell2Note(WeaponSkill1, Octave.High);
+            return note;
+        }
+
+        protected override void IncreaseOctave()
+        {
+            switch (this.CurrentOctave)
+            {
+                case Octave.Low:
+                    this.CurrentOctave = Octave.High;
+                    break;
+                case Octave.High:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        protected override void DecreaseOctave()
+        {
+            switch (this.CurrentOctave)
+            {
+                case Octave.Low:
+                    break;
+                case Octave.High:
+                    this.CurrentOctave = Octave.Low;
+                    break;
+                default: break;
+            }
+        }
+
+        protected override void PressKey(GuildWarsControls key)
         {
             switch (key)
             {
@@ -21,7 +64,7 @@ namespace Nekres.Musician.Core.Instrument.Bell2
                 case GuildWarsControls.HealingSkill:
                 case GuildWarsControls.UtilitySkill1:
                 case GuildWarsControls.UtilitySkill2:
-                    ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, _octave));
+                    MusicianModule.ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, this.CurrentOctave));
                     break;
                 case GuildWarsControls.UtilitySkill3:
                     DecreaseOctave();
@@ -29,45 +72,11 @@ namespace Nekres.Musician.Core.Instrument.Bell2
                 case GuildWarsControls.EliteSkill:
                     IncreaseOctave();
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: break;
             }
         }
 
-        private void IncreaseOctave()
-        {
-            switch (_octave)
-            {
-                case Bell2Note.Octaves.None:
-                    break;
-                case Bell2Note.Octaves.Low:
-                    _octave = Bell2Note.Octaves.High;
-                    break;
-                case Bell2Note.Octaves.High:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private void DecreaseOctave()
-        {
-            switch (_octave)
-            {
-                case Bell2Note.Octaves.None:
-                    break;
-                case Bell2Note.Octaves.Low:
-                    break;
-                case Bell2Note.Octaves.High:
-                    _octave = Bell2Note.Octaves.Low;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        public void Dispose() {
-            _soundRepository?.Dispose();
+        public override void Dispose() {
         }
     }
 }

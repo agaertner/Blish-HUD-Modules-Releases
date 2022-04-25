@@ -1,15 +1,66 @@
-﻿using System;
-using Blish_HUD.Controls.Intern;
-using static Nekres.Musician.MusicianModule;
-namespace Nekres.Musician.Core.Instrument.Bell
+﻿using Blish_HUD.Controls.Intern;
+using Nekres.Musician.Core.Domain;
+using static Blish_HUD.Controls.Intern.GuildWarsControls;
+namespace Nekres.Musician.Core.Instrument
 {
-    public class BellPreview : IInstrumentPreview
+    internal class BellPreview : InstrumentBase
     {
-        private BellNote.Octaves _octave = BellNote.Octaves.Middle;
+        private readonly ISoundRepository _soundRepository;
 
-        private readonly BellSoundRepository _soundRepository = new BellSoundRepository();
+        public BellPreview(ISoundRepository soundRepo)
+        {
+            this.CurrentOctave = Octave.Middle;
+            _soundRepository = soundRepo;
+        }
 
-        public void PlaySoundByKey(GuildWarsControls key)
+        protected override NoteBase ConvertNote(RealNote note) => BellNote.From(note);
+
+        protected override NoteBase OptimizeNote(NoteBase note)
+        {
+            if (note.Equals(new BellNote(WeaponSkill1, Octave.High)) && CurrentOctave == Octave.Middle)
+                note = new BellNote(UtilitySkill2, Octave.Middle);
+            else if (note.Equals(new BellNote(UtilitySkill2, Octave.Middle)) && CurrentOctave == Octave.High)
+                note = new BellNote(WeaponSkill1, Octave.High);
+            else if (note.Equals(new BellNote(WeaponSkill1, Octave.Middle)) && CurrentOctave == Octave.Low)
+                note = new BellNote(UtilitySkill2, Octave.Low);
+            else if (note.Equals(new BellNote(UtilitySkill2, Octave.Low)) && CurrentOctave == Octave.Middle)
+                note = new BellNote(WeaponSkill1, Octave.Middle);
+            return note;
+        }
+
+        protected override void IncreaseOctave()
+        {
+            switch (this.CurrentOctave)
+            {
+                case Octave.Low:
+                    this.CurrentOctave = Octave.Middle;
+                    break;
+                case Octave.Middle:
+                    this.CurrentOctave = Octave.High;
+                    break;
+                case Octave.High:
+                    break;
+                default: break;
+            }
+        }
+
+        protected override void DecreaseOctave()
+        {
+            switch (this.CurrentOctave)
+            {
+                case Octave.Low:
+                    break;
+                case Octave.Middle:
+                    this.CurrentOctave = Octave.Low;
+                    break;
+                case Octave.High:
+                    this.CurrentOctave = Octave.Middle;
+                    break;
+                default: break;
+            }
+        }
+
+        protected override void PressKey(GuildWarsControls key)
         {
             switch (key)
             {
@@ -21,7 +72,7 @@ namespace Nekres.Musician.Core.Instrument.Bell
                 case GuildWarsControls.HealingSkill:
                 case GuildWarsControls.UtilitySkill1:
                 case GuildWarsControls.UtilitySkill2:
-                    ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, _octave));
+                    MusicianModule.ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, this.CurrentOctave));
                     break;
                 case GuildWarsControls.UtilitySkill3:
                     DecreaseOctave();
@@ -29,51 +80,11 @@ namespace Nekres.Musician.Core.Instrument.Bell
                 case GuildWarsControls.EliteSkill:
                     IncreaseOctave();
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: break;
             }
         }
 
-        private void IncreaseOctave()
-        {
-            switch (_octave)
-            {
-                case BellNote.Octaves.None:
-                    break;
-                case BellNote.Octaves.Low:
-                    _octave = BellNote.Octaves.Middle;
-                    break;
-                case BellNote.Octaves.Middle:
-                    _octave = BellNote.Octaves.High;
-                    break;
-                case BellNote.Octaves.High:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private void DecreaseOctave()
-        {
-            switch (_octave)
-            {
-                case BellNote.Octaves.None:
-                    break;
-                case BellNote.Octaves.Low:
-                    break;
-                case BellNote.Octaves.Middle:
-                    _octave = BellNote.Octaves.Low;
-                    break;
-                case BellNote.Octaves.High:
-                    _octave = BellNote.Octaves.Middle;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        public void Dispose() {
-            _soundRepository?.Dispose();
+        public override void Dispose() {
         }
     }
 }

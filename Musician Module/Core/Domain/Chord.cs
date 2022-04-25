@@ -10,7 +10,7 @@ namespace Nekres.Musician.Core.Domain
         private static readonly Regex NotesAndDurationRegex = new Regex(@"\[?([ABCDEFGZabcdefgz',]+)\]?(\d+)?\/?(\d+)?");
         private static readonly Regex NoteRegex = new Regex(@"([ABCDEFGZabcdefgz][,]{0,3}[']{0,2})");
 
-        private Chord(IEnumerable<Note> notes, Fraction length)
+        private Chord(IEnumerable<RealNote> notes, Fraction length)
         {
             Length = length;
             Notes = notes;
@@ -18,12 +18,8 @@ namespace Nekres.Musician.Core.Domain
 
         public Fraction Length { get; }
 
-        public IEnumerable<Note> Notes { get; }
+        public IEnumerable<RealNote> Notes { get; }
 
-        public override string ToString()
-        {
-            return $"{string.Join(":", Notes)} {Length}";
-        }
         public static Chord Parse(string text)
         {
             var notesAndDuration = NotesAndDurationRegex.Match(text);
@@ -39,13 +35,13 @@ namespace Nekres.Musician.Core.Domain
             var notes = NoteRegex.Matches(chord);
             
             // Parse the duration
-            var length = new Fraction(int.Parse(nominator), int.Parse(denominator));
+            var length = Fraction.Parse(nominator, denominator);
 
             // Return the chord
-            return new Chord(notes.Cast<Match>().Select(x => Note.Deserialize(x.Groups[1].Value)), length);
+            return new Chord(notes.Cast<Match>().Select(x => RealNote.Deserialize(x.Groups[1].Value)), length);
         }
 
-        public string Serialize()
+        public override string ToString()
         {
             var stringBuilder = new StringBuilder();
 

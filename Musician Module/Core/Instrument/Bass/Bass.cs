@@ -1,145 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Nekres.Musician.Core.Domain;
 using System.Threading;
-using Blish_HUD.Controls.Intern;
-using Nekres.Musician.Core.Domain;
-
-namespace Nekres.Musician.Core.Instrument.Bass
+using static Blish_HUD.Controls.Intern.GuildWarsControls;
+namespace Nekres.Musician.Core.Instrument
 {
-    public class Bass : Musician.Core.Instrument.Instrument
+    public class Bass : InstrumentBase
     {
-        private readonly TimeSpan NoteTimeout = TimeSpan.FromMilliseconds(5);
-        private readonly TimeSpan OctaveTimeout = TimeSpan.FromTicks(500);
-
-        private readonly Dictionary<BassNote.Keys, GuildWarsControls> NoteMap = new Dictionary<BassNote.Keys, GuildWarsControls>
+        public Bass()
         {
-            {BassNote.Keys.Note1, GuildWarsControls.WeaponSkill1},
-            {BassNote.Keys.Note2, GuildWarsControls.WeaponSkill2},
-            {BassNote.Keys.Note3, GuildWarsControls.WeaponSkill3},
-            {BassNote.Keys.Note4, GuildWarsControls.WeaponSkill4},
-            {BassNote.Keys.Note5, GuildWarsControls.WeaponSkill5},
-            {BassNote.Keys.Note6, GuildWarsControls.HealingSkill},
-            {BassNote.Keys.Note7, GuildWarsControls.UtilitySkill1},
-            {BassNote.Keys.Note8, GuildWarsControls.UtilitySkill2}
-        };
-
-        private BassNote.Octaves CurrentOctave = BassNote.Octaves.Low;
-
-        public Bass() {
-            Preview = new BassPreview();
+            this.CurrentOctave = Octave.Low;
         }
 
-
-        public override void PlayNote(Note note)
+        protected override NoteBase OptimizeNote(NoteBase note)
         {
-            var bassNote = BassNote.From(note);
-
-            if (RequiresAction(bassNote))
-            {
-                if (bassNote.Key == BassNote.Keys.None)
-                {
-                    PressNote(GuildWarsControls.EliteSkill);
-                }
-                else
-                {
-                    bassNote = OptimizeNote(bassNote);
-                    PressNote(NoteMap[bassNote.Key]);
-                }
-            }
-        }
-
-
-        public override void GoToOctave(Note note)
-        {
-            var bassNote = BassNote.From(note);
-
-            if (RequiresAction(bassNote))
-            {
-                bassNote = OptimizeNote(bassNote);
-
-                while (CurrentOctave != bassNote.Octave)
-                {
-                    if (CurrentOctave < bassNote.Octave)
-                    {
-                        IncreaseOctave();
-                    }
-                    else
-                    {
-                        DecreaseOctave();
-                    }
-                }
-            }
-        }
-
-
-        private static bool RequiresAction(BassNote bassNote)
-        {
-            return bassNote.Key != BassNote.Keys.None;
-        }
-
-
-        private BassNote OptimizeNote(BassNote note)
-        {
-            if (note.Equals(new BassNote(BassNote.Keys.Note1, BassNote.Octaves.High)) && CurrentOctave == BassNote.Octaves.Low)
-            {
-                note = new BassNote(BassNote.Keys.Note8, BassNote.Octaves.Low);
-            }
-            else if (note.Equals(new BassNote(BassNote.Keys.Note8, BassNote.Octaves.Low)) && CurrentOctave == BassNote.Octaves.High)
-            {
-                note = new BassNote(BassNote.Keys.Note1, BassNote.Octaves.High);
-            }
+            if (note.Equals(new BassNote(WeaponSkill1, Octave.High)) && this.CurrentOctave == Octave.Low)
+                note = new BassNote(UtilitySkill2, Octave.Low);
+            else if (note.Equals(new BassNote(UtilitySkill2, Octave.Low)) && this.CurrentOctave == Octave.High)
+                note = new BassNote(WeaponSkill1, Octave.High);
             return note;
         }
 
+        protected override NoteBase ConvertNote(RealNote note) => BassNote.From(note);
 
-        private void IncreaseOctave()
+        protected override void IncreaseOctave()
         {
-            switch (CurrentOctave)
+            switch (this.CurrentOctave)
             {
-                case BassNote.Octaves.Low:
-                    CurrentOctave = BassNote.Octaves.High;
+                case Octave.Low:
+                    this.CurrentOctave = Octave.High;
                     break;
-                case BassNote.Octaves.High:
+                case Octave.High:
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: break;
             }
 
-            PressKey(GuildWarsControls.EliteSkill, CurrentOctave.ToString());
+            PressKey(EliteSkill);
 
-            Thread.Sleep(OctaveTimeout);
+            Thread.Sleep(this.OctaveTimeout);
         }
 
-
-        private void DecreaseOctave()
+        protected override void DecreaseOctave()
         {
-            switch (CurrentOctave)
+            switch (this.CurrentOctave)
             {
-                case BassNote.Octaves.Low:
+                case Octave.Low:
                     break;
-                case BassNote.Octaves.High:
-                    CurrentOctave = BassNote.Octaves.Low;
+                case Octave.High:
+                    this.CurrentOctave = Octave.Low;
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: break;
             }
 
-            PressKey(GuildWarsControls.UtilitySkill3, CurrentOctave.ToString());
+            PressKey(UtilitySkill3);
 
-            Thread.Sleep(OctaveTimeout);
+            Thread.Sleep(this.OctaveTimeout);
         }
 
-
-        private void PressNote(GuildWarsControls key)
+        public override void Dispose()
         {
-            PressKey(key, CurrentOctave.ToString());
-
-            Thread.Sleep(NoteTimeout);
-        }
-
-
-        public override void Dispose() {
-            Preview?.Dispose();
         }
     }
 }

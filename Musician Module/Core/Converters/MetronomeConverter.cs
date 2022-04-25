@@ -12,11 +12,7 @@ namespace Nekres.Musician.Core.Domain
 
         public override Metronome ReadJson(JsonReader reader, Type objectType, Metronome existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            if (reader.Value == null) return null;
-            var val = ((string)reader.Value).Split(' ');
-            if (val.Length < 2) return null;
-            var fraction = val[1].Split('/');
-            return new Metronome(int.Parse(val[0]), new Fraction(int.Parse(fraction[0]), int.Parse(fraction[1])));
+            return reader.Value == null ? null : Metronome.FromString((string)reader.Value);
         }
     }
 }

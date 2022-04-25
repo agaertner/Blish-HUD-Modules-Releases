@@ -1,82 +1,83 @@
-﻿using System;
-using Blish_HUD.Controls.Intern;
-using static Nekres.Musician.MusicianModule;
-namespace Nekres.Musician.Core.Instrument.Flute
+﻿using Blish_HUD.Controls.Intern;
+using Nekres.Musician.Core.Domain;
+using static Blish_HUD.Controls.Intern.GuildWarsControls;
+namespace Nekres.Musician.Core.Instrument
 {
-    public class FlutePreview : IInstrumentPreview
+    internal class FlutePreview : InstrumentBase
     {
-        private FluteNote.Octaves _octave = FluteNote.Octaves.Low;
+        private readonly ISoundRepository _soundRepository;
 
-        private readonly FluteSoundRepository _soundRepository = new FluteSoundRepository();
+        public FlutePreview(ISoundRepository soundRepo)
+        {
+            this.CurrentOctave = Octave.Low;
+            _soundRepository = soundRepo;
+        }
 
-        public void PlaySoundByKey(GuildWarsControls key)
+        protected override NoteBase ConvertNote(RealNote note) => FluteNote.From(note);
+
+        protected override NoteBase OptimizeNote(NoteBase note)
+        {
+            if (note.Equals(new FluteNote(WeaponSkill1, Octave.High)) && CurrentOctave == Octave.Low)
+                note = new FluteNote(UtilitySkill2, Octave.Low);
+            else if (note.Equals(new FluteNote(UtilitySkill2, Octave.Low)) && CurrentOctave == Octave.High)
+                note = new FluteNote(WeaponSkill1, Octave.High);
+            return note;
+        }
+
+        protected override void IncreaseOctave()
+        {
+            switch (this.CurrentOctave)
+            {
+                case Octave.Low:
+                    this.CurrentOctave = Octave.High;
+                    break;
+                case Octave.High:
+                    break;
+                default: break;
+            }
+        }
+
+        protected override void DecreaseOctave()
+        {
+            switch (this.CurrentOctave)
+            {
+                case Octave.Low:
+                    break;
+                case Octave.High:
+                    this.CurrentOctave = Octave.Low;
+                    break;
+                default: break;
+            }
+        }
+
+        protected override void PressKey(GuildWarsControls key)
         {
             switch (key)
             {
-                case GuildWarsControls.WeaponSkill1:
-                case GuildWarsControls.WeaponSkill2:
-                case GuildWarsControls.WeaponSkill3:
-                case GuildWarsControls.WeaponSkill4:
-                case GuildWarsControls.WeaponSkill5:
-                case GuildWarsControls.HealingSkill:
-                case GuildWarsControls.UtilitySkill1:
-                case GuildWarsControls.UtilitySkill2:
-                    ModuleInstance.MusicPlayer.StopSound();
-                    ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, _octave));
+                case WeaponSkill1:
+                case WeaponSkill2:
+                case WeaponSkill3:
+                case WeaponSkill4:
+                case WeaponSkill5:
+                case HealingSkill:
+                case UtilitySkill1:
+                case UtilitySkill2:
+                    MusicianModule.ModuleInstance.MusicPlayer.PlaySound(_soundRepository.Get(key, this.CurrentOctave), true);
                     break;
-                case GuildWarsControls.UtilitySkill3:
-                    if (_octave == FluteNote.Octaves.Low)
-                    {
+                case UtilitySkill3:
+                    if (this.CurrentOctave == Octave.Low)
                         IncreaseOctave();
-                    }
                     else
-                    {
                         DecreaseOctave();
-                    }
                     break;
-                case GuildWarsControls.EliteSkill:
-                    ModuleInstance.MusicPlayer.StopSound();
+                case EliteSkill:
+                    MusicianModule.ModuleInstance.MusicPlayer.StopSound();
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: break;
             }
         }
 
-        private void IncreaseOctave()
-        {
-            switch (_octave)
-            {
-                case FluteNote.Octaves.None:
-                    break;
-                case FluteNote.Octaves.Low:
-                    _octave = FluteNote.Octaves.High;
-                    break;
-                case FluteNote.Octaves.High:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private void DecreaseOctave()
-        {
-            switch (_octave)
-            {
-                case FluteNote.Octaves.None:
-                    break;
-                case FluteNote.Octaves.Low:
-                    break;
-                case FluteNote.Octaves.High:
-                    _octave = FluteNote.Octaves.Low;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-
-        public void Dispose() {
-            _soundRepository?.Dispose();
+        public override void Dispose() {
         }
     }
 }

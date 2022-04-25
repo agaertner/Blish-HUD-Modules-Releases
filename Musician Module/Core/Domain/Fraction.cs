@@ -8,6 +8,12 @@
             Denominator = denominator;
         }
 
+        public static Fraction Parse(string nominator, string denominator)
+        {
+            return new Fraction(string.IsNullOrEmpty(nominator) ? 1 : int.Parse(nominator),
+                string.IsNullOrEmpty(denominator) ? 1 : int.Parse(denominator));
+        }
+
         public int Nominator { get; }
 
         public int Denominator { get; }

@@ -1,84 +1,42 @@
 ﻿using System.Collections.Generic;
+using Blish_HUD.Controls.Intern;
 using Nekres.Musician.Core.Domain;
 
-namespace Nekres.Musician.Core.Instrument.Bass
-{
-    public class BassNote
+namespace Nekres.Musician.Core.Instrument {
+    public class BassNote : NoteBase
     {
-        public enum Keys
+        private static readonly Dictionary<string, BassNote> Map = new()
         {
-            None,
-            Note1,
-            Note2,
-            Note3,
-            Note4,
-            Note5,
-            Note6,
-            Note7,
-            Note8
-        }
-
-        public enum Octaves
-        {
-            None,
-            Low,
-            High
-        }
-
-        private static readonly Dictionary<string, BassNote> Map = new Dictionary<string, BassNote>
-        {
-            {$"{Note.Keys.None}{Note.Octaves.None}", new BassNote(Keys.None, Octaves.None)},
-
             // Low Octave
-            {$"{Note.Keys.C}{Note.Octaves.Middle}", new BassNote(Keys.Note1, Octaves.Low)},
-            {$"{Note.Keys.D}{Note.Octaves.Middle}", new BassNote(Keys.Note2, Octaves.Low)},
-            {$"{Note.Keys.E}{Note.Octaves.Middle}", new BassNote(Keys.Note3, Octaves.Low)},
-            {$"{Note.Keys.F}{Note.Octaves.Middle}", new BassNote(Keys.Note4, Octaves.Low)},
-            {$"{Note.Keys.G}{Note.Octaves.Middle}", new BassNote(Keys.Note5, Octaves.Low)},
-            {$"{Note.Keys.A}{Note.Octaves.Middle}", new BassNote(Keys.Note6, Octaves.Low)},
-            {$"{Note.Keys.B}{Note.Octaves.Middle}", new BassNote(Keys.Note7, Octaves.Low)},
+            {$"{Note.C}{Octave.Middle}", new BassNote(GuildWarsControls.WeaponSkill1, Octave.Low)},
+            {$"{Note.D}{Octave.Middle}", new BassNote(GuildWarsControls.WeaponSkill2, Octave.Low)},
+            {$"{Note.E}{Octave.Middle}", new BassNote(GuildWarsControls.WeaponSkill3, Octave.Low)},
+            {$"{Note.F}{Octave.Middle}", new BassNote(GuildWarsControls.WeaponSkill4, Octave.Low)},
+            {$"{Note.G}{Octave.Middle}", new BassNote(GuildWarsControls.WeaponSkill5, Octave.Low)},
+            {$"{Note.A}{Octave.Middle}", new BassNote(GuildWarsControls.HealingSkill, Octave.Low)},
+            {$"{Note.B}{Octave.Middle}", new BassNote(GuildWarsControls.UtilitySkill1, Octave.Low)},
 
             // High Octave
-            {$"{Note.Keys.C}{Note.Octaves.Low}", new BassNote(Keys.Note1, Octaves.High)},
-            {$"{Note.Keys.D}{Note.Octaves.Low}", new BassNote(Keys.Note2, Octaves.High)},
-            {$"{Note.Keys.E}{Note.Octaves.Low}", new BassNote(Keys.Note3, Octaves.High)},
-            {$"{Note.Keys.F}{Note.Octaves.Low}", new BassNote(Keys.Note4, Octaves.High)},
-            {$"{Note.Keys.G}{Note.Octaves.Low}", new BassNote(Keys.Note5, Octaves.High)},
-            {$"{Note.Keys.A}{Note.Octaves.Low}", new BassNote(Keys.Note6, Octaves.High)},
-            {$"{Note.Keys.B}{Note.Octaves.Low}", new BassNote(Keys.Note7, Octaves.High)},
-            {$"{Note.Keys.C}{Note.Octaves.Lowest}", new BassNote(Keys.Note8, Octaves.High)}
+            {$"{Note.C}{Octave.Low}", new BassNote(GuildWarsControls.WeaponSkill1, Octave.High)},
+            {$"{Note.D}{Octave.Low}", new BassNote(GuildWarsControls.WeaponSkill2, Octave.High)},
+            {$"{Note.E}{Octave.Low}", new BassNote(GuildWarsControls.WeaponSkill3, Octave.High)},
+            {$"{Note.F}{Octave.Low}", new BassNote(GuildWarsControls.WeaponSkill4, Octave.High)},
+            {$"{Note.G}{Octave.Low}", new BassNote(GuildWarsControls.WeaponSkill5, Octave.High)},
+            {$"{Note.A}{Octave.Low}", new BassNote(GuildWarsControls.HealingSkill, Octave.High)},
+            {$"{Note.B}{Octave.Low}", new BassNote(GuildWarsControls.UtilitySkill1, Octave.High)},
+            {$"{Note.C}{Octave.Lowest}", new BassNote(GuildWarsControls.UtilitySkill2, Octave.High)}
         };
 
-        public Keys Key { get; }
-        public Octaves Octave { get; }
-
-        public BassNote(Keys key, Octaves octave)
+        public BassNote(GuildWarsControls key, Octave octave) : base(key, octave)
         {
-            Key = key;
-            Octave = octave;
+            /* NOOP */
         }
 
-        public static BassNote From(Note note)
+        public static BassNote From(RealNote note)
         {
-            return Map[$"{note.Key}{note.Octave}"];
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals((BassNote) obj);
-        }
-
-        protected bool Equals(BassNote other)
-        {
-            return Key == other.Key && Octave == other.Octave;
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((int) Key*397) ^ (int) Octave;
-            }
+            if (note.Note == Note.Z)
+                return new BassNote(GuildWarsControls.None, note.Octave);
+            return Map[$"{note.Note}{note.Octave}"];
         }
     }
 }

@@ -15,12 +15,27 @@ namespace Nekres.Musician.Core.Domain
             BeatsPerMeasure = beatsPerMeasure;
             Tempo = tempo;
 
-            QuaterNoteLength = TimeSpan.FromMinutes(1)
-                .Divide(tempo*16/beatsPerMeasure.Denominator);
+            var divisor = beatsPerMeasure.Denominator != 0 ? tempo * 16 / beatsPerMeasure.Denominator : tempo * 16;
 
-            WholeNoteLength = TimeSpan.FromMinutes(1)
-                .Divide(tempo*16/beatsPerMeasure.Denominator)
-                .Multiply(4);
+            QuaterNoteLength = TimeSpan.FromMinutes(1);
+
+            if (divisor != 0) QuaterNoteLength = QuaterNoteLength.Divide(divisor);
+
+            WholeNoteLength = TimeSpan.FromMinutes(1);
+
+            if (divisor != 0) WholeNoteLength = WholeNoteLength.Divide(divisor);
+
+            WholeNoteLength = WholeNoteLength.Multiply(4);
+        }
+
+        public override string ToString() => $"{Tempo} {BeatsPerMeasure}";
+
+        public static Metronome FromString(string s)
+        {
+            var val = s.Split(' ');
+            if (val.Length < 2) return null;
+            var fraction = val[1].Split('/');
+            return new Metronome(int.Parse(val[0]), new Fraction(int.Parse(fraction[0]), int.Parse(fraction[1])));
         }
     }
 }

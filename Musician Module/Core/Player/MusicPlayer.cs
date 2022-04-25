@@ -1,40 +1,131 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework.Audio;
+using Nekres.Musician.Core.Instrument;
+using Nekres.Musician.Core.Models;
+using Nekres.Musician.Core.Player.Algorithms;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using CSCore;
-using CSCore.SoundOut;
-using Nekres.Musician.Core.Player.Algorithms;
-using Nekres.Musician.Core.Models;
+using System.Threading.Tasks;
 
 namespace Nekres.Musician.Core.Player
 {
-    public class MusicPlayer : IDisposable
+    internal class MusicPlayer : IDisposable
     {
-        public Thread Worker { get; private set; }
-        public IPlayAlgorithm Algorithm { get; private set; }
-        public WasapiOut OutputDevice { get; private set; }
+        private readonly Dictionary<Models.Instrument, ISoundRepository> _soundRepositories;
 
-        public void PlaySound(ISampleSource sampleSource) {
-            StopSound();
-            OutputDevice.Initialize(sampleSource.ToWaveSource().Loop());
-            OutputDevice.Play();
-        }
+        private PlayAlgorithmBase _algorithm;
 
-        public void StopSound() {
-            OutputDevice.Stop();
-        }
+        private SoundEffectInstance _activeSfx;
 
-        public MusicPlayer(MusicSheet musicSheet, Instrument.Instrument instrument, IPlayAlgorithm algorithm)
+        private Guid _activeMusicSheet;
+
+        private float _audioVolume => MusicianModule.ModuleInstance.audioVolume.Value / 1000;
+
+        public MusicPlayer()
         {
-            Algorithm = algorithm;
-            Worker = new Thread(() => algorithm.Play(instrument, musicSheet.Tempo, musicSheet.Melody.ToArray()));
-
-            OutputDevice = new WasapiOut();
+            _soundRepositories = new Dictionary<Models.Instrument, ISoundRepository>
+            {
+                {Models.Instrument.Bass, new BassSoundRepository()},
+                {Models.Instrument.Bell, new BellSoundRepository()},
+                {Models.Instrument.Bell2, new Bell2SoundRepository()},
+                {Models.Instrument.Flute, new FluteSoundRepository()},
+                {Models.Instrument.Harp, new HarpSoundRepository()},
+                {Models.Instrument.Horn, new HornSoundRepository()},
+                {Models.Instrument.Lute, new LuteSoundRepository()}
+            };
         }
-        public void Dispose() {
-            Algorithm.Dispose();
-            OutputDevice.Stop();
-            OutputDevice.Dispose();
+
+        public void Dispose()
+        {
+            foreach (var (_, soundRepo) in _soundRepositories) soundRepo.Dispose();
+        }
+
+        public void PlaySound(SoundEffectInstance sfx, bool loops = false)
+        {
+            if (loops)
+            {
+                StopSound();
+                sfx.IsLooped = true;
+            }
+            _activeSfx = sfx;
+            sfx.Volume = _audioVolume;
+            sfx.Play();
+        }
+
+        public void StopSound()
+        {
+            _activeSfx?.Stop();
+        }
+
+        public bool IsMySongPlaying(Guid id) => _activeMusicSheet.Equals(id);
+
+        public async Task PlayPreview(MusicSheet musicSheet) => Play(musicSheet, await GetInstrumentPreview(musicSheet.Instrument));
+
+        public void PlayEmulate(MusicSheet musicSheet) => Play(musicSheet, GetInstrumentEmulate(musicSheet.Instrument));
+
+        private void Play(MusicSheet musicSheet, InstrumentBase instrument)
+        {
+            this.Stop();
+            _algorithm = musicSheet.Algorithm == Algorithm.FavorChords ? new FavorChordsAlgorithm(instrument) : new FavorNotesAlgorithm(instrument);
+            var worker = new Thread(() => _algorithm?.Play(musicSheet.Tempo, musicSheet.Melody.ToArray()));
+            worker.Start();
+            _activeMusicSheet = musicSheet.Id;
+        }
+
+        public void Stop()
+        {
+            this.StopSound();
+            _activeMusicSheet = Guid.Empty;
+            _algorithm?.Dispose();
+            _algorithm = null;
+        }
+
+        private InstrumentBase GetInstrumentEmulate(Models.Instrument instrument)
+        {
+            switch (instrument)
+            {
+                case Models.Instrument.Bass:
+                    return new Bass();
+                case Models.Instrument.Bell:
+                    return new Bell();
+                case Models.Instrument.Bell2:
+                    return new Bell2();
+                case Models.Instrument.Flute:
+                    return new Flute();
+                case Models.Instrument.Harp:
+                    return new Harp();
+                case Models.Instrument.Horn:
+                    return new Horn();
+                case Models.Instrument.Lute:
+                    return new Lute();
+                default: break;
+            }
+            return null;
+        }
+
+        private async Task<InstrumentBase> GetInstrumentPreview(Models.Instrument instrument)
+        {
+
+            switch (instrument)
+            {
+                case Models.Instrument.Bass:
+                    return new BassPreview(await _soundRepositories[instrument].Initialize());
+                case Models.Instrument.Bell:
+                    return new BellPreview(await _soundRepositories[instrument].Initialize());
+                case Models.Instrument.Bell2:
+                    return new Bell2Preview(await _soundRepositories[instrument].Initialize());
+                case Models.Instrument.Flute:
+                    return new FlutePreview(await _soundRepositories[instrument].Initialize());
+                case Models.Instrument.Harp:
+                    return new HarpPreview(await _soundRepositories[instrument].Initialize());
+                case Models.Instrument.Horn:
+                    return new HornPreview(await _soundRepositories[instrument].Initialize());
+                case Models.Instrument.Lute:
+                    return new LutePreview(await _soundRepositories[instrument].Initialize());
+                default: break;
+            }
+            return null;
         }
     }
 }

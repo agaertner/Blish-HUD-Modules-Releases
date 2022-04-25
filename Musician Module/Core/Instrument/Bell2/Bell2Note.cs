@@ -1,84 +1,40 @@
 ﻿using System.Collections.Generic;
+using Blish_HUD.Controls.Intern;
 using Nekres.Musician.Core.Domain;
 
-namespace Nekres.Musician.Core.Instrument.Bell2
+namespace Nekres.Musician.Core.Instrument
 {
-    public class Bell2Note
+    public class Bell2Note : NoteBase
     {
-        public enum Keys
+        private static readonly Dictionary<string, Bell2Note> Map = new ()
         {
-            None,
-            Note1,
-            Note2,
-            Note3,
-            Note4,
-            Note5,
-            Note6,
-            Note7,
-            Note8
-        }
-
-        public enum Octaves
-        {
-            None,
-            Low,
-            High
-        }
-
-        private static readonly Dictionary<string, Bell2Note> Map = new Dictionary<string, Bell2Note>
-        {
-            {$"{Note.Keys.None}{Note.Octaves.None}", new Bell2Note(Keys.None, Octaves.None)},
-
-            // Low Octave
-            {$"{Note.Keys.C}{Note.Octaves.Middle}", new Bell2Note(Keys.Note1, Octaves.Low)},
-            {$"{Note.Keys.D}{Note.Octaves.Middle}", new Bell2Note(Keys.Note2, Octaves.Low)},
-            {$"{Note.Keys.E}{Note.Octaves.Middle}", new Bell2Note(Keys.Note3, Octaves.Low)},
-            {$"{Note.Keys.F}{Note.Octaves.Middle}", new Bell2Note(Keys.Note4, Octaves.Low)},
-            {$"{Note.Keys.G}{Note.Octaves.Middle}", new Bell2Note(Keys.Note5, Octaves.Low)},
-            {$"{Note.Keys.A}{Note.Octaves.Middle}", new Bell2Note(Keys.Note6, Octaves.Low)},
-            {$"{Note.Keys.B}{Note.Octaves.Middle}", new Bell2Note(Keys.Note7, Octaves.Low)},
-            //{$"{Note.Keys.C}{Note.Octaves.High}", new Bell2Note(Keys.Note8, Octaves.Low)}, // Note to optimize at runtime.
-            // High Octave
-            {$"{Note.Keys.C}{Note.Octaves.High}", new Bell2Note(Keys.Note1, Octaves.High)},
-            {$"{Note.Keys.D}{Note.Octaves.High}", new Bell2Note(Keys.Note2, Octaves.High)},
-            {$"{Note.Keys.E}{Note.Octaves.High}", new Bell2Note(Keys.Note3, Octaves.High)},
-            {$"{Note.Keys.F}{Note.Octaves.High}", new Bell2Note(Keys.Note4, Octaves.High)},
-            {$"{Note.Keys.G}{Note.Octaves.High}", new Bell2Note(Keys.Note5, Octaves.High)},
-            {$"{Note.Keys.A}{Note.Octaves.High}", new Bell2Note(Keys.Note6, Octaves.High)},
-            {$"{Note.Keys.B}{Note.Octaves.High}", new Bell2Note(Keys.Note7, Octaves.High)},
-            {$"{Note.Keys.C}{Note.Octaves.Highest}", new Bell2Note(Keys.Note8, Octaves.High)}
+            {$"{Note.C}{Octave.Middle}", new Bell2Note(GuildWarsControls.WeaponSkill1, Octave.Low)},
+            {$"{Note.D}{Octave.Middle}", new Bell2Note(GuildWarsControls.WeaponSkill2, Octave.Low)},
+            {$"{Note.E}{Octave.Middle}", new Bell2Note(GuildWarsControls.WeaponSkill3, Octave.Low)},
+            {$"{Note.F}{Octave.Middle}", new Bell2Note(GuildWarsControls.WeaponSkill4, Octave.Low)},
+            {$"{Note.G}{Octave.Middle}", new Bell2Note(GuildWarsControls.WeaponSkill5, Octave.Low)},
+            {$"{Note.A}{Octave.Middle}", new Bell2Note(GuildWarsControls.HealingSkill, Octave.Low)},
+            {$"{Note.B}{Octave.Middle}", new Bell2Note(GuildWarsControls.UtilitySkill1, Octave.Low)},
+            {$"{Note.C}{Octave.High}", new Bell2Note(GuildWarsControls.WeaponSkill1, Octave.High)},
+            {$"{Note.D}{Octave.High}", new Bell2Note(GuildWarsControls.WeaponSkill2, Octave.High)},
+            {$"{Note.E}{Octave.High}", new Bell2Note(GuildWarsControls.WeaponSkill3, Octave.High)},
+            {$"{Note.F}{Octave.High}", new Bell2Note(GuildWarsControls.WeaponSkill4, Octave.High)},
+            {$"{Note.G}{Octave.High}", new Bell2Note(GuildWarsControls.WeaponSkill5, Octave.High)},
+            {$"{Note.A}{Octave.High}", new Bell2Note(GuildWarsControls.HealingSkill, Octave.High)},
+            {$"{Note.B}{Octave.High}", new Bell2Note(GuildWarsControls.UtilitySkill1, Octave.High)},
+            {$"{Note.C}{Octave.Highest}", new Bell2Note(GuildWarsControls.UtilitySkill2, Octave.High)}
         };
 
-        public Keys Key { get; }
-        public Octaves Octave { get; }
-
-        public Bell2Note(Keys key, Octaves octave)
+        public Bell2Note(GuildWarsControls key, Octave octave) : base(key, octave)
         {
-            Key = key;
-            Octave = octave;
+            /* NOOP */
         }
 
-        public static Bell2Note From(Note note)
+        public static Bell2Note From(RealNote note)
         {
-            return Map[$"{note.Key}{note.Octave}"];
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals((Bell2Note) obj);
-        }
-
-        protected bool Equals(Bell2Note other)
-        {
-            return Key == other.Key && Octave == other.Octave;
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((int) Key*397) ^ (int) Octave;
-            }
+            if (note.Note == Note.Z)
+                return new Bell2Note(GuildWarsControls.None, note.Octave);
+            return Map[$"{note.Note}{note.Octave}"];
         }
     }
 }

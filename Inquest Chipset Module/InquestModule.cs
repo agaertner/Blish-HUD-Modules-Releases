@@ -1,6 +1,7 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Controls.Extern;
+using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
 using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
@@ -8,13 +9,11 @@ using Blish_HUD.Settings;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nekres.Inquest_Module.Core.Controllers;
+using Nekres.Inquest_Module.UI.Models;
+using Nekres.Inquest_Module.UI.Views;
 using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
-using Blish_HUD.Graphics.UI;
-using Gw2Sharp.WebApi.Caching;
-using Nekres.Inquest_Module.UI.Models;
-using Nekres.Inquest_Module.UI.Views;
 
 namespace Nekres.Inquest_Module
 {
@@ -105,6 +104,7 @@ namespace Nekres.Inquest_Module
             JumpKeyBindingSetting.Value.Enabled = false;
             DodgeKeyBindingSetting.Value.Enabled = false;
             DodgeJumpKeyBindingSetting.Value.Enabled = true;
+            DodgeJumpKeyBindingSetting.Value.BlockSequenceFromGw2 = true;
             DodgeJumpKeyBindingSetting.Value.Activated += OnDodgeJumpKeyActivated;
             AutoClickSoundVolume.SettingChanged += OnAutoClickSoundVolumeSettingChanged;
         }
@@ -143,9 +143,9 @@ namespace Nekres.Inquest_Module
             _nextDodgeJump = DateTime.UtcNow.AddMilliseconds(80);
             
             if (DodgeKeyBindingSetting.Value.PrimaryKey != Keys.None)
-                Blish_HUD.Controls.Intern.Keyboard.Stroke((VirtualKeyShort)DodgeKeyBindingSetting.Value.PrimaryKey, true);
+                Blish_HUD.Controls.Intern.Keyboard.Stroke((VirtualKeyShort)DodgeKeyBindingSetting.Value.PrimaryKey);
             if (JumpKeyBindingSetting.Value.PrimaryKey != Keys.None)
-                Blish_HUD.Controls.Intern.Keyboard.Stroke((VirtualKeyShort)JumpKeyBindingSetting.Value.PrimaryKey, true);
+                Blish_HUD.Controls.Intern.Keyboard.Stroke((VirtualKeyShort)JumpKeyBindingSetting.Value.PrimaryKey);
         }
 
         protected override void OnModuleLoaded(EventArgs e)

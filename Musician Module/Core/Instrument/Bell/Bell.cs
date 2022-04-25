@@ -1,157 +1,75 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Nekres.Musician.Core.Domain;
+using System;
 using System.Threading;
-using Blish_HUD.Controls.Intern;
-using Nekres.Musician.Core.Domain;
+using static Blish_HUD.Controls.Intern.GuildWarsControls;
 
-namespace Nekres.Musician.Core.Instrument.Bell
+namespace Nekres.Musician.Core.Instrument
 {
-    public class Bell : Musician.Core.Instrument.Instrument
+    public class Bell : InstrumentBase
     {
-        private readonly TimeSpan NoteTimeout = TimeSpan.FromMilliseconds(5);
-        private readonly TimeSpan OctaveTimeout = TimeSpan.FromTicks(500);
-        private readonly Dictionary<BellNote.Keys, GuildWarsControls> NoteMap = new Dictionary<BellNote.Keys, GuildWarsControls>
+        public Bell()
         {
-            {BellNote.Keys.Note1, GuildWarsControls.WeaponSkill1},
-            {BellNote.Keys.Note2, GuildWarsControls.WeaponSkill2},
-            {BellNote.Keys.Note3, GuildWarsControls.WeaponSkill3},
-            {BellNote.Keys.Note4, GuildWarsControls.WeaponSkill4},
-            {BellNote.Keys.Note5, GuildWarsControls.WeaponSkill5},
-            {BellNote.Keys.Note6, GuildWarsControls.HealingSkill},
-            {BellNote.Keys.Note7, GuildWarsControls.UtilitySkill1},
-            {BellNote.Keys.Note8, GuildWarsControls.UtilitySkill2}
-        };
-
-        private BellNote.Octaves CurrentOctave = BellNote.Octaves.Low;
-
-        public Bell() {
-            Preview = new BellPreview();
+            this.CurrentOctave = Octave.Middle;
         }
 
+        protected override NoteBase ConvertNote(RealNote note) => BellNote.From(note);
 
-        public override void PlayNote(Note note)
+        protected override NoteBase OptimizeNote(NoteBase note)
         {
-            var bellNote = BellNote.From(note);
-
-            if (RequiresAction(bellNote))
-            {
-                if (bellNote.Key == BellNote.Keys.None)
-                {
-                    PressNote(GuildWarsControls.EliteSkill);
-                }
-                else
-                {
-                    bellNote = OptimizeNote(bellNote);
-                    PressNote(NoteMap[bellNote.Key]);
-                }
-            }
-        }
-
-
-        public override void GoToOctave(Note note)
-        {
-            var bellNote = BellNote.From(note);
-
-            if (RequiresAction(bellNote))
-            {
-                bellNote = OptimizeNote(bellNote);
-
-                while (CurrentOctave != bellNote.Octave)
-                {
-                    if (CurrentOctave < bellNote.Octave)
-                    {
-                        IncreaseOctave();
-                    }
-                    else
-                    {
-                        DecreaseOctave();
-                    }
-                }
-            }
-        }
-
-
-        private static bool RequiresAction(BellNote bellNote)
-        {
-            return bellNote.Key != BellNote.Keys.None;
-        }
-
-
-        private BellNote OptimizeNote(BellNote note)
-        {
-            if (note.Equals(new BellNote(BellNote.Keys.Note1, BellNote.Octaves.High)) && CurrentOctave == BellNote.Octaves.Middle)
-            {
-                note = new BellNote(BellNote.Keys.Note8, BellNote.Octaves.Middle);
-            }
-            else if (note.Equals(new BellNote(BellNote.Keys.Note8, BellNote.Octaves.Middle)) && CurrentOctave == BellNote.Octaves.High)
-            {
-                note = new BellNote(BellNote.Keys.Note1, BellNote.Octaves.High);
-            }
-            else if (note.Equals(new BellNote(BellNote.Keys.Note1, BellNote.Octaves.Middle)) && CurrentOctave == BellNote.Octaves.Low)
-            {
-                note = new BellNote(BellNote.Keys.Note8, BellNote.Octaves.Low);
-            }
-            else if (note.Equals(new BellNote(BellNote.Keys.Note8, BellNote.Octaves.Low)) && CurrentOctave == BellNote.Octaves.Middle)
-            {
-                note = new BellNote(BellNote.Keys.Note1, BellNote.Octaves.Middle);
-            }
+            if (note.Equals(new BellNote(WeaponSkill1, Octave.High)) && CurrentOctave == Octave.Middle)
+                note = new BellNote(UtilitySkill2, Octave.Middle);
+            else if (note.Equals(new BellNote(UtilitySkill2, Octave.Middle)) && CurrentOctave == Octave.High)
+                note = new BellNote(WeaponSkill1, Octave.High);
+            else if (note.Equals(new BellNote(WeaponSkill1, Octave.Middle)) && CurrentOctave == Octave.Low)
+                note = new BellNote(UtilitySkill2, Octave.Low);
+            else if (note.Equals(new BellNote(UtilitySkill2, Octave.Low)) && CurrentOctave == Octave.Middle)
+                note = new BellNote(WeaponSkill1, Octave.Middle);
             return note;
         }
 
-
-        private void IncreaseOctave()
+        protected override void IncreaseOctave()
         {
             switch (CurrentOctave)
             {
-                case BellNote.Octaves.Low:
-                    CurrentOctave = BellNote.Octaves.Middle;
+                case Octave.Low:
+                    CurrentOctave = Octave.Middle;
                     break;
-                case BellNote.Octaves.Middle:
-                    CurrentOctave = BellNote.Octaves.High;
+                case Octave.Middle:
+                    CurrentOctave = Octave.High;
                     break;
-                case BellNote.Octaves.High:
+                case Octave.High:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            PressKey(GuildWarsControls.EliteSkill, CurrentOctave.ToString());
+            PressKey(EliteSkill);
 
             Thread.Sleep(OctaveTimeout);
         }
 
-
-        private void DecreaseOctave()
+        protected override void DecreaseOctave()
         {
             switch (CurrentOctave)
             {
-                case BellNote.Octaves.Low:
+                case Octave.Low:
                     break;
-                case BellNote.Octaves.Middle:
-                    CurrentOctave = BellNote.Octaves.Low;
+                case Octave.Middle:
+                    CurrentOctave = Octave.Low;
                     break;
-                case BellNote.Octaves.High:
-                    CurrentOctave = BellNote.Octaves.Middle;
+                case Octave.High:
+                    CurrentOctave = Octave.Middle;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            PressKey(GuildWarsControls.UtilitySkill3, CurrentOctave.ToString());
+            PressKey(UtilitySkill3);
 
             Thread.Sleep(OctaveTimeout);
         }
-
-
-        private void PressNote(GuildWarsControls key)
-        {
-            PressKey(key, CurrentOctave.ToString());
-            Thread.Sleep(NoteTimeout);
-        }
-
 
         public override void Dispose() {
-            Preview?.Dispose();
         }
     }
 }

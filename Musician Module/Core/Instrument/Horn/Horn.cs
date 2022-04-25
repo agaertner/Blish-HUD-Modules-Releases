@@ -1,158 +1,72 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using Blish_HUD.Controls.Intern;
+﻿using System.Threading;
 using Nekres.Musician.Core.Domain;
+using static Blish_HUD.Controls.Intern.GuildWarsControls;
 
-namespace Nekres.Musician.Core.Instrument.Horn
+namespace Nekres.Musician.Core.Instrument
 {
-    public class Horn : Musician.Core.Instrument.Instrument
+    public class Horn : InstrumentBase
     {
-        private readonly TimeSpan NoteTimeout = TimeSpan.FromMilliseconds(5);
-        private readonly TimeSpan OctaveTimeout = TimeSpan.FromTicks(500);
-
-        private readonly Dictionary<HornNote.Keys, GuildWarsControls> NoteMap = new Dictionary<HornNote.Keys, GuildWarsControls>
+        public Horn() : base(false)
         {
-            {HornNote.Keys.Note1, GuildWarsControls.WeaponSkill1},
-            {HornNote.Keys.Note2, GuildWarsControls.WeaponSkill2},
-            {HornNote.Keys.Note3, GuildWarsControls.WeaponSkill3},
-            {HornNote.Keys.Note4, GuildWarsControls.WeaponSkill4},
-            {HornNote.Keys.Note5, GuildWarsControls.WeaponSkill5},
-            {HornNote.Keys.Note6, GuildWarsControls.HealingSkill},
-            {HornNote.Keys.Note7, GuildWarsControls.UtilitySkill1},
-            {HornNote.Keys.Note8, GuildWarsControls.UtilitySkill2}
-        };
-
-        private HornNote.Octaves CurrentOctave = HornNote.Octaves.Low;
-
-        public Horn() { 
-            Preview = new HornPreview(); 
+            this.CurrentOctave = Octave.Low;
         }
 
+        protected override NoteBase ConvertNote(RealNote note) => HornNote.From(note);
 
-        public override void PlayNote(Note note)
+        protected override NoteBase OptimizeNote(NoteBase note)
         {
-            var hornNote = HornNote.From(note);
-
-            if (RequiresAction(hornNote))
-            {
-                if (hornNote.Key == HornNote.Keys.None)
-                {
-                    PressNote(GuildWarsControls.EliteSkill);
-                }
-                else
-                {
-                    hornNote = OptimizeNote(hornNote);
-                    PressNote(NoteMap[hornNote.Key]);
-                }
-            }
-        }
-
-
-        public override void GoToOctave(Note note)
-        {
-            var hornNote = HornNote.From(note);
-
-            if (RequiresAction(hornNote))
-            {
-                hornNote = OptimizeNote(hornNote);
-
-                while (CurrentOctave != hornNote.Octave)
-                {
-                    if (CurrentOctave < hornNote.Octave)
-                    {
-                        IncreaseOctave();
-                    }
-                    else
-                    {
-                        DecreaseOctave();
-                    }
-                }
-            }
-        }
-
-
-        private static bool RequiresAction(HornNote hornNote)
-        {
-            return hornNote.Key != HornNote.Keys.None;
-        }
-
-
-        private HornNote OptimizeNote(HornNote note)
-        {
-            if (note.Equals(new HornNote(HornNote.Keys.Note1, HornNote.Octaves.High)) && CurrentOctave == HornNote.Octaves.Middle)
-            {
-                note = new HornNote(HornNote.Keys.Note8, HornNote.Octaves.Middle);
-            }
-            else if (note.Equals(new HornNote(HornNote.Keys.Note8, HornNote.Octaves.Middle)) && CurrentOctave == HornNote.Octaves.High)
-            {
-                note = new HornNote(HornNote.Keys.Note1, HornNote.Octaves.High);
-            }
-            else if (note.Equals(new HornNote(HornNote.Keys.Note1, HornNote.Octaves.Middle)) && CurrentOctave == HornNote.Octaves.Low)
-            {
-                note = new HornNote(HornNote.Keys.Note8, HornNote.Octaves.Low);
-            }
-            else if (note.Equals(new HornNote(HornNote.Keys.Note8, HornNote.Octaves.Low)) && CurrentOctave == HornNote.Octaves.Middle)
-            {
-                note = new HornNote(HornNote.Keys.Note1, HornNote.Octaves.Middle);
-            }
+            if (note.Equals(new HornNote(WeaponSkill1, Octave.High)) && CurrentOctave == Octave.Middle)
+                note = new HornNote(UtilitySkill2, Octave.Middle);
+            else if (note.Equals(new HornNote(UtilitySkill2, Octave.Middle)) && CurrentOctave == Octave.High)
+                note = new HornNote(WeaponSkill1, Octave.High);
+            else if (note.Equals(new HornNote(WeaponSkill1, Octave.Middle)) && CurrentOctave == Octave.Low)
+                note = new HornNote(UtilitySkill2, Octave.Low);
+            else if (note.Equals(new HornNote(UtilitySkill2, Octave.Low)) && CurrentOctave == Octave.Middle)
+                note = new HornNote(WeaponSkill1, Octave.Middle);
             return note;
         }
 
-
-        private void IncreaseOctave()
+        protected override void IncreaseOctave()
         {
             switch (CurrentOctave)
             {
-                case HornNote.Octaves.Low:
-                    CurrentOctave = HornNote.Octaves.Middle;
+                case Octave.Low:
+                    CurrentOctave = Octave.Middle;
                     break;
-                case HornNote.Octaves.Middle:
-                    CurrentOctave = HornNote.Octaves.High;
+                case Octave.Middle:
+                    CurrentOctave = Octave.High;
                     break;
-                case HornNote.Octaves.High:
+                case Octave.High:
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: break;
             }
 
-            PressKey(GuildWarsControls.EliteSkill, CurrentOctave.ToString());
+            PressKey(EliteSkill);
 
             Thread.Sleep(OctaveTimeout);
         }
 
-
-        private void DecreaseOctave()
+        protected override void DecreaseOctave()
         {
             switch (CurrentOctave)
             {
-                case HornNote.Octaves.Low:
+                case Octave.Low:
                     break;
-                case HornNote.Octaves.Middle:
-                    CurrentOctave = HornNote.Octaves.Low;
+                case Octave.Middle:
+                    CurrentOctave = Octave.Low;
                     break;
-                case HornNote.Octaves.High:
-                    CurrentOctave = HornNote.Octaves.Middle;
+                case Octave.High:
+                    CurrentOctave = Octave.Middle;
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: break;
             }
 
-            PressKey(GuildWarsControls.UtilitySkill3, CurrentOctave.ToString());
+            PressKey(UtilitySkill3);
 
             Thread.Sleep(OctaveTimeout);
         }
-
-
-        private void PressNote(GuildWarsControls key)
-        {
-            PressKey(key, CurrentOctave.ToString());
-            Thread.Sleep(NoteTimeout);
-        }
-
 
         public override void Dispose() {
-            Preview?.Dispose();
         }
     }
 }

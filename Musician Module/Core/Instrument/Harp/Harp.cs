@@ -1,142 +1,72 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Nekres.Musician.Core.Domain;
+using System;
 using System.Threading;
-using Blish_HUD.Controls.Intern;
-using Nekres.Musician.Core.Domain;
+using static Blish_HUD.Controls.Intern.GuildWarsControls;
 
-namespace Nekres.Musician.Core.Instrument.Harp
+namespace Nekres.Musician.Core.Instrument
 {
-    public class Harp : Musician.Core.Instrument.Instrument
+    public class Harp : InstrumentBase
     {
-        private readonly TimeSpan NoteTimeout = TimeSpan.FromMilliseconds(5);
-        private readonly TimeSpan OctaveTimeout = TimeSpan.FromTicks(500);
-
-        private readonly Dictionary<HarpNote.Keys, GuildWarsControls> NoteMap = new Dictionary<HarpNote.Keys, GuildWarsControls>
+        public Harp() : base(false)
         {
-            {HarpNote.Keys.Note1, GuildWarsControls.WeaponSkill1},
-            {HarpNote.Keys.Note2, GuildWarsControls.WeaponSkill2},
-            {HarpNote.Keys.Note3, GuildWarsControls.WeaponSkill3},
-            {HarpNote.Keys.Note4, GuildWarsControls.WeaponSkill4},
-            {HarpNote.Keys.Note5, GuildWarsControls.WeaponSkill5},
-            {HarpNote.Keys.Note6, GuildWarsControls.HealingSkill},
-            {HarpNote.Keys.Note7, GuildWarsControls.UtilitySkill1},
-            {HarpNote.Keys.Note8, GuildWarsControls.UtilitySkill2}
-        };
-
-        private HarpNote.Octaves CurrentOctave = HarpNote.Octaves.Middle;
-
-        public Harp() {
-            Preview = new HarpPreview();
+            this.CurrentOctave = Octave.Middle;
         }
 
+        protected override NoteBase ConvertNote(RealNote note) => HarpNote.From(note);
 
-        public override void PlayNote(Note note)
+        protected override NoteBase OptimizeNote(NoteBase note)
         {
-            var harpNote = HarpNote.From(note);
-
-            if (RequiresAction(harpNote))
-            {
-                harpNote = OptimizeNote(harpNote);
-                PressNote(NoteMap[harpNote.Key]);
-            }
-        }
-
-
-        public override void GoToOctave(Note note)
-        {
-            var harpNote = HarpNote.From(note);
-
-            if (RequiresAction(harpNote))
-            {
-                harpNote = OptimizeNote(harpNote);
-
-                while (CurrentOctave != harpNote.Octave)
-                {
-                    if (CurrentOctave < harpNote.Octave)
-                    {
-                        IncreaseOctave();
-                    }
-                    else
-                    {
-                        DecreaseOctave();
-                    }
-                }
-            }
-        }
-
-
-        private static bool RequiresAction(HarpNote harpNote)
-        {
-            return harpNote.Key != HarpNote.Keys.None;
-        }
-
-
-        private HarpNote OptimizeNote(HarpNote note)
-        {
-            if (note.Equals(new HarpNote(HarpNote.Keys.Note1, HarpNote.Octaves.Middle)) && CurrentOctave == HarpNote.Octaves.Low)
-            {
-                note = new HarpNote(HarpNote.Keys.Note8, HarpNote.Octaves.Low);
-            }
-            else if (note.Equals(new HarpNote(HarpNote.Keys.Note1, HarpNote.Octaves.High)) && CurrentOctave == HarpNote.Octaves.Middle)
-            {
-                note = new HarpNote(HarpNote.Keys.Note8, HarpNote.Octaves.Middle);
-            }
+            if (note.Equals(new HarpNote(WeaponSkill1, Octave.Middle)) && CurrentOctave == Octave.Low)
+                note = new HarpNote(UtilitySkill2, Octave.Low);
+            else if (note.Equals(new HarpNote(WeaponSkill1, Octave.High)) && CurrentOctave == Octave.Middle)
+                note = new HarpNote(UtilitySkill2, Octave.Middle);
             return note;
         }
 
 
-        private void IncreaseOctave()
+        protected override void IncreaseOctave()
         {
             switch (CurrentOctave)
             {
-                case HarpNote.Octaves.Low:
-                    CurrentOctave = HarpNote.Octaves.Middle;
+                case Octave.Low:
+                    CurrentOctave = Octave.Middle;
                     break;
-                case HarpNote.Octaves.Middle:
-                    CurrentOctave = HarpNote.Octaves.High;
+                case Octave.Middle:
+                    CurrentOctave = Octave.High;
                     break;
-                case HarpNote.Octaves.High:
+                case Octave.High:
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: break;
             }
 
-            PressKey(GuildWarsControls.EliteSkill, CurrentOctave.ToString());
+            PressKey(EliteSkill);
 
             Thread.Sleep(OctaveTimeout);
         }
 
 
-        private void DecreaseOctave()
+        protected override void DecreaseOctave()
         {
             switch (CurrentOctave)
             {
-                case HarpNote.Octaves.Low:
+                case Octave.Low:
                     break;
-                case HarpNote.Octaves.Middle:
-                    CurrentOctave = HarpNote.Octaves.Low;
+                case Octave.Middle:
+                    CurrentOctave = Octave.Low;
                     break;
-                case HarpNote.Octaves.High:
-                    CurrentOctave = HarpNote.Octaves.Middle;
+                case Octave.High:
+                    CurrentOctave = Octave.Middle;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            PressKey(GuildWarsControls.UtilitySkill3, CurrentOctave.ToString());
+
+            PressKey(UtilitySkill3);
 
             Thread.Sleep(OctaveTimeout);
         }
-
-
-        private void PressNote(GuildWarsControls key)
-        {
-            PressKey(key, CurrentOctave.ToString());
-            Thread.Sleep(NoteTimeout);
-        }
-
 
         public override void Dispose() {
-            Preview?.Dispose();
         }
     }
 }

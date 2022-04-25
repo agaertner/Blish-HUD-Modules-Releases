@@ -1,22 +1,25 @@
-﻿using System;
+﻿using Blish_HUD;
+using Nekres.Musician.Core.Domain;
+using Nekres.Musician.Core.Instrument;
+using System;
 using System.Diagnostics;
 using System.Threading;
-using Blish_HUD;
-using Nekres.Musician.Core.Domain;
 
 namespace Nekres.Musician.Core.Player.Algorithms
 {
-    public class FavorChordsAlgorithm : IPlayAlgorithm
+    public class FavorChordsAlgorithm : PlayAlgorithmBase
     {
-        private bool Abort = false;
-        public void Dispose() { Abort = true; }
-        public void Play(Instrument instrument, Metronome metronomeMark, ChordOffset[] melody) {
+        public FavorChordsAlgorithm(InstrumentBase instrument) : base(instrument)
+        {
+        }
+
+        public override void Play(Metronome metronomeMark, ChordOffset[] melody) {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             for (var strumIndex = 0; strumIndex < melody.Length;)
             {
-                if (Abort) return;
+                if (_abort || !CanContinue()) break;
 
                 var strum = melody[strumIndex];
 
@@ -26,8 +29,8 @@ namespace Nekres.Musician.Core.Player.Algorithms
 
                     foreach (var note in chord.Notes)
                     {
-                        instrument.GoToOctave(note);
-                        instrument.PlayNote(note);
+                        this.Instrument.GoToOctave(note);
+                        this.Instrument.PlayNote(note);
                     }
 
                     strumIndex++;
@@ -38,7 +41,7 @@ namespace Nekres.Musician.Core.Player.Algorithms
                 }
             }
 
-            stopwatch.Stop();
+            MusicianModule.ModuleInstance.MusicPlayer?.Stop();
         }
     }
 }

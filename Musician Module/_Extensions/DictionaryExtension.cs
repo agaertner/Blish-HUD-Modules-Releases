@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nekres.Musician_Module
+namespace Nekres.Musician
 {
     internal static class DictionaryExtension
     {
@@ -12,7 +12,7 @@ namespace Nekres.Musician_Module
             (
                 input.Select
                 ( 
-                    async pair => new { Key = pair.Key, Value = await pair.Value }
+                    async pair => new {pair.Key, Value = await pair.Value }
                 )
             );
             return pairs.ToDictionary(pair => pair.Key, pair => pair.Value);
