@@ -1,6 +1,6 @@
 {
   "name": "Musician",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "namespace": "Nekres.Musician_Module",
   "package": "Musician Module.dll",
   "manifest_version": 1,
@@ -17,6 +17,5 @@
     }
   ],
   "directories": [ "musician" ],
-  "enabled_without_gw2": false,
-  "api_permissions": {}
+  "enabled_without_gw2": false
 }
