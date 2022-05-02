@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Blish_HUD;
 
 namespace Nekres.Chat_Shorts.UI.Models
 {
@@ -47,6 +49,12 @@ namespace Nekres.Chat_Shorts.UI.Models
             this.PrimaryKey = Keys.None;
             this.Title = string.Empty;
             this.Text = string.Empty;
+        }
+
+        public static bool CanActivate(MacroEntity e)
+        {
+            return (e.GameMode == MapUtil.GetCurrentGameMode() || e.GameMode == GameMode.All) &&
+                   (e.MapIds.Any(id => id == GameService.Gw2Mumble.CurrentMap.Id) || !e.MapIds.Any());
         }
     }
 }

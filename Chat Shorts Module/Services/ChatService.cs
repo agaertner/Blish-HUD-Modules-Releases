@@ -26,7 +26,7 @@ namespace Nekres.Chat_Shorts.Services
         {
             foreach (var macro in _activeMacros) macro.Activated -= SendToChat;
 
-            _activeMacros = await _dataService.GetAllForMap(e.Value, GetCurrentGameMode()).ContinueWith(t =>
+            _activeMacros = await _dataService.GetAllActives().ContinueWith(t =>
             {
                 var result = t.Result.Select(Macro.FromEntity).ToList();
                 foreach (var entity in result) entity.Activated += SendToChat;
@@ -44,47 +44,20 @@ namespace Nekres.Chat_Shorts.Services
             macro.Text = model.Text;
             macro.MapIds = model.MapIds;
             macro.Mode = model.Mode;
-            var mode = GetCurrentGameMode();
-            if (model.Mode != mode && model.Mode != GameMode.All || 
-                model.MapIds.All(id => id != GameService.Gw2Mumble.CurrentMap.Id) && model.MapIds.Any()) return;
+            if (!macro.CanActivate()) return;
             macro.Activated += SendToChat;
             _activeMacros.Add(macro);
         }
 
         private void SendToChat(object o, EventArgs e)
         {
+            if (!GameService.GameIntegration.Gw2Instance.IsInGame || GameService.Gw2Mumble.UI.IsTextInputFocused) return;
             GameService.GameIntegration.Chat.Send(((Macro)o).Text);
         }
 
         public void Dispose()
         {
             GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
-        }
-
-        private GameMode GetCurrentGameMode()
-        {
-            switch (GameService.Gw2Mumble.CurrentMap.Type)
-            {
-                case MapType.Pvp:
-                case MapType.Gvg:
-                case MapType.Tournament:
-                case MapType.UserTournament:
-                case MapType.EdgeOfTheMists:
-                    return GameMode.PvP;
-                case MapType.Instance:
-                case MapType.Public:
-                case MapType.Tutorial:
-                case MapType.PublicMini:
-                    return GameService.Gw2Mumble.CurrentMap.Id == 350 ? GameMode.PvP : GameMode.PvE; // Heart of the Mists
-                case MapType.Center:
-                case MapType.BlueHome:
-                case MapType.GreenHome:
-                case MapType.RedHome:
-                case MapType.WvwLounge:
-                case MapType.JumpPuzzle:
-                    return GameMode.WvW;
-                default: return GameMode.All;
-            }
         }
     }
 }

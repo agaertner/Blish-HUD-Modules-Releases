@@ -24,7 +24,6 @@ namespace Nekres.Chat_Shorts.Services
             _cacheDir = cacheDir;
             _liteDatabase = new LiteDatabaseAsync(Path.Combine(_cacheDir, "data.db"));
             _ctx = _liteDatabase.GetCollection<MacroEntity>("macros");
-
         }
 
         public async Task UpsertMacro(MacroModel model)
@@ -65,9 +64,6 @@ namespace Nekres.Chat_Shorts.Services
             MacroDeleted?.Invoke(this, new ValueEventArgs<Guid>(id));
         }
 
-        public async Task<IEnumerable<MacroEntity>> GetAllForMap(int mapId, GameMode mode)
-        {
-            return await _ctx.FindAsync(x=> (x.GameMode == mode || x.GameMode == GameMode.All) && (x.MapIds.Any(id => id == mapId) || !x.MapIds.Any()));
-        }
+        public async Task<IEnumerable<MacroEntity>> GetAllActives() => await _ctx.FindAsync(x => MacroEntity.CanActivate(x)); // async lib no haz method group overload :(
     }
 }

@@ -2,6 +2,8 @@
 using Nekres.Chat_Shorts.UI.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Blish_HUD;
 
 namespace Nekres.Chat_Shorts.Core
 {
@@ -53,6 +55,12 @@ namespace Nekres.Chat_Shorts.Core
                 Mode = model.Mode,
                 MapIds = model.MapIds
             };
+        }
+
+        public bool CanActivate()
+        {
+            return (this.Mode == MapUtil.GetCurrentGameMode() || this.Mode == GameMode.All) &&
+                   (this.MapIds.Any(id => id == GameService.Gw2Mumble.CurrentMap.Id) || !this.MapIds.Any());
         }
 
         public void Dispose()

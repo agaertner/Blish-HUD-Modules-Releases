@@ -147,6 +147,7 @@
     <Compile Include="UI\Views\LibraryView.cs" />
     <Compile Include="UI\Views\MacroEditView.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
+    <Compile Include="_Utils\MapUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
