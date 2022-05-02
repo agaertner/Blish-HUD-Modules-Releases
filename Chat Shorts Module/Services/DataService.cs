@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Blish_HUD;
+using LiteDB.Async;
+using Nekres.Chat_Shorts.UI.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Blish_HUD;
-using LiteDB.Async;
-using Nekres.Chat_Shorts.UI.Models;
 
 namespace Nekres.Chat_Shorts.Services
 {

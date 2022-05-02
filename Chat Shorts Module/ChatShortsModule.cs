@@ -6,13 +6,13 @@ using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nekres.Chat_Shorts.Services;
 using Nekres.Chat_Shorts.UI.Models;
 using Nekres.Chat_Shorts.UI.Views;
 using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Nekres.Chat_Shorts
 {

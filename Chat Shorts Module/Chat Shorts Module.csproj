@@ -134,8 +134,7 @@
     <Compile Include="Services\ChatService.cs" />
     <Compile Include="Services\DataService.cs" />
     <Compile Include="UI\Controls\DeleteButton.cs" />
-    <Compile Include="UI\Controls\EditButton.cs" />
-    <Compile Include="UI\Controls\MacroContainer.cs" />
+    <Compile Include="UI\Controls\MacroDetails.cs" />
     <Compile Include="UI\Controls\MapEntry.cs" />
     <Compile Include="UI\Models\CustomSettingsModel.cs" />
     <Compile Include="Services\Entities\MacroEntity.cs" />
@@ -144,11 +143,9 @@
     <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
     <Compile Include="UI\Presenters\LibraryPresenter.cs" />
     <Compile Include="UI\Presenters\MacroEditPresenter.cs" />
-    <Compile Include="UI\Presenters\MacroPresenter.cs" />
     <Compile Include="UI\Views\CustomSettingsView.cs" />
     <Compile Include="UI\Views\LibraryView.cs" />
     <Compile Include="UI\Views\MacroEditView.cs" />
-    <Compile Include="UI\Views\MacroView.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
   </ItemGroup>
   <ItemGroup>

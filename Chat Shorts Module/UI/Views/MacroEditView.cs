@@ -2,6 +2,7 @@
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
+using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Nekres.Chat_Shorts.UI.Controls;
 using Nekres.Chat_Shorts.UI.Models;
@@ -10,8 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Gw2Sharp.WebApi.V2.Models;
-using Color = Microsoft.Xna.Framework.Color;
 
 namespace Nekres.Chat_Shorts.UI.Views
 {
@@ -57,11 +56,37 @@ namespace Nekres.Chat_Shorts.UI.Views
             var editText = new MultilineTextBox
             {
                 Parent = buildPanel,
-                Size = new Point(buildPanel.ContentRegion.Width / 2, buildPanel.ContentRegion.Height / 2),
+                Size = new Point(buildPanel.ContentRegion.Width, buildPanel.ContentRegion.Height / 2 - 60),
                 Location = new Point(0, editTitle.Bottom + Panel.BOTTOM_PADDING),
-                Text = this.Presenter.Model.Text
+                Text = this.Presenter.Model.Text,
+                PlaceholderText = "/say Hello World!"
             };
             editText.InputFocusChanged += EditText_InputFocusChanged;
+
+            // MapIds selection
+            _mapsPanel = new FlowPanel
+            {
+                Parent = buildPanel,
+                Size = new Point(editText.Width / 2, buildPanel.ContentRegion.Height - editText.Height - 100),
+                Location = new Point(0, editText.Bottom + Panel.BOTTOM_PADDING),
+                FlowDirection = ControlFlowDirection.LeftToRight,
+                ControlPadding = new Vector2(5, 5),
+                CanCollapse = false,
+                CanScroll = true,
+                Collapsed = false,
+                ShowTint = true,
+                ShowBorder = true
+            };
+            foreach (var map in _maps) CreateMapEntry(map.Id, map.Name);
+
+            var btnAddMap = new StandardButton
+            {
+                Parent = buildPanel,
+                Size = new Point(150, StandardButton.STANDARD_CONTROL_HEIGHT),
+                Location = new Point(_mapsPanel.Location.X + (_mapsPanel.Width - 150) / 2, _mapsPanel.Location.Y + _mapsPanel.Height),
+                Text = "Add Current Map"
+            };
+            btnAddMap.Click += BtnAddMap_Click;
 
             // GameMode selection
             var labelGameMode = new Label
@@ -69,7 +94,7 @@ namespace Nekres.Chat_Shorts.UI.Views
                 Parent = buildPanel,
                 Text = "GameMode:",
                 Size = new Point(100, 34),
-                Location = new Point(editText.Width + Panel.RIGHT_PADDING, editText.Location.Y)
+                Location = new Point(_mapsPanel.Width + Panel.RIGHT_PADDING, _mapsPanel.Location.Y + (_mapsPanel.Height - 85) / 2)
             };
 
             var ddGameModeSelect = new Dropdown
@@ -82,54 +107,29 @@ namespace Nekres.Chat_Shorts.UI.Views
             ddGameModeSelect.SelectedItem = this.Presenter.Model.Mode.ToString();
             ddGameModeSelect.ValueChanged += DdGameModeSelect_ValueChanged;
 
-            // MapIds selection
-            _mapsPanel = new FlowPanel
-            {
-                Parent = buildPanel,
-                Size = new Point(editText.Width - Panel.RIGHT_PADDING, editText.Height / 2),
-                Location = new Point(editText.Width + Panel.RIGHT_PADDING, ddGameModeSelect.Bottom + Panel.BOTTOM_PADDING),
-                FlowDirection = ControlFlowDirection.LeftToRight,
-                ControlPadding = new Vector2(5, 5),
-                CanCollapse = false,
-                CanScroll = true,
-                Collapsed = false,
-                ShowTint = true,
-                ShowBorder = true,
-                BackgroundColor = Color.Black * 0.4f
-            };
-
-            foreach (var map in _maps) CreateMapEntry(map.Id, map.Name);
-
-            var btnAddMap = new StandardButton
-            {
-                Parent = buildPanel,
-                Size = new Point(150, StandardButton.STANDARD_CONTROL_HEIGHT),
-                Location = new Point(_mapsPanel.Location.X + (_mapsPanel.Width - 150) / 2, _mapsPanel.Location.Y + _mapsPanel.Height),
-                Text = "Add Current Map"
-            };
-            btnAddMap.Click += BtnAddMap_Click;
-
+            // Key Binding
             var keyAssigner = new KeybindingAssigner(this.Presenter.Model.KeyBinding)
             {
                 Parent = buildPanel,
-                Location = new Point(0,0)
+                Location = new Point(_mapsPanel.Width + Panel.RIGHT_PADDING, ddGameModeSelect.Location.Y + ddGameModeSelect.Height + Panel.BOTTOM_PADDING * 4),
+                KeyBindingName = "Macro Key:"
             };
-            keyAssigner.Location = new Point(
-                (buildPanel.ContentRegion.Width - keyAssigner.Width) / 2,
-                editText.Bottom + Panel.BOTTOM_PADDING);
             keyAssigner.BindingChanged += KeyAssigner_BindingChanged;
 
+            // Delete button
             var delBtn = new DeleteButton(ChatShorts.Instance.ContentsManager)
             {
                 Parent = buildPanel,
                 Size = new Point(42,42),
-                Location = new Point(buildPanel.ContentRegion.Width - 42, keyAssigner.Location.Y)
+                Location = new Point(buildPanel.ContentRegion.Width - 42, btnAddMap.Location.Y + btnAddMap.Height - 42),
+                BasicTooltipText = "Delete Macro"
             };
             delBtn.Click += DeleteButton_Click;
         }
 
         private void DdGameModeSelect_ValueChanged(object o, ValueChangedEventArgs e)
         {
+            GameService.Content.PlaySoundEffectByName("button-click");
             this.Presenter.Model.Mode = (GameMode)Enum.Parse(typeof(GameMode), e.CurrentValue);
         }
 
@@ -150,6 +150,8 @@ namespace Nekres.Chat_Shorts.UI.Views
 
         private async void BtnAddMap_Click(object o, MouseEventArgs e)
         {
+            GameService.Content.PlaySoundEffectByName("button-click");
+            if (this.Presenter.Model.MapIds.Any(id => id.Equals(GameService.Gw2Mumble.CurrentMap.Id))) return;
             await ChatShorts.Instance.Gw2ApiManager.Gw2ApiClient.V2.Maps
                 .GetAsync(GameService.Gw2Mumble.CurrentMap.Id).ContinueWith(t =>
                     {
@@ -174,6 +176,7 @@ namespace Nekres.Chat_Shorts.UI.Views
 
         private void MapEntry_Click(object o, MouseEventArgs e)
         {
+            GameService.Content.PlaySoundEffectByName("button-click");
             var ctrl = (MapEntry) o;
             this.Presenter.Model.MapIds.Remove(ctrl.MapId);
             ctrl.Dispose();

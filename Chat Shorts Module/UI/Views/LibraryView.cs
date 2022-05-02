@@ -14,7 +14,6 @@ namespace Nekres.Chat_Shorts.UI.Views
 {
     internal class LibraryView : View<LibraryPresenter>
     {
-
         internal event EventHandler<EventArgs> AddNewClick;
 
         internal FlowPanel MacroPanel;
@@ -30,8 +29,8 @@ namespace Nekres.Chat_Shorts.UI.Views
         private void OnMacroDeleted(object o, ValueEventArgs<Guid> e)
         {
             var ctrl = this.MacroPanel?.Children
-                            .Where(x => x.GetType() == typeof(MacroContainer))
-                            .Cast<MacroContainer>().FirstOrDefault(x => x.MacroModel.Id.Equals(e.Value));
+                            .Where(x => x.GetType() == typeof(MacroDetails))
+                            .Cast<MacroDetails>().FirstOrDefault(x => x.Model.Id.Equals(e.Value));
             ctrl?.Dispose();
         }
 
@@ -46,7 +45,7 @@ namespace Nekres.Chat_Shorts.UI.Views
             this.MacroPanel = new FlowPanel
             {
                 Parent = buildPanel,
-                Size = new Point(buildPanel.ContentRegion.Width, buildPanel.ContentRegion.Height - 150),
+                Size = new Point(buildPanel.ContentRegion.Width - 10, buildPanel.ContentRegion.Height - 150),
                 Location = new Point(0, 0),
                 FlowDirection = ControlFlowDirection.LeftToRight,
                 ControlPadding = new Vector2(5, 5),
@@ -54,8 +53,7 @@ namespace Nekres.Chat_Shorts.UI.Views
                 CanScroll = true,
                 Collapsed = false,
                 ShowTint = true,
-                ShowBorder = true,
-                BackgroundColor = Color.Black * 0.4f
+                ShowBorder = true
             };
 
             var btnAddNew = new StandardButton
@@ -73,6 +71,7 @@ namespace Nekres.Chat_Shorts.UI.Views
 
         private void BtnAddNew_Click(object o, MouseEventArgs e)
         {
+            GameService.Content.PlaySoundEffectByName("button-click");
             AddNewClick?.Invoke(this, EventArgs.Empty);
         }
     }

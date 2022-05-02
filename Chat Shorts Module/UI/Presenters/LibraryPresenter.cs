@@ -4,6 +4,9 @@ using Nekres.Chat_Shorts.UI.Controls;
 using Nekres.Chat_Shorts.UI.Models;
 using Nekres.Chat_Shorts.UI.Views;
 using System;
+using Blish_HUD;
+using Blish_HUD.Controls;
+using Blish_HUD.Input;
 
 namespace Nekres.Chat_Shorts.UI.Presenters
 {
@@ -23,12 +26,32 @@ namespace Nekres.Chat_Shorts.UI.Presenters
 
         internal void AddMacro(MacroModel model)
         {
-            var macroPanel = new MacroContainer(model)
+            var macroEntry = new MacroDetails(model)
             {
                 Parent = this.View.MacroPanel,
-                Size = new Point(345, 80)
+                Size = new Point(345, 100)
             };
-            macroPanel.Show(new MacroView(model));
+            macroEntry.EditClick += OnEditMacroClicked;
+        }
+
+        private void OnEditMacroClicked(object o, MouseEventArgs e)
+        {
+            var ctrl = (MacroDetails)o;
+            ctrl.Active = true;
+            var bgTex = GameService.Content.GetTexture("controls/window/502049");
+            var windowRegion = new Rectangle(40, 26, 895 + 38, 780 - 56);
+            var contentRegion = new Rectangle(70, 41, 895 - 43, 780 - 142);
+            var editWindow = new StandardWindow(bgTex, windowRegion, contentRegion)
+            {
+                Parent = GameService.Graphics.SpriteScreen,
+                Location = new Point((GameService.Graphics.SpriteScreen.Width - windowRegion.Width) / 2, (GameService.Graphics.SpriteScreen.Height - windowRegion.Height) / 2),
+                Title = $"Edit Macro - {ctrl.Title}",
+                Id = $"ChatShorts_{nameof(MacroEditView)}_b273ada2-95ad-4d54-a071-44ca63c65120",
+                SavesPosition = true
+            };
+            editWindow.Show(new MacroEditView(ctrl.Model));
+            editWindow.Hidden += (_, _) => editWindow.Dispose();
+            editWindow.Disposed += (_, _) => ctrl.Active = false;
         }
     }
 }

@@ -37,6 +37,7 @@ namespace Nekres.Chat_Shorts.Services
         public void UpdateMacro(MacroModel model)
         {
             var macro = _activeMacros.FirstOrDefault(x => x.Id.Equals(model.Id)) ?? Macro.FromModel(model);
+            _activeMacros.Remove(macro);
             macro.Activated -= SendToChat;
             macro.KeyBinding.ModifierKeys = model.KeyBinding.ModifierKeys;
             macro.KeyBinding.PrimaryKey = model.KeyBinding.PrimaryKey;
@@ -44,13 +45,10 @@ namespace Nekres.Chat_Shorts.Services
             macro.MapIds = model.MapIds;
             macro.Mode = model.Mode;
             var mode = GetCurrentGameMode();
-            if ((model.Mode == mode || model.Mode == GameMode.All)
-                && (model.MapIds.Any(id => id == GameService.Gw2Mumble.CurrentMap.Id) || !model.MapIds.Any()))
-            {
-                macro.Activated += SendToChat;
-                return;
-            }
-            _activeMacros.Remove(macro);
+            if (model.Mode != mode && model.Mode != GameMode.All || 
+                model.MapIds.All(id => id != GameService.Gw2Mumble.CurrentMap.Id) && model.MapIds.Any()) return;
+            macro.Activated += SendToChat;
+            _activeMacros.Add(macro);
         }
 
         private void SendToChat(object o, EventArgs e)
