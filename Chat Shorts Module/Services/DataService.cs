@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace Nekres.Chat_Shorts.Services
 {
-    internal class DataService
+    internal class DataService : IDisposable
     {
         public event EventHandler<ValueEventArgs<Guid>> MacroDeleted;
 
-        private LiteDatabaseAsync _liteDatabase;
+        private LiteDatabaseAsync _db;
         private ILiteCollectionAsync<MacroEntity> _ctx;
 
         public bool Loading { get; private set; }
@@ -22,8 +22,8 @@ namespace Nekres.Chat_Shorts.Services
         public DataService(string cacheDir)
         {
             _cacheDir = cacheDir;
-            _liteDatabase = new LiteDatabaseAsync(Path.Combine(_cacheDir, "data.db"));
-            _ctx = _liteDatabase.GetCollection<MacroEntity>("macros");
+            _db = new LiteDatabaseAsync(Path.Combine(_cacheDir, "data.db"));
+            _ctx = _db.GetCollection<MacroEntity>("macros");
         }
 
         public async Task UpsertMacro(MacroModel model)
@@ -66,5 +66,10 @@ namespace Nekres.Chat_Shorts.Services
 
         public async Task<IEnumerable<MacroEntity>> GetAllActives() => await _ctx.FindAsync(e => (e.GameMode == MapUtil.GetCurrentGameMode() || e.GameMode == GameMode.All) &&
             (e.MapIds.Any(id => id == GameService.Gw2Mumble.CurrentMap.Id) || !e.MapIds.Any())); // async lib no haz method group overload :(
+
+        public void Dispose()
+        {
+            _db?.Dispose();
+        }
     }
 }

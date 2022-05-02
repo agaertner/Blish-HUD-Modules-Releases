@@ -105,7 +105,8 @@ namespace Nekres.Chat_Shorts
         protected override void Unload()
         {
             // Unload here
-            this.ChatService.Dispose();
+            this.ChatService?.Dispose();
+            this.DataService?.Dispose();
             _cornerIcon.Click -= OnModuleIconClick;
             _cornerIcon?.Dispose();
             _moduleWindow?.Dispose();
