@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32319.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chat Shorts Module", "Chat Shorts Module.csproj", "{1013AB9A-F2AF-459F-BAA7-3E5BDEFDA76B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1013AB9A-F2AF-459F-BAA7-3E5BDEFDA76B}.Debug|x64.ActiveCfg = Debug|x64
+		{1013AB9A-F2AF-459F-BAA7-3E5BDEFDA76B}.Debug|x64.Build.0 = Debug|x64
+		{1013AB9A-F2AF-459F-BAA7-3E5BDEFDA76B}.Release|x64.ActiveCfg = Release|x64
+		{1013AB9A-F2AF-459F-BAA7-3E5BDEFDA76B}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2448CA00-4F4B-45FF-B9F7-02A202E81EA3}
+	EndGlobalSection
+EndGlobal
