@@ -1,7 +1,7 @@
 {
   "name": "Loading Screen Hints",
-  "version": "0.6.5",
-  "namespace": "Nekres.Loading_Screen_Hints",
+  "version": "1.0.2",
+  "namespace": "bh.general.loadingscreenhints",
   "package": "Loading Screen Hints Module.dll",
   "manifest_version": 1,
   "description": "Shows tips, Tyrian knowledge, narrations, and character quizzes during the loading screen.",
