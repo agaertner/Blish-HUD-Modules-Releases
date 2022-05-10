@@ -1,0 +1,18 @@
+{
+  "name": "Loading Screen Hints",
+  "version": "0.6.5",
+  "namespace": "Nekres.Loading_Screen_Hints",
+  "package": "Loading Screen Hints Module.dll",
+  "manifest_version": 1,
+  "description": "Shows tips, Tyrian knowledge, narrations, and character quizzes during the loading screen.",
+  "dependencies": {
+    "bh.blishhud": ">=0.11.6"
+  },
+  "url": "https://github.com/agaertner/Blish-HUD-Modules-Releases",
+  "contributors": [
+    {
+      "name": "Nekres",
+      "username": "Nekres.1943"
+    }
+  ]
+}
