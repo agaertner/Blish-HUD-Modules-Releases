@@ -1,11 +1,12 @@
-﻿using Blish_HUD.Controls;
-using System;
+﻿using System;
 using Blish_HUD;
+using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nekres.Loading_Screen_Hints.Controls.Hints;
 
-namespace Loading_Screen_Hints_Module.Controls
+namespace Nekres.Loading_Screen_Hints.Controls
 {
     public class LoadScreenPanel : Container {
 

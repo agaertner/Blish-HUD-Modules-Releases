@@ -2,15 +2,16 @@
 using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
-using Loading_Screen_Hints_Module.Controls;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
+using Nekres.Loading_Screen_Hints.Controls;
+using Nekres.Loading_Screen_Hints.Controls.Hints;
 
-namespace Loading_Screen_Hints_Module
+namespace Nekres.Loading_Screen_Hints
 {
 
     [Export(typeof(Module))]

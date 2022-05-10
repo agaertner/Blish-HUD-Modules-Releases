@@ -1,11 +1,11 @@
-﻿using Blish_HUD;
+﻿using System.Collections.Generic;
+using Blish_HUD;
 using Blish_HUD.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.BitmapFonts;
-using System.Collections.Generic;
 
-namespace Loading_Screen_Hints_Module.Controls
+namespace Nekres.Loading_Screen_Hints.Controls.Hints
 {
     public class GuessCharacter : Control {
         public static List<string> Characters = new List<string>
