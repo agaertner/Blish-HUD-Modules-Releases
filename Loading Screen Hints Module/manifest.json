@@ -2,7 +2,7 @@
   "name": "Loading Screen Hints",
   "version": "1.0.3",
   "namespace": "bh.general.loadingscreenhints",
-  "package": "Loading Screen Hints Module.dll",
+  "package": "LoadingScreenHintsModule.dll",
   "manifest_version": 1,
   "description": "Shows tips, Tyrian knowledge, narrations, and character quizzes during the loading screen.",
   "dependencies": {
