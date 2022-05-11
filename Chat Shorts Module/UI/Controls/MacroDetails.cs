@@ -47,6 +47,7 @@ namespace Nekres.Chat_Shorts.UI.Controls
         {
             this.Keys = model.KeyBinding.GetBindingDisplayText();
             this.Title = model.Title;
+            this.BasicTooltipText = model.Text;
             this.Model = model;
             this.Model.Changed += OnModelChanged;
         }
@@ -55,6 +56,7 @@ namespace Nekres.Chat_Shorts.UI.Controls
         {
             this.Keys = this.Model.KeyBinding.GetBindingDisplayText();
             this.Title = this.Model.Title;
+            this.BasicTooltipText = this.Model.Text;
         }
 
         protected override void OnMouseMoved(MouseEventArgs e)

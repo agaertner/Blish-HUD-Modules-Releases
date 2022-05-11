@@ -130,7 +130,8 @@ namespace Nekres.Chat_Shorts
                 var entry = new ContextMenuStripItemWithModel<MacroModel>(model)
                 {
                     Text = model.Title,
-                    Parent = _moduleContextMenu
+                    Parent = _moduleContextMenu,
+                    BasicTooltipText = model.Text
                 };
                 entry.Click += (o, _) => ChatService.SendToChat(((ContextMenuStripItemWithModel<MacroModel>)o).Model.Text);
             }
