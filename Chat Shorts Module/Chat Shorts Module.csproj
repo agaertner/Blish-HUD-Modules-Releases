@@ -133,6 +133,8 @@
     <Compile Include="Core\Macro.cs" />
     <Compile Include="Services\ChatService.cs" />
     <Compile Include="Services\DataService.cs" />
+    <Compile Include="UI\Controls\ContextMenuStripItemSeparator.cs" />
+    <Compile Include="UI\Controls\ContextMenuStripItemWithModel.cs" />
     <Compile Include="UI\Controls\DeleteButton.cs" />
     <Compile Include="UI\Controls\MacroDetails.cs" />
     <Compile Include="UI\Controls\MapEntry.cs" />

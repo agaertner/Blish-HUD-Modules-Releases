@@ -24,12 +24,12 @@ namespace Nekres.Chat_Shorts.Services
 
         private async void OnMapChanged(object o, ValueEventArgs<int> e)
         {
-            foreach (var macro in _activeMacros) macro.Activated -= SendToChat;
+            foreach (var macro in _activeMacros) macro.Activated -= OnMacroActivated;
 
             _activeMacros = await _dataService.GetAllActives().ContinueWith(t =>
             {
                 var result = t.Result.Select(Macro.FromEntity).ToList();
-                foreach (var entity in result) entity.Activated += SendToChat;
+                foreach (var entity in result) entity.Activated += OnMacroActivated;
                 return result;
             });
         }
@@ -38,21 +38,23 @@ namespace Nekres.Chat_Shorts.Services
         {
             var macro = _activeMacros.FirstOrDefault(x => x.Id.Equals(model.Id)) ?? Macro.FromModel(model);
             _activeMacros.Remove(macro);
-            macro.Activated -= SendToChat;
+            macro.Activated -= OnMacroActivated;
             macro.KeyBinding.ModifierKeys = model.KeyBinding.ModifierKeys;
             macro.KeyBinding.PrimaryKey = model.KeyBinding.PrimaryKey;
             macro.Text = model.Text;
             macro.MapIds = model.MapIds;
             macro.Mode = model.Mode;
             if (!macro.CanActivate()) return;
-            macro.Activated += SendToChat;
+            macro.Activated += OnMacroActivated;
             _activeMacros.Add(macro);
         }
 
-        private void SendToChat(object o, EventArgs e)
+        private void OnMacroActivated(object o, EventArgs e) => SendToChat(((Macro)o).Text);
+
+        public void SendToChat(string text)
         {
             if (!GameService.GameIntegration.Gw2Instance.IsInGame || GameService.Gw2Mumble.UI.IsTextInputFocused) return;
-            GameService.GameIntegration.Chat.Send(((Macro)o).Text);
+            GameService.GameIntegration.Chat.Send(text);
         }
 
         public void Dispose()

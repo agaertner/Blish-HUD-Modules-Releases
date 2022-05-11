@@ -11,8 +11,11 @@ using Nekres.Chat_Shorts.Services;
 using Nekres.Chat_Shorts.UI.Models;
 using Nekres.Chat_Shorts.UI.Views;
 using System;
+using System.CodeDom;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Threading.Tasks;
+using Nekres.Chat_Shorts.UI.Controls;
 
 namespace Nekres.Chat_Shorts
 {
@@ -36,6 +39,7 @@ namespace Nekres.Chat_Shorts
 
         private StandardWindow _moduleWindow;
         private CornerIcon _cornerIcon;
+        private ContextMenuStrip _moduleContextMenu;
 
         // Textures
         private Texture2D _cornerTexture;
@@ -62,6 +66,7 @@ namespace Nekres.Chat_Shorts
 
         protected override async Task LoadAsync()
         {
+            await BuildContextMenu();
         }
 
         protected override void OnModuleLoaded(EventArgs e)
@@ -82,13 +87,57 @@ namespace Nekres.Chat_Shorts
                 Icon = ContentsManager.GetTexture("corner_icon.png")
             };
             _cornerIcon.Click += OnModuleIconClick;
+
+            GameService.Gw2Mumble.CurrentMap.MapChanged += OnMapChanged;
             // Base handler must be called
             base.OnModuleLoaded(e);
         }
 
+        private async void OnMapChanged(object o, ValueEventArgs<int> e)
+        {
+            await BuildContextMenu();
+        }
+
         public void OnModuleIconClick(object o, MouseEventArgs e)
         {
-            _moduleWindow.ToggleWindow(new LibraryView(new LibraryModel()));
+            _moduleContextMenu?.Show(_cornerIcon);
+        }
+
+        internal async Task BuildContextMenu()
+        {
+            var prevVisible = _moduleContextMenu?.Visible;
+            var prevLocation = _moduleContextMenu?.Location;
+            _moduleContextMenu?.Dispose();
+            _moduleContextMenu = new ContextMenuStrip();
+
+            var openLibrary = new ContextMenuStripItem("Open Library")
+            {
+                Parent = _moduleContextMenu
+            };
+            openLibrary.Click += (_, _) => _moduleWindow.ToggleWindow(new LibraryView(new LibraryModel()));
+
+            var separatorItem = new ContextMenuStripItemSeparator
+            {
+                Parent = _moduleContextMenu,
+                CanCheck = false,
+                Enabled = false
+            };
+
+            var macros = (await DataService.GetAllActives()).Select(MacroModel.FromEntity);
+
+            foreach (var model in macros)
+            {
+                var entry = new ContextMenuStripItemWithModel<MacroModel>(model)
+                {
+                    Text = model.Title,
+                    Parent = _moduleContextMenu
+                };
+                entry.Click += (o, _) => ChatService.SendToChat(((ContextMenuStripItemWithModel<MacroModel>)o).Model.Text);
+            }
+
+            if (!prevVisible.GetValueOrDefault()) return;
+            _moduleContextMenu.Location = prevLocation.GetValueOrDefault();
+            _moduleContextMenu.Show();
         }
 
         protected override void Update(GameTime gameTime)
@@ -108,6 +157,8 @@ namespace Nekres.Chat_Shorts
             this.ChatService?.Dispose();
             this.DataService?.Dispose();
             _cornerIcon.Click -= OnModuleIconClick;
+            GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
+            _moduleContextMenu?.Dispose();
             _cornerIcon?.Dispose();
             _moduleWindow?.Dispose();
             _backgroundTexture?.Dispose();

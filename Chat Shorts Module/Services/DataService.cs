@@ -44,7 +44,9 @@ namespace Nekres.Chat_Shorts.Services
                 e.ModifierKey = model.KeyBinding.ModifierKeys;
                 await _ctx.UpdateAsync(e);
             }
+
             await _ctx.EnsureIndexAsync(x => x.Id);
+            await ChatShorts.Instance.BuildContextMenu();
         }
 
         public async Task<IEnumerable<MacroEntity>> GetAll()
