@@ -110,6 +110,8 @@ namespace Nekres.Inquest_Module
             AutoClickHoldKeySetting.Value.Enabled = true;
             AutoClickSoundVolume.SettingChanged += OnAutoClickSoundVolumeSettingChanged;
             GameService.Gw2Mumble.PlayerCharacter.CurrentMountChanged += OnCurrentMountChanged;
+            GameService.Gw2Mumble.UI.IsTextInputFocusedChanged += OnIsTextInputFocusChanged;
+            GameService.Gw2Mumble.UI.IsMapOpenChanged += OnIsMapOpenChanged;
             GameService.GameIntegration.Gw2Instance.IsInGameChanged += OnIsInGameChanged;
         }
         public override IView GetSettingsView()
@@ -154,7 +156,8 @@ namespace Nekres.Inquest_Module
 
         private void OnCurrentMountChanged(object o, ValueEventArgs<MountType> e) => ToggleDodgeJump(e.Value == MountType.None);
         private void OnIsInGameChanged(object o, ValueEventArgs<bool> e) => ToggleDodgeJump(e.Value);
-
+        private void OnIsTextInputFocusChanged(object o, ValueEventArgs<bool> e) => ToggleDodgeJump(!e.Value);
+        private void OnIsMapOpenChanged(object o, ValueEventArgs<bool> e) => ToggleDodgeJump(!e.Value);
         private void ToggleDodgeJump(bool enabled)
         {
             DodgeJumpKeyBindingSetting.Value.BlockSequenceFromGw2 = enabled;
@@ -182,6 +185,8 @@ namespace Nekres.Inquest_Module
             AutoClickHoldKeySetting.Value.Enabled = false;
             GameService.Gw2Mumble.PlayerCharacter.CurrentMountChanged -= OnCurrentMountChanged;
             GameService.GameIntegration.Gw2Instance.IsInGameChanged -= OnIsInGameChanged;
+            GameService.Gw2Mumble.UI.IsTextInputFocusedChanged -= OnIsTextInputFocusChanged;
+            GameService.Gw2Mumble.UI.IsMapOpenChanged -= OnIsMapOpenChanged;
             DodgeJumpKeyBindingSetting.Value.Enabled = false;
             DodgeJumpKeyBindingSetting.Value.BlockSequenceFromGw2 = false;
             _autoClickController?.Dispose();
