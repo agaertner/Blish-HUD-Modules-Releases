@@ -131,7 +131,7 @@ namespace Nekres.Inquest_Module
 
         private void OnDodgeJumpKeyActivated(object o, EventArgs e)
         {
-            if (GameService.Gw2Mumble.PlayerCharacter.CurrentMount != MountType.None || DateTime.UtcNow < _nextDodgeJump) return;
+            if (DateTime.UtcNow < _nextDodgeJump) return;
 
             if (DodgeKeyBindingSetting.Value.PrimaryKey == DodgeJumpKeyBindingSetting.Value.PrimaryKey 
                 && DodgeKeyBindingSetting.Value.ModifierKeys == DodgeJumpKeyBindingSetting.Value.ModifierKeys)
