@@ -83,6 +83,17 @@ namespace Nekres.Inquest_Module.UI.Views
             };
             donateBtn.Click += OnBrowserButtonClick;
 
+            var twitch = new StandardButton
+            {
+                Parent = _socialFlowPanel,
+                Size = new Point(100, 46),
+                Text = "twitch",
+                Icon = this.Presenter.Model.GetSocialLogo(CustomSettingsModel.Social.Twitch),
+                ResizeIcon = true,
+                BasicTooltipText = this.Presenter.Model.GetSocialUrl(CustomSettingsModel.Social.Twitch)
+            };
+            twitch.Click += OnBrowserButtonClick;
+
             _settingFlowPanel = new FlowPanel
             {
                 Size = new Point(buildPanel.Width, buildPanel.Height),

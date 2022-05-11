@@ -14,6 +14,7 @@ using Nekres.Inquest_Module.UI.Views;
 using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
+using Gw2Sharp.Models;
 
 namespace Nekres.Inquest_Module
 {
@@ -104,9 +105,12 @@ namespace Nekres.Inquest_Module
             JumpKeyBindingSetting.Value.Enabled = false;
             DodgeKeyBindingSetting.Value.Enabled = false;
             DodgeJumpKeyBindingSetting.Value.Enabled = true;
-            DodgeJumpKeyBindingSetting.Value.BlockSequenceFromGw2 = true;
-            DodgeJumpKeyBindingSetting.Value.Activated += OnDodgeJumpKeyActivated;
+            ToggleDodgeJump(GameService.Gw2Mumble.PlayerCharacter.CurrentMount == MountType.None);
+            AutoClickToggleKeySetting.Value.Enabled = true;
+            AutoClickHoldKeySetting.Value.Enabled = true;
             AutoClickSoundVolume.SettingChanged += OnAutoClickSoundVolumeSettingChanged;
+            GameService.Gw2Mumble.PlayerCharacter.CurrentMountChanged += OnCurrentMountChanged;
+            GameService.GameIntegration.Gw2Instance.IsInGameChanged += OnIsInGameChanged;
         }
         public override IView GetSettingsView()
         {
@@ -125,7 +129,7 @@ namespace Nekres.Inquest_Module
 
         private void OnDodgeJumpKeyActivated(object o, EventArgs e)
         {
-            if (DateTime.UtcNow < _nextDodgeJump) return;
+            if (GameService.Gw2Mumble.PlayerCharacter.CurrentMount != MountType.None || DateTime.UtcNow < _nextDodgeJump) return;
 
             if (DodgeKeyBindingSetting.Value.PrimaryKey == DodgeJumpKeyBindingSetting.Value.PrimaryKey 
                 && DodgeKeyBindingSetting.Value.ModifierKeys == DodgeJumpKeyBindingSetting.Value.ModifierKeys)
@@ -148,6 +152,18 @@ namespace Nekres.Inquest_Module
                 Blish_HUD.Controls.Intern.Keyboard.Stroke((VirtualKeyShort)JumpKeyBindingSetting.Value.PrimaryKey);
         }
 
+        private void OnCurrentMountChanged(object o, ValueEventArgs<MountType> e) => ToggleDodgeJump(e.Value == MountType.None);
+        private void OnIsInGameChanged(object o, ValueEventArgs<bool> e) => ToggleDodgeJump(e.Value);
+
+        private void ToggleDodgeJump(bool enabled)
+        {
+            DodgeJumpKeyBindingSetting.Value.BlockSequenceFromGw2 = enabled;
+            if (enabled)
+                DodgeJumpKeyBindingSetting.Value.Activated += OnDodgeJumpKeyActivated;
+            else
+                DodgeJumpKeyBindingSetting.Value.Activated -= OnDodgeJumpKeyActivated;
+        }
+
         protected override void OnModuleLoaded(EventArgs e)
         {
             // Base handler must be called
@@ -162,6 +178,12 @@ namespace Nekres.Inquest_Module
         /// <inheritdoc />
         protected override void Unload()
         {
+            AutoClickToggleKeySetting.Value.Enabled = false;
+            AutoClickHoldKeySetting.Value.Enabled = false;
+            GameService.Gw2Mumble.PlayerCharacter.CurrentMountChanged -= OnCurrentMountChanged;
+            GameService.GameIntegration.Gw2Instance.IsInGameChanged -= OnIsInGameChanged;
+            DodgeJumpKeyBindingSetting.Value.Enabled = false;
+            DodgeJumpKeyBindingSetting.Value.BlockSequenceFromGw2 = false;
             _autoClickController?.Dispose();
             DodgeJumpKeyBindingSetting.Value.Activated -= OnDodgeJumpKeyActivated;
             AutoClickSoundVolume.SettingChanged -= OnAutoClickSoundVolumeSettingChanged;
