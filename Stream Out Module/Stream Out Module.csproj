@@ -142,7 +142,7 @@
     <Compile Include="Core\Services\PvpService.cs" />
     <Compile Include="Core\Services\WalletService.cs" />
     <Compile Include="Core\Services\WvwService.cs" />
-    <Compile Include="Core\Services\IExportService.cs" />
+    <Compile Include="Core\Services\ExportService.cs" />
     <Compile Include="StreamOutModule.cs" />
     <Compile Include="UI\Models\CustomSettingsModel.cs" />
     <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
@@ -160,7 +160,6 @@
     <Compile Include="_Extensions\OverlayServiceExtensions.cs" />
     <Compile Include="_Extensions\StringExtensions.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
-    <Compile Include="_Utils\CommonStrings.cs" />
     <Compile Include="_Utils\TextureUtil.cs" />
   </ItemGroup>
   <ItemGroup>

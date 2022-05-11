@@ -22,7 +22,7 @@ namespace Nekres.Stream_Out
 
         public static async Task SaveToImage(string renderUri, string path)
         {
-            await StreamOutModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.Render.DownloadToByteArrayAsync(renderUri).ContinueWith(async textureDataResponse =>
+            await StreamOutModule.Instance.Gw2ApiManager.Gw2ApiClient.Render.DownloadToByteArrayAsync(renderUri).ContinueWith(async textureDataResponse =>
             {
                 if (textureDataResponse.IsFaulted)
                 {

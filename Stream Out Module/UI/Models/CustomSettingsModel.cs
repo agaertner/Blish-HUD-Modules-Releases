@@ -16,7 +16,7 @@ namespace Nekres.Stream_Out.UI.Models
 
         public SettingCollection Settings { get; }
 
-        private ContentsManager ContentsManager => StreamOutModule.ModuleInstance.ContentsManager;
+        private ContentsManager ContentsManager => StreamOutModule.Instance.ContentsManager;
         public CustomSettingsModel(SettingCollection settings)
         {
             Settings = settings;

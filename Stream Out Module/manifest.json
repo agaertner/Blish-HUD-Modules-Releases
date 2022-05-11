@@ -1,6 +1,6 @@
 {
   "name": "Stream Out",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "namespace": "Nekres.Stream_Out",
   "package": "StreamOut.dll",
   "manifest_version": 1,

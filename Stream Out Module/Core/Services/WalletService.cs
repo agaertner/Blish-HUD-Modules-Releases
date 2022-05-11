@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace Nekres.Stream_Out.Core.Services
 {
-    internal class WalletService : IExportService
+    internal class WalletService : ExportService
     {
-        private Logger Logger => StreamOutModule.Logger;
-        private Gw2ApiManager Gw2ApiManager => StreamOutModule.ModuleInstance?.Gw2ApiManager;
-        private DirectoriesManager DirectoriesManager => StreamOutModule.ModuleInstance?.DirectoriesManager;
+        private Gw2ApiManager Gw2ApiManager => StreamOutModule.Instance?.Gw2ApiManager;
+        private DirectoriesManager DirectoriesManager => StreamOutModule.Instance?.DirectoriesManager;
 
         private const string WALLET_COINS = "wallet_coins.png";
         private const string WALLET_KARMA = "wallet_karma.png";
@@ -19,18 +18,18 @@ namespace Nekres.Stream_Out.Core.Services
         {
         }
 
-        public async Task Update()
+        protected override async Task Update()
         {
             await UpdateWallet();
         }
 
-        public async Task Initialize()
+        public override async Task Initialize()
         {
             await Gw2Util.GenerateCoinsImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_COINS}", 10000000, false);
             await Gw2Util.GenerateKarmaImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_KARMA}", 10000000, false);
         }
 
-        public async Task ResetDaily()
+        protected override async Task ResetDaily()
         {
         }
 
@@ -50,7 +49,7 @@ namespace Nekres.Stream_Out.Core.Services
             });
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
         }
     }

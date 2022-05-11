@@ -11,11 +11,10 @@ using static Blish_HUD.GameService;
 
 namespace Nekres.Stream_Out.Core.Services
 {
-    internal class MapService : IExportService
+    internal class MapService : ExportService
     {
-        private Logger Logger => StreamOutModule.Logger;
-        private Gw2ApiManager Gw2ApiManager => StreamOutModule.ModuleInstance?.Gw2ApiManager;
-        private DirectoriesManager DirectoriesManager => StreamOutModule.ModuleInstance?.DirectoriesManager;
+        private Gw2ApiManager Gw2ApiManager => StreamOutModule.Instance?.Gw2ApiManager;
+        private DirectoriesManager DirectoriesManager => StreamOutModule.Instance?.DirectoriesManager;
 
         private const string MAP_TYPE = "map_type.txt";
         private const string MAP_NAME = "map_name.txt";
@@ -50,7 +49,7 @@ namespace Nekres.Stream_Out.Core.Services
             }
             catch (Exception ex) when (ex is UnexpectedStatusException or NullReferenceException)
             {
-                Logger.Warn(CommonStrings.WebApiDown);
+                StreamOutModule.Logger.Warn(StreamOutModule.Instance.WebApiDown);
                 return;
             }
 
@@ -99,19 +98,19 @@ namespace Nekres.Stream_Out.Core.Services
             await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{MAP_TYPE}", type);
         }
 
-        public async Task Update()
+        protected override async Task Update()
         {
         }
 
-        public async Task Initialize()
+        public override async Task Initialize()
         {
         }
 
-        public async Task ResetDaily()
+        protected override async Task ResetDaily()
         {
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
         }
     }

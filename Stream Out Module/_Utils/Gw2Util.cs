@@ -32,11 +32,11 @@ namespace Nekres.Stream_Out
 
             var fontHeight = Math.Max(Math.Max(silverSize.Height, goldSize.Height), copperSize.Height);
 
-            var copperIconStream = ModuleInstance.ContentsManager.GetFileStream("copper_coin.png");
+            var copperIconStream = Instance.ContentsManager.GetFileStream("copper_coin.png");
             var copperIcon = new Bitmap(copperIconStream).FitToHeight(fontHeight - 5);
-            var silverIconStream = ModuleInstance.ContentsManager.GetFileStream("silver_coin.png");
+            var silverIconStream = Instance.ContentsManager.GetFileStream("silver_coin.png");
             var silverIcon = new Bitmap(silverIconStream).FitToHeight(fontHeight - 5);
-            var goldIconStream = ModuleInstance.ContentsManager.GetFileStream("gold_coin.png");
+            var goldIconStream = Instance.ContentsManager.GetFileStream("gold_coin.png");
             var goldIcon = new Bitmap(goldIconStream).FitToHeight(fontHeight - 5);
 
             var margin = 5;
@@ -115,7 +115,7 @@ namespace Nekres.Stream_Out
             var font = new Font("Arial", 12);
             var karmaStr = karma.ToString("N0", Overlay.CultureInfo());
             var karmaSize = karmaStr.Measure(font);
-            var karmaIconStream = ModuleInstance.ContentsManager.GetFileStream("karma.png");
+            var karmaIconStream = Instance.ContentsManager.GetFileStream("karma.png");
             var karmaIcon = new Bitmap(karmaIconStream).FitToHeight(karmaSize.Height);
             var height = Math.Max(karmaSize.Height, karmaIcon.Height);
             using (var bitmap = new Bitmap(karmaSize.Width + karmaIcon.Width, height))
@@ -145,9 +145,9 @@ namespace Nekres.Stream_Out
         public static async Task GeneratePvpTierImage(string filePath, int tier, int maxTiers, bool overwrite = true)
         {
             if (!overwrite && File.Exists(filePath)) return;
-            var tierIconFilledStream = ModuleInstance.ContentsManager.GetFileStream("1495585.png");
+            var tierIconFilledStream = Instance.ContentsManager.GetFileStream("1495585.png");
             var tierIconFilled = new Bitmap(tierIconFilledStream);
-            var tierIconEmptyStream = ModuleInstance.ContentsManager.GetFileStream("1495584.png");
+            var tierIconEmptyStream = Instance.ContentsManager.GetFileStream("1495584.png");
             var tierIconEmpty = new Bitmap(tierIconEmptyStream);
 
             var width = maxTiers * (Math.Max(tierIconFilled.Width, tierIconEmpty.Width) + 2);

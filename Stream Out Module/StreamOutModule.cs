@@ -20,7 +20,7 @@ namespace Nekres.Stream_Out
 
         internal static readonly Logger Logger = Logger.GetLogger<StreamOutModule>();
 
-        internal static StreamOutModule ModuleInstance;
+        internal static StreamOutModule Instance;
 
         #region Service Managers
         internal SettingsManager SettingsManager => ModuleParameters.SettingsManager;
@@ -29,15 +29,12 @@ namespace Nekres.Stream_Out
         internal Gw2ApiManager Gw2ApiManager => ModuleParameters.Gw2ApiManager;
         #endregion
 
-        [ImportingConstructor]
-        public StreamOutModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { ModuleInstance = this; }
-
         internal SettingEntry<bool> OnlyLastDigitSettingEntry;
         internal SettingEntry<UnicodeSigning> AddUnicodeSymbols;
         internal SettingEntry<bool> UseCatmanderTag;
 
-        internal SettingEntry<DateTime?> ResetTimeWvW;
-        internal SettingEntry<DateTime?> ResetTimeDaily;
+        internal SettingEntry<DateTime> ResetTimeWvW;
+        internal SettingEntry<DateTime> ResetTimeDaily;
 
         internal SettingEntry<int> SessionKillsWvW;
         internal SettingEntry<int> SessionKillsWvwDaily;
@@ -57,7 +54,7 @@ namespace Nekres.Stream_Out
 
         internal bool HasSubToken { get; private set; }
 
-        private DateTime? _prevApiRequestTime;
+        internal string WebApiDown = "Unable to connect to the official Guild Wars 2 WebApi. Check if the WebApi is down for maintenance.";
 
         internal enum UnicodeSigning
         {
@@ -66,7 +63,13 @@ namespace Nekres.Stream_Out
             Suffixed
         }
 
-        private List<IExportService> _allExportServices;
+        private List<ExportService> _allExportServices;
+
+        [ImportingConstructor]
+        public StreamOutModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
+        {
+            Instance = this;
+        }
 
         protected override void DefineSettings(SettingCollection settings)
         {
@@ -74,12 +77,11 @@ namespace Nekres.Stream_Out
             AddUnicodeSymbols = settings.DefineSetting("UnicodeSymbols",UnicodeSigning.Suffixed, () => "Numeric Value Signing", () => "The way numeric values should be signed with unicode symbols.");
             UseCatmanderTag = settings.DefineSetting("CatmanderTag", false, () => "Use Catmander Tag", () => $"Replaces the Commander icon with the Catmander icon if you tag up as Commander in-game.");
 
-            var cache = settings.AddSubCollection("CachedValues");
-            cache.RenderInUi = false;
+            var cache = settings.AddSubCollection("CachedValues", false, false);
             AccountGuid = cache.DefineSetting("AccountGuid", Guid.Empty);
             AccountName = cache.DefineSetting("AccountName", string.Empty);
-            ResetTimeWvW = cache.DefineSetting<DateTime?>("ResetTimeWvW", null);
-            ResetTimeDaily = cache.DefineSetting<DateTime?>("ResetTimeDaily", null);
+            ResetTimeWvW = cache.DefineSetting("ResetTimeWvW", DateTime.UtcNow);
+            ResetTimeDaily = cache.DefineSetting("ResetTimeDaily", DateTime.UtcNow);
             SessionKillsWvW = cache.DefineSetting("SessionKillsWvW", 0);
             SessionKillsWvwDaily = cache.DefineSetting("SessionsKillsWvWDaily", 0);
             SessionKillsPvP = cache.DefineSetting("SessionKillsPvP", 0);
@@ -98,9 +100,7 @@ namespace Nekres.Stream_Out
 
         protected override void Initialize()
         {
-            Gw2ApiManager.SubtokenUpdated += SubTokenUpdated;
-
-            _allExportServices = new List<IExportService>
+            _allExportServices = new List<ExportService>
             {
                 new CharacterService(),
                 new ClientService(),
@@ -111,6 +111,8 @@ namespace Nekres.Stream_Out
                 new WalletService(),
                 new WvwService()
             };
+
+            Gw2ApiManager.SubtokenUpdated += SubTokenUpdated;
         }
 
         private void SubTokenUpdated(object o, ValueEventArgs<IEnumerable<TokenPermission>> e)
@@ -133,19 +135,7 @@ namespace Nekres.Stream_Out
         protected override async void Update(GameTime gameTime)
         {
             if (!HasSubToken) return;
-
-            await ResetDaily();
-
-            if (_prevApiRequestTime.HasValue && DateTime.UtcNow.Subtract(_prevApiRequestTime.Value).TotalSeconds < 300) return;
-            _prevApiRequestTime = DateTime.UtcNow;
-            foreach (var service in _allExportServices) await service.Update();
-        }
-
-        private async Task ResetDaily()
-        {
-            if (ResetTimeDaily.Value.HasValue && DateTime.UtcNow < ResetTimeDaily.Value) return;
-            ResetTimeDaily.Value = Gw2Util.GetDailyResetTime();
-            foreach (var service in _allExportServices) await service.ResetDaily();
+            foreach (var service in _allExportServices) await service.DoUpdate();
         }
 
         /// <inheritdoc />
@@ -154,7 +144,7 @@ namespace Nekres.Stream_Out
             Gw2ApiManager.SubtokenUpdated -= SubTokenUpdated;
             foreach (var service in _allExportServices) service?.Dispose();
             // All static members must be manually unset
-            ModuleInstance = null;
+            Instance = null;
         }
     }
 }
