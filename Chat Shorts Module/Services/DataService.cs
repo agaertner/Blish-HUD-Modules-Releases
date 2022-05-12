@@ -40,6 +40,8 @@ namespace Nekres.Chat_Shorts.Services
                 e.Title = model.Title;
                 e.GameMode = model.Mode;
                 e.MapIds = model.MapIds;
+                e.ExcludedMapIds = model.ExcludedMapIds;
+                e.SquadBroadcast = model.SquadBroadcast;
                 e.PrimaryKey = model.KeyBinding.PrimaryKey;
                 e.ModifierKey = model.KeyBinding.ModifierKeys;
                 await _ctx.UpdateAsync(e);
@@ -66,8 +68,11 @@ namespace Nekres.Chat_Shorts.Services
             MacroDeleted?.Invoke(this, new ValueEventArgs<Guid>(id));
         }
 
-        public async Task<IEnumerable<MacroEntity>> GetAllActives() => await _ctx.FindAsync(e => (e.GameMode == MapUtil.GetCurrentGameMode() || e.GameMode == GameMode.All) &&
-            (e.MapIds.Any(id => id == GameService.Gw2Mumble.CurrentMap.Id) || !e.MapIds.Any())); // async lib no haz method group overload :(
+        public async Task<IEnumerable<MacroEntity>> GetAllActives() => await _ctx.FindAsync(e => 
+            (e.GameMode == MapUtil.GetCurrentGameMode() || e.GameMode == GameMode.All) &&
+            (e.MapIds.Any(id => id == GameService.Gw2Mumble.CurrentMap.Id) || !e.MapIds.Any()) &&
+            e.ExcludedMapIds.All(id => id != GameService.Gw2Mumble.CurrentMap.Id) &&
+            (!e.SquadBroadcast || GameService.Gw2Mumble.PlayerCharacter.IsCommander)); // async lib no haz method group overload :(
 
         public void Dispose()
         {

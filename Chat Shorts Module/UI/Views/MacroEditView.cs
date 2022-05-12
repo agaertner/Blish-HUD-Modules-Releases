@@ -17,9 +17,10 @@ namespace Nekres.Chat_Shorts.UI.Views
     internal class MacroEditView : View<MacroEditPresenter>
     {
         private bool _deleted;
-        private IReadOnlyList<Map> _maps;
+        private IList<Map> _maps;
 
         private FlowPanel _mapsPanel;
+        private FlowPanel _mapsExclusionPanel;
 
         public MacroEditView(MacroModel model)
         {
@@ -29,9 +30,10 @@ namespace Nekres.Chat_Shorts.UI.Views
 
         protected override async Task<bool> Load(IProgress<string> progress)
         {
-            if (!this.Presenter.Model.MapIds.Any()) return true;
-            _maps = await ChatShorts.Instance.Gw2ApiManager.Gw2ApiClient.V2.Maps.ManyAsync(this.Presenter.Model.MapIds);
-            return _maps != null;
+            var mapIds = this.Presenter.Model.MapIds.Concat(this.Presenter.Model.ExcludedMapIds).ToList();
+            if (!mapIds.Any()) return true;
+            _maps = (await ChatShorts.Instance.Gw2ApiManager.Gw2ApiClient.V2.Maps.ManyAsync(mapIds)).ToList();
+            return _maps.Any();
         }
 
         protected override async void Unload()
@@ -67,7 +69,7 @@ namespace Nekres.Chat_Shorts.UI.Views
             _mapsPanel = new FlowPanel
             {
                 Parent = buildPanel,
-                Size = new Point(editText.Width / 2, buildPanel.ContentRegion.Height - editText.Height - 100),
+                Size = new Point(editText.Width / 4 - 5, buildPanel.ContentRegion.Height - editText.Height - 100),
                 Location = new Point(0, editText.Bottom + Panel.BOTTOM_PADDING),
                 FlowDirection = ControlFlowDirection.LeftToRight,
                 ControlPadding = new Vector2(5, 5),
@@ -77,16 +79,52 @@ namespace Nekres.Chat_Shorts.UI.Views
                 ShowTint = true,
                 ShowBorder = true
             };
-            foreach (var map in _maps) CreateMapEntry(map.Id, map.Name);
+            foreach (var id in this.Presenter.Model.MapIds) CreateMapEntry(id, _mapsPanel, OnMapClick);
 
-            var btnAddMap = new StandardButton
+            var btnIncludeMap = new StandardButton
             {
                 Parent = buildPanel,
                 Size = new Point(150, StandardButton.STANDARD_CONTROL_HEIGHT),
                 Location = new Point(_mapsPanel.Location.X + (_mapsPanel.Width - 150) / 2, _mapsPanel.Location.Y + _mapsPanel.Height),
-                Text = "Add Current Map"
+                Text = "Include Map"
             };
-            btnAddMap.Click += BtnAddMap_Click;
+            btnIncludeMap.Click += BtnIncludeMap_Click;
+
+            // MapIds selection
+            _mapsExclusionPanel = new FlowPanel
+            {
+                Parent = buildPanel,
+                Size = new Point(editText.Width / 4 - 5, buildPanel.ContentRegion.Height - editText.Height - 100),
+                Location = new Point(_mapsPanel.Right + 5, editText.Bottom + Panel.BOTTOM_PADDING),
+                FlowDirection = ControlFlowDirection.LeftToRight,
+                ControlPadding = new Vector2(5, 5),
+                CanCollapse = false,
+                CanScroll = true,
+                Collapsed = false,
+                ShowTint = true,
+                ShowBorder = true
+            };
+            foreach (var id in this.Presenter.Model.ExcludedMapIds) CreateMapEntry(id, _mapsExclusionPanel, OnExcludedMapClick);
+
+            var btnExcludeMap = new StandardButton
+            {
+                Parent = buildPanel,
+                Size = new Point(150, StandardButton.STANDARD_CONTROL_HEIGHT),
+                Location = new Point(_mapsExclusionPanel.Location.X + (_mapsExclusionPanel.Width - 150) / 2, _mapsExclusionPanel.Location.Y + _mapsExclusionPanel.Height),
+                Text = "Exclude Map"
+            };
+            btnExcludeMap.Click += BtnExcludeMap_Click;
+
+            // Squad Broadcast
+            var squadBroadcastCheck = new Checkbox
+            {
+                Parent = buildPanel,
+                Text = "Squad Broadcast",
+                BasicTooltipText = "Send this text as a squad broadcast instead.",
+                Location = new Point(_mapsExclusionPanel.Right + 10, _mapsExclusionPanel.Location.Y + 20),
+                Checked = this.Presenter.Model.SquadBroadcast
+            };
+            squadBroadcastCheck.CheckedChanged += (_,e) => this.Presenter.Model.SquadBroadcast = e.Checked;
 
             // GameMode selection
             var labelGameMode = new Label
@@ -94,7 +132,7 @@ namespace Nekres.Chat_Shorts.UI.Views
                 Parent = buildPanel,
                 Text = "GameMode:",
                 Size = new Point(100, 34),
-                Location = new Point(_mapsPanel.Width + Panel.RIGHT_PADDING, _mapsPanel.Location.Y + (_mapsPanel.Height - 85) / 2)
+                Location = new Point(squadBroadcastCheck.Location.X, squadBroadcastCheck.Bottom + Panel.BOTTOM_PADDING * 5)
             };
 
             var ddGameModeSelect = new Dropdown
@@ -111,7 +149,7 @@ namespace Nekres.Chat_Shorts.UI.Views
             var keyAssigner = new KeybindingAssigner(this.Presenter.Model.KeyBinding)
             {
                 Parent = buildPanel,
-                Location = new Point(_mapsPanel.Width + Panel.RIGHT_PADDING, ddGameModeSelect.Location.Y + ddGameModeSelect.Height + Panel.BOTTOM_PADDING * 4),
+                Location = new Point(squadBroadcastCheck.Location.X, ddGameModeSelect.Location.Y + ddGameModeSelect.Height + Panel.BOTTOM_PADDING * 5),
                 KeyBindingName = "Macro Key:"
             };
             keyAssigner.BindingChanged += KeyAssigner_BindingChanged;
@@ -121,7 +159,7 @@ namespace Nekres.Chat_Shorts.UI.Views
             {
                 Parent = buildPanel,
                 Size = new Point(42,42),
-                Location = new Point(buildPanel.ContentRegion.Width - 42, btnAddMap.Location.Y + btnAddMap.Height - 42),
+                Location = new Point(buildPanel.ContentRegion.Width - 42, btnIncludeMap.Location.Y + btnIncludeMap.Height - 42),
                 BasicTooltipText = "Delete Macro"
             };
             delBtn.Click += DeleteButton_Click;
@@ -148,37 +186,62 @@ namespace Nekres.Chat_Shorts.UI.Views
             this.Presenter.Model.Text = ctrl.Text;
         }
 
-        private async void BtnAddMap_Click(object o, MouseEventArgs e)
+        private async void BtnIncludeMap_Click(object o, MouseEventArgs e)
         {
             GameService.Content.PlaySoundEffectByName("button-click");
             if (this.Presenter.Model.MapIds.Any(id => id.Equals(GameService.Gw2Mumble.CurrentMap.Id))) return;
             await ChatShorts.Instance.Gw2ApiManager.Gw2ApiClient.V2.Maps
                 .GetAsync(GameService.Gw2Mumble.CurrentMap.Id).ContinueWith(t =>
                     {
-                        if (t.IsFaulted) return null;
+                        if (t.IsFaulted) return;
                         var map = t.Result;
+                        _maps.Add(map);
                         this.Presenter.Model.MapIds.Add(map.Id);
                         this.Presenter.Model.InvokeChanged();
-                        CreateMapEntry(map.Id, map.Name);
-                        return map;
+                        CreateMapEntry(map.Id, _mapsPanel, OnMapClick);
                     });
         }
 
-        private void CreateMapEntry(int mapId, string mapName)
+        private async void BtnExcludeMap_Click(object o, MouseEventArgs e)
         {
-            var mapEntry = new MapEntry(mapId, mapName)
-            {
-                Parent = _mapsPanel,
-                Size = new Point(_mapsPanel.ContentRegion.Width, StandardButton.STANDARD_CONTROL_HEIGHT)
-            };
-            mapEntry.Click += MapEntry_Click;
+            GameService.Content.PlaySoundEffectByName("button-click");
+            if (this.Presenter.Model.ExcludedMapIds.Any(id => id.Equals(GameService.Gw2Mumble.CurrentMap.Id))) return;
+            await ChatShorts.Instance.Gw2ApiManager.Gw2ApiClient.V2.Maps
+                .GetAsync(GameService.Gw2Mumble.CurrentMap.Id).ContinueWith(t =>
+                {
+                    if (t.IsFaulted) return;
+                    var map = t.Result;
+                    _maps.Add(map);
+                    this.Presenter.Model.ExcludedMapIds.Add(map.Id);
+                    this.Presenter.Model.InvokeChanged();
+                    CreateMapEntry(map.Id, _mapsExclusionPanel, OnExcludedMapClick);
+                });
         }
 
-        private void MapEntry_Click(object o, MouseEventArgs e)
+        private void CreateMapEntry(int mapId, FlowPanel parent, EventHandler<MouseEventArgs> clickAction)
+        {
+            var map = _maps.First(x => x.Id == mapId);
+            var mapEntry = new MapEntry(map.Id, map.Name)
+            {
+                Parent = parent,
+                Size = new Point(parent.ContentRegion.Width, StandardButton.STANDARD_CONTROL_HEIGHT)
+            };
+            mapEntry.Click += clickAction;
+        }
+
+        private void OnMapClick(object o, MouseEventArgs e)
         {
             GameService.Content.PlaySoundEffectByName("button-click");
             var ctrl = (MapEntry) o;
             this.Presenter.Model.MapIds.Remove(ctrl.MapId);
+            ctrl.Dispose();
+            this.Presenter.Model.InvokeChanged();
+        }
+        private void OnExcludedMapClick(object o, MouseEventArgs e)
+        {
+            GameService.Content.PlaySoundEffectByName("button-click");
+            var ctrl = (MapEntry)o;
+            this.Presenter.Model.ExcludedMapIds.Remove(ctrl.MapId);
             ctrl.Dispose();
             this.Presenter.Model.InvokeChanged();
         }

@@ -60,12 +60,37 @@ namespace Nekres.Chat_Shorts.UI.Models
             }
         }
 
+        private IList<int> _excludedMapIds;
+        public IList<int> ExcludedMapIds
+        {
+            get => _excludedMapIds;
+            set
+            {
+                if (_excludedMapIds != null && value != null && _excludedMapIds.SequenceEqual(value)) return;
+                _excludedMapIds = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private bool _squadBroadcast;
+        public bool SquadBroadcast
+        {
+            get => _squadBroadcast;
+            set
+            {
+                if (value == _squadBroadcast) return;
+                _squadBroadcast = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         public KeyBinding KeyBinding { get; }
 
         public MacroModel(Guid id, KeyBinding binding)
         {
             this.Id = id;
             this.MapIds = new List<int>();
+            this.ExcludedMapIds = new List<int>();
             this.KeyBinding = binding;
             this.KeyBinding.Enabled = false;
             this.Title = "Empty Macro";
@@ -89,6 +114,8 @@ namespace Nekres.Chat_Shorts.UI.Models
                 GameMode = this.Mode,
                 Text = this.Text,
                 MapIds = this.MapIds,
+                ExcludedMapIds = this.ExcludedMapIds,
+                SquadBroadcast = this.SquadBroadcast,
                 ModifierKey = this.KeyBinding.ModifierKeys,
                 PrimaryKey = this.KeyBinding.PrimaryKey,
             };
@@ -100,8 +127,10 @@ namespace Nekres.Chat_Shorts.UI.Models
             {
                 Title = entity.Title,
                 Mode = entity.GameMode,
+                SquadBroadcast = entity.SquadBroadcast,
                 Text = entity.Text,
-                MapIds = entity.MapIds
+                MapIds = entity.MapIds,
+                ExcludedMapIds = entity.ExcludedMapIds
             };
         } 
     }

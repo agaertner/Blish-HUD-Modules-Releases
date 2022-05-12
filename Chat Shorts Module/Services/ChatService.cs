@@ -1,10 +1,16 @@
 ﻿using Blish_HUD;
-using Gw2Sharp.Models;
+using Blish_HUD.Controls.Extern;
+using Blish_HUD.Controls.Intern;
+using Microsoft.Xna.Framework.Input;
+using Nekres.Chat_Shorts.Core;
 using Nekres.Chat_Shorts.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nekres.Chat_Shorts.Core;
+using System.Threading;
+using System.Threading.Tasks;
+using Keyboard = Blish_HUD.Controls.Intern.Keyboard;
+using Mouse = Blish_HUD.Controls.Intern.Mouse;
 
 namespace Nekres.Chat_Shorts.Services
 {
@@ -13,53 +19,154 @@ namespace Nekres.Chat_Shorts.Services
 
         private DataService _dataService;
 
-        private IList<Macro> _activeMacros;
+        private List<Macro> _activeMacros;
+
+        private Dictionary<ModifierKeys, VirtualKeyShort> _modifierLookUp;
 
         public ChatService(DataService dataService)
         {
             _dataService = dataService;
             _activeMacros = new List<Macro>();
+            _modifierLookUp = new Dictionary<ModifierKeys, VirtualKeyShort>()
+            {
+                {ModifierKeys.Alt, VirtualKeyShort.MENU},
+                {ModifierKeys.Ctrl, VirtualKeyShort.CONTROL},
+                {ModifierKeys.Shift, VirtualKeyShort.SHIFT}
+            };
             GameService.Gw2Mumble.CurrentMap.MapChanged += OnMapChanged;
+            GameService.Gw2Mumble.PlayerCharacter.IsCommanderChanged += OnIsCommanderChanged;
         }
 
         private async void OnMapChanged(object o, ValueEventArgs<int> e)
         {
-            foreach (var macro in _activeMacros) macro.Activated -= OnMacroActivated;
-
-            _activeMacros = await _dataService.GetAllActives().ContinueWith(t =>
-            {
-                var result = t.Result.Select(Macro.FromEntity).ToList();
-                foreach (var entity in result) entity.Activated += OnMacroActivated;
-                return result;
-            });
+            if (!ChatShorts.Instance.Loaded) return;
+            await LoadMacros();
         }
 
-        public void UpdateMacro(MacroModel model)
+        private async void OnIsCommanderChanged(object o, ValueEventArgs<bool> e)
         {
-            var macro = _activeMacros.FirstOrDefault(x => x.Id.Equals(model.Id)) ?? Macro.FromModel(model);
-            _activeMacros.Remove(macro);
-            macro.Activated -= OnMacroActivated;
-            macro.KeyBinding.ModifierKeys = model.KeyBinding.ModifierKeys;
-            macro.KeyBinding.PrimaryKey = model.KeyBinding.PrimaryKey;
-            macro.Text = model.Text;
-            macro.MapIds = model.MapIds;
-            macro.Mode = model.Mode;
+            if (!ChatShorts.Instance.Loaded) return;
+            await LoadMacros();
+        }
+
+        public async Task LoadAsync()
+        {
+            await LoadMacros();
+        }
+
+        private async Task LoadMacros()
+        {
+            foreach (var macro in _activeMacros)
+            {
+                macro.Activated -= OnMacroActivated;
+                macro.Dispose();
+            }
+            _activeMacros.Clear();
+            foreach (var entity in await _dataService.GetAllActives())
+            {
+                this.ToggleMacro(MacroModel.FromEntity(entity));
+            }
+        }
+
+        public void ToggleMacro(MacroModel model)
+        {
+            var macro = _activeMacros.FirstOrDefault(x => x.Model.Id.Equals(model.Id));
+            _activeMacros.RemoveAll(x => x.Model.Id.Equals(model.Id));
+            if (macro != null) macro.Activated -= OnMacroActivated;
+            macro?.Dispose();
+            macro = Macro.FromModel(model);
             if (!macro.CanActivate()) return;
             macro.Activated += OnMacroActivated;
             _activeMacros.Add(macro);
         }
 
-        private void OnMacroActivated(object o, EventArgs e) => SendToChat(((Macro)o).Text);
-
-        public void SendToChat(string text)
+        private async void OnMacroActivated(object o, EventArgs e)
         {
-            if (!GameService.GameIntegration.Gw2Instance.IsInGame || GameService.Gw2Mumble.UI.IsTextInputFocused) return;
-            GameService.GameIntegration.Chat.Send(text);
+            var macro = (Macro)o;
+            await this.Send(macro.Model.Text, macro.Model.SquadBroadcast);
+        }
+
+        public async Task Send(string text, bool squadBroadcast = false)
+        {
+            if (IsBusy() || !IsTextValid(text)) return;
+            if (squadBroadcast && !GameService.Gw2Mumble.PlayerCharacter.IsCommander) return;
+            await this.PastText(text, squadBroadcast);
+        }
+
+        private async Task PastText(string text, bool squadBroadcast = false)
+        {
+            byte[] prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
+            await ClipboardUtil.WindowsClipboardService.SetTextAsync(text)
+                .ContinueWith(async clipboardResult => {
+                    if (clipboardResult.IsFaulted) {
+                        ChatShorts.Logger.Warn(clipboardResult.Exception, "Failed to set clipboard text to {message}!", text);
+                    } else {
+                        await Task.Run(() =>
+                        {
+                            Focus(squadBroadcast);
+                            Keyboard.Press(VirtualKeyShort.LCONTROL, true);
+                            Keyboard.Stroke(VirtualKeyShort.KEY_V, true);
+                            Thread.Sleep(50);
+                            Keyboard.Release(VirtualKeyShort.LCONTROL, true);
+                            Keyboard.Stroke(VirtualKeyShort.RETURN);
+                            UnFocus();
+                        }).ContinueWith(async _ =>
+                        {
+                            if (prevClipboardContent == null) return;
+                            await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
+                        });
+                    }
+                });
+        }
+
+        private void Focus(bool squadBroadcast = false)
+        {
+            UnFocus();
+
+            if (squadBroadcast)
+            {
+                if (ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys != ModifierKeys.None)
+                    Keyboard.Press(_modifierLookUp[ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys]);
+                if (ChatShorts.Instance.SquadBroadcast.Value.PrimaryKey != Keys.None)
+                {
+                    Keyboard.Press((VirtualKeyShort)ChatShorts.Instance.SquadBroadcast.Value.PrimaryKey);
+                    Keyboard.Release((VirtualKeyShort)ChatShorts.Instance.SquadBroadcast.Value.PrimaryKey);
+                }
+                if (ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys != ModifierKeys.None)
+                    Keyboard.Release(_modifierLookUp[ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys]);
+            } else {
+                Keyboard.Stroke(VirtualKeyShort.RETURN);
+            }
+        }
+
+        private void UnFocus()
+        {
+            Mouse.Click(MouseButton.LEFT, GameService.Graphics.WindowWidth - 1);
+        }
+
+        private bool IsTextValid(string text)
+        {
+            return text is {Length: < 200};
+            // More checks? (Symbols: https://wiki.guildwars2.com/wiki/User:MithranArkanere/Charset)
+        }
+
+        private bool IsBusy()
+        {
+            return !GameService.GameIntegration.Gw2Instance.Gw2IsRunning 
+                   || !GameService.GameIntegration.Gw2Instance.Gw2HasFocus 
+                   || !GameService.GameIntegration.Gw2Instance.IsInGame
+                   || GameService.Gw2Mumble.UI.IsTextInputFocused;
         }
 
         public void Dispose()
         {
+            foreach (var macro in _activeMacros)
+            {
+                macro.Activated -= OnMacroActivated;
+                macro.Dispose();
+            }
             GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
+            GameService.Gw2Mumble.PlayerCharacter.IsCommanderChanged -= OnIsCommanderChanged;
         }
     }
 }

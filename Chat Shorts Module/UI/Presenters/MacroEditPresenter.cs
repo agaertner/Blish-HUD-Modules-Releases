@@ -21,7 +21,7 @@ namespace Nekres.Chat_Shorts.UI.Presenters
         private async void View_OnModelChanged(object o, EventArgs e)
         {
             await ChatShorts.Instance.DataService.UpsertMacro(this.Model);
-            ChatShorts.Instance.ChatService.UpdateMacro(this.Model);
+            ChatShorts.Instance.ChatService.ToggleMacro(this.Model);
         }
     }
 }

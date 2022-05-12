@@ -15,6 +15,7 @@ using System.CodeDom;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework.Input;
 using Nekres.Chat_Shorts.UI.Controls;
 
 namespace Nekres.Chat_Shorts
@@ -45,6 +46,8 @@ namespace Nekres.Chat_Shorts
         private Texture2D _cornerTexture;
         private Texture2D _backgroundTexture;
 
+        internal SettingEntry<KeyBinding> SquadBroadcast;
+
         [ImportingConstructor]
         public ChatShorts([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
         {
@@ -53,7 +56,10 @@ namespace Nekres.Chat_Shorts
 
         protected override void DefineSettings(SettingCollection settings)
         {
-
+            SquadBroadcast = settings.DefineSetting("squadBroadcastKeyBinding",
+                new KeyBinding(ModifierKeys.Shift, Keys.Enter),
+                () => "Squad Broadcast Message", 
+                () => "Give focus to the chat edit box.");
         }
 
         protected override void Initialize()
@@ -62,10 +68,12 @@ namespace Nekres.Chat_Shorts
             _cornerTexture = ContentsManager.GetTexture("corner_icon.png");
             _backgroundTexture = ContentsManager.GetTexture("background.png");
             ChatService = new ChatService(this.DataService);
+            SquadBroadcast.Value.Enabled = false;
         }
 
         protected override async Task LoadAsync()
         {
+            await ChatService.LoadAsync();
             await BuildContextMenu();
         }
 
@@ -89,12 +97,20 @@ namespace Nekres.Chat_Shorts
             _cornerIcon.Click += OnModuleIconClick;
 
             GameService.Gw2Mumble.CurrentMap.MapChanged += OnMapChanged;
+            GameService.Gw2Mumble.PlayerCharacter.IsCommanderChanged += OnIsCommanderChanged;
             // Base handler must be called
             base.OnModuleLoaded(e);
         }
 
         private async void OnMapChanged(object o, ValueEventArgs<int> e)
         {
+            if (!this.Loaded) return;
+            await BuildContextMenu();
+        }
+
+        private async void OnIsCommanderChanged(object o, ValueEventArgs<bool> e)
+        {
+            if (!this.Loaded) return;
             await BuildContextMenu();
         }
 
@@ -133,7 +149,7 @@ namespace Nekres.Chat_Shorts
                     Parent = _moduleContextMenu,
                     BasicTooltipText = model.Text
                 };
-                entry.Click += (o, _) => ChatService.SendToChat(((ContextMenuStripItemWithModel<MacroModel>)o).Model.Text);
+                entry.Click += async (_, _) => await ChatService.Send(model.Text, model.SquadBroadcast);
             }
 
             if (!prevVisible.GetValueOrDefault()) return;
@@ -157,8 +173,9 @@ namespace Nekres.Chat_Shorts
             // Unload here
             this.ChatService?.Dispose();
             this.DataService?.Dispose();
-            _cornerIcon.Click -= OnModuleIconClick;
             GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
+            GameService.Gw2Mumble.PlayerCharacter.IsCommanderChanged -= OnIsCommanderChanged;
+            _cornerIcon.Click -= OnModuleIconClick;
             _moduleContextMenu?.Dispose();
             _cornerIcon?.Dispose();
             _moduleWindow?.Dispose();
