@@ -1,6 +1,6 @@
-﻿using Blish_HUD;
-using Blish_HUD.Modules.Managers;
+﻿using Blish_HUD.Modules.Managers;
 using Gw2Sharp.WebApi.V2.Models;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -47,6 +47,13 @@ namespace Nekres.Stream_Out.Core.Services
                 var karma = task.Result.First(x => x.Id == 2).Value; // Karma
                 await Gw2Util.GenerateKarmaImage($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{WALLET_KARMA}", karma);
             });
+        }
+
+        public override async Task Clear()
+        {
+            var dir = DirectoriesManager.GetFullDirectoryPath("stream_out");
+            await FileUtil.DeleteAsync(Path.Combine(dir, WALLET_COINS));
+            await FileUtil.DeleteAsync(Path.Combine(dir, WALLET_KARMA));
         }
 
         public override void Dispose()

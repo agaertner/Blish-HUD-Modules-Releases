@@ -1,5 +1,4 @@
-﻿using Blish_HUD;
-using Blish_HUD.Modules.Managers;
+﻿using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
 using Gw2Sharp.WebApi.V2.Models;
 using System;
@@ -170,6 +169,17 @@ namespace Nekres.Stream_Out.Core.Services
                 await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{PVP_KILLS_DAY}", $"{prefixKills}{SessionKillsPvP.Value}{suffixKills}");
                 await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{PVP_KILLS_TOTAL}", $"{prefixKills}{totalKillsPvP}{suffixKills}");
             }
+        }
+
+        public override async Task Clear()
+        {
+            var dir = DirectoriesManager.GetFullDirectoryPath("stream_out");
+            await FileUtil.DeleteAsync(Path.Combine(dir, PVP_KILLS_TOTAL));
+            await FileUtil.DeleteAsync(Path.Combine(dir, PVP_KILLS_DAY));
+            await FileUtil.DeleteAsync(Path.Combine(dir, PVP_RANK));
+            await FileUtil.DeleteAsync(Path.Combine(dir, PVP_RANK_ICON));
+            await FileUtil.DeleteAsync(Path.Combine(dir, PVP_TIER_ICON));
+            await FileUtil.DeleteAsync(Path.Combine(dir, PVP_WINRATE));
         }
 
         public override void Dispose()

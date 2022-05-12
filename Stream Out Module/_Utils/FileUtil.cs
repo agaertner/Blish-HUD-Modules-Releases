@@ -30,5 +30,49 @@ namespace Nekres.Stream_Out
                 Logger.Error(ioEx.Message);
             }
         }
+
+        public static async Task<bool> DeleteAsync(string filePath)
+        {
+            return await Task.Run(() => {
+                var timeout = DateTime.UtcNow.AddMilliseconds(10000);
+                while (DateTime.UtcNow < timeout)
+                {
+                    try
+                    {
+                        File.Delete(filePath);
+                        return true;
+                    }
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                    {
+                        if (DateTime.UtcNow < timeout) continue;
+                        StreamOutModule.Logger.Error(e, e.Message);
+                        break;
+                    }
+                }
+                return false;
+            });
+        }
+
+        public static async Task<bool> DeleteDirectoryAsync(string dirPath)
+        {
+            return await Task.Run(() => {
+                var timeout = DateTime.UtcNow.AddMilliseconds(10000);
+                while (DateTime.UtcNow < timeout)
+                {
+                    try
+                    {
+                        Directory.Delete(dirPath, true);
+                        return true;
+                    }
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                    {
+                        if (DateTime.UtcNow < timeout) continue;
+                        StreamOutModule.Logger.Error(e, e.Message);
+                        break;
+                    }
+                }
+                return false;
+            });
+        }
     }
 }

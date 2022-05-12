@@ -8,7 +8,8 @@ namespace Nekres.Stream_Out.UI.Models
     {
         public enum Social
         {
-            KoFi
+            KoFi,
+            Twitch
         }
 
         private readonly Dictionary<Social, string> _socialUrls;
@@ -22,11 +23,13 @@ namespace Nekres.Stream_Out.UI.Models
             Settings = settings;
             _socialUrls = new Dictionary<Social, string>
             {
-                {Social.KoFi, "https://ko-fi.com/TypoTiger"}
+                {Social.KoFi, "https://ko-fi.com/TypoTiger"},
+                {Social.Twitch, "https://twitch.com/sNekCmd"}
             };
             _socialLogos = new Dictionary<Social, Texture2D>
             {
-                {Social.KoFi, ContentsManager.GetTexture(@"socials\ko-fi-logo.png")}
+                {Social.KoFi, ContentsManager.GetTexture(@"socials\ko-fi-logo.png")},
+                {Social.Twitch, ContentsManager.GetTexture(@"socials\twitch-logo.png")}
             };
         }
 

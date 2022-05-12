@@ -29,10 +29,6 @@ namespace Nekres.Stream_Out.Core.Services
             ContentsManager.ExtractIcons("unstable_fractal_essence.png", Path.Combine($@"{moduleDir}\static", "unstable_fractal_essence.png"));
         }
 
-        protected override async Task ResetDaily()
-        {
-        }
-
         protected override async Task Update()
         {
             await UpdateKillProofs();
@@ -73,6 +69,15 @@ namespace Nekres.Stream_Out.Core.Services
                     if (count == 3) break;
                 }
             });
+        }
+
+        public override async Task Clear()
+        {
+            var dir = DirectoriesManager.GetFullDirectoryPath("stream_out");
+            await FileUtil.DeleteAsync(Path.Combine(dir, KILLPROOF_ME_UNSTABLE_FRACTAL_ESSENCE));
+            await FileUtil.DeleteAsync(Path.Combine(dir, KILLPROOF_ME_LEGENDARY_DIVINATION));
+            await FileUtil.DeleteAsync(Path.Combine(dir, KILLPROOF_ME_LEGENDARY_INSIGHT));
+            await FileUtil.DeleteDirectoryAsync(Path.Combine(Path.Combine(dir, "static")));
         }
 
         public override void Dispose()

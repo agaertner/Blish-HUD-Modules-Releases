@@ -128,12 +128,13 @@ namespace Nekres.Stream_Out.Core.Services
             await UpdateGuild();
         }
 
-        public override async Task Initialize()
+        public override async Task Clear()
         {
-        }
-
-        protected override async Task ResetDaily()
-        {
+            var dir = DirectoriesManager.GetFullDirectoryPath("stream_out");
+            await FileUtil.DeleteAsync(Path.Combine(dir, GUILD_NAME));
+            await FileUtil.DeleteAsync(Path.Combine(dir, GUILD_TAG));
+            await FileUtil.DeleteAsync(Path.Combine(dir, GUILD_EMBLEM));
+            await FileUtil.DeleteAsync(Path.Combine(dir, GUILD_MOTD));
         }
 
         public override void Dispose()

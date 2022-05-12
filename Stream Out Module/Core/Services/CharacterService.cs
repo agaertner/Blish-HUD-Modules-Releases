@@ -1,5 +1,4 @@
-﻿using System;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
 using Gw2Sharp.WebApi.Exceptions;
@@ -150,6 +149,16 @@ namespace Nekres.Stream_Out.Core.Services
                 await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{DEATHS_WEEK}", $"{prefixDeaths}{SessionDeathsWvW.Value}{suffixDeaths}");
                 await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{DEATHS_DAY}", $"{prefixDeaths}{SessionDeathsDaily.Value}{suffixDeaths}");
             }
+        }
+
+        public override async Task Clear()
+        {
+            var dir = DirectoriesManager.GetFullDirectoryPath("stream_out");
+            await FileUtil.DeleteAsync(Path.Combine(dir, DEATHS_DAY));
+            await FileUtil.DeleteAsync(Path.Combine(dir, DEATHS_WEEK));
+            await FileUtil.DeleteAsync(Path.Combine(dir, CHARACTER_NAME));
+            await FileUtil.DeleteAsync(Path.Combine(dir, PROFESSION_ICON));
+            await FileUtil.DeleteAsync(Path.Combine(dir, COMMANDER_ICON));
         }
 
         public override void Dispose()

@@ -29,11 +29,13 @@ namespace Nekres.Stream_Out.Core.Services
             await this.ResetDaily();
         }
 
-        public abstract Task Initialize();
+        public virtual async Task Initialize() { /* NOOP */ }
 
-        protected abstract Task Update();
+        protected virtual async Task Update() { /* NOOP */ }
 
-        protected abstract Task ResetDaily();
+        protected virtual async Task ResetDaily() { /* NOOP */ }
+
+        public abstract Task Clear();
 
         public abstract void Dispose();
     }

@@ -1,7 +1,7 @@
-﻿using Blish_HUD;
-using Blish_HUD.Modules.Managers;
+﻿using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using static Blish_HUD.GameService;
 
@@ -30,12 +30,10 @@ namespace Nekres.Stream_Out.Core.Services
             }
         }
 
-        public override async Task Initialize()
+        public override async Task Clear()
         {
-        }
-
-        protected override async Task ResetDaily()
-        {
+            var dir = DirectoriesManager.GetFullDirectoryPath("stream_out");
+            await FileUtil.DeleteAsync(Path.Combine(dir, SERVER_ADDRESS));
         }
 
         public override void Dispose()

@@ -1,8 +1,8 @@
-﻿using Blish_HUD;
-using Blish_HUD.Modules.Managers;
+﻿using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
 using Gw2Sharp.WebApi.V2.Models;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -123,6 +123,15 @@ namespace Nekres.Stream_Out.Core.Services
                     }
                 });
             });
+        }
+
+        public override async Task Clear()
+        {
+            var dir = DirectoriesManager.GetFullDirectoryPath("stream_out");
+            await FileUtil.DeleteAsync(Path.Combine(dir, WVW_KILLS_WEEK));
+            await FileUtil.DeleteAsync(Path.Combine(dir, WVW_KILLS_DAY));
+            await FileUtil.DeleteAsync(Path.Combine(dir, WVW_KILLS_TOTAL));
+            await FileUtil.DeleteAsync(Path.Combine(dir, WVW_RANK));
         }
 
         public override void Dispose()

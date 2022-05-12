@@ -1,10 +1,10 @@
 {
   "name": "Stream Out",
-  "version": "0.6.2",
+  "version": "0.7.2",
   "namespace": "Nekres.Stream_Out",
   "package": "StreamOut.dll",
   "manifest_version": 1,
-  "description": "Outputs current game information so that it can be used as a dynamic source in broadcasting software that has\nfile monitoring capabilities.\nA guild's Message of the Day can contain text enclosed in [public]text here[/public] to signal this module permission to export it.\nIf the [public] region is not found or set incorrectly the 'guild_motd.txt' will not contain any text.\nSimilarly, other exported text and image files will also be cleared to reflect specific toggles and changes (eg. not representing a guild will clear 'guild_emblem.png', not commanding a squad will clear 'commander_icon.png',\nand so on).",
+  "description": "Exports player account information to image and text files which can be used in OBS and other streaming software.\nSome update in real-time because they reflect your character's current state while others update every 5 minutes as they reflect data from your overall account.",
   "dependencies": {
     "bh.blishhud": ">=0.11.6"
   },

@@ -11,7 +11,13 @@ using Nekres.Stream_Out.UI.Views;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Primitives;
+using System.Drawing.Text;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using NAudio.MediaFoundation;
+
 namespace Nekres.Stream_Out
 {
     [Export(typeof(Module))]
@@ -29,10 +35,22 @@ namespace Nekres.Stream_Out
         internal Gw2ApiManager Gw2ApiManager => ModuleParameters.Gw2ApiManager;
         #endregion
 
+        // Settings
         internal SettingEntry<bool> OnlyLastDigitSettingEntry;
         internal SettingEntry<UnicodeSigning> AddUnicodeSymbols;
         internal SettingEntry<bool> UseCatmanderTag;
 
+        // Export Toggles
+        internal SettingEntry<bool> ExportClientInfo;
+        internal SettingEntry<bool> ExportMapInfo;
+        internal SettingEntry<bool> ExportWalletInfo;
+        internal SettingEntry<bool> ExportPvpInfo;
+        internal SettingEntry<bool> ExportWvwInfo;
+        internal SettingEntry<bool> ExportGuildInfo;
+        internal SettingEntry<bool> ExportCharacterInfo;
+        internal SettingEntry<bool> ExportKillProofs;
+
+        // Hidden settings cache
         internal SettingEntry<DateTime> ResetTimeWvW;
         internal SettingEntry<DateTime> ResetTimeDaily;
 
@@ -77,6 +95,38 @@ namespace Nekres.Stream_Out
             AddUnicodeSymbols = settings.DefineSetting("UnicodeSymbols",UnicodeSigning.Suffixed, () => "Numeric Value Signing", () => "The way numeric values should be signed with unicode symbols.");
             UseCatmanderTag = settings.DefineSetting("CatmanderTag", false, () => "Use Catmander Tag", () => $"Replaces the Commander icon with the Catmander icon if you tag up as Commander in-game.");
 
+            var toggles = settings.AddSubCollection("Export Toggles", true, false);
+            ExportClientInfo = toggles.DefineSetting("clientInfo", true, 
+                () => "Export Client Info", 
+                () => "Client info such as server address.");
+            ExportCharacterInfo = toggles.DefineSetting("characterInfo", true,
+                () => "Export Character Info",
+                () => "Character info such as name, deaths, profession and commander tag.");
+
+            ExportGuildInfo = toggles.DefineSetting("guildInfo", true,
+                () => "Export Guild Info",
+                () => "Guild info such as guild name, tag, emblem and part of the Message of the Day that is surrounded by [public]<text>[/public].");
+
+            ExportKillProofs = toggles.DefineSetting("killsProofs", true,
+                () => "Export Kill Proofs",
+                () => "Kill Proofs such as Legendary Divination, Legendary Insight and Unstable Fractal Essence.\nFor more info visit: www.killproof.me");
+
+            ExportMapInfo = toggles.DefineSetting("mapInfo", true,
+                () => "Export Map Info",
+                () => "Map info such as map name and map type.");
+
+            ExportPvpInfo = toggles.DefineSetting("pvpInfo", true,
+                () => "Export PvP Info",
+                () => "PvP info such as rank, tier, win rate and kills.");
+
+            ExportWvwInfo = toggles.DefineSetting("wvwInfo", true,
+                () => "Export WvW info",
+                () => "WvW info such as rank and kills");
+
+            ExportWalletInfo = toggles.DefineSetting("walletInfo", true, 
+                () => "Export Wallet Info",
+                () => "Currencies such as coins and karma.");
+
             var cache = settings.AddSubCollection("CachedValues", false, false);
             AccountGuid = cache.DefineSetting("AccountGuid", Guid.Empty);
             AccountName = cache.DefineSetting("AccountName", string.Empty);
@@ -100,19 +150,36 @@ namespace Nekres.Stream_Out
 
         protected override void Initialize()
         {
-            _allExportServices = new List<ExportService>
-            {
-                new CharacterService(),
-                new ClientService(),
-                new GuildService(),
-                new KillProofService(),
-                new MapService(),
-                new PvpService(),
-                new WalletService(),
-                new WvwService()
-            };
+            _allExportServices = new List<ExportService>();
+
+            ExportCharacterInfo.SettingChanged += ToggleService<CharacterService>;
+            ExportClientInfo.SettingChanged += ToggleService<ClientService>;
+            ExportGuildInfo.SettingChanged += ToggleService<GuildService>;
+            ExportKillProofs.SettingChanged += ToggleService<KillProofService>;
+            ExportMapInfo.SettingChanged += ToggleService<MapService>;
+            ExportPvpInfo.SettingChanged += ToggleService<PvpService>;
+            ExportWvwInfo.SettingChanged += ToggleService<WvwService>;
+            ExportWalletInfo.SettingChanged += ToggleService<WalletService>;
 
             Gw2ApiManager.SubtokenUpdated += SubTokenUpdated;
+        }
+
+        private async void ToggleService<TType>(object o, ValueChangedEventArgs<bool> e) where TType : ExportService => await ToggleService<TType>(e.NewValue);
+        private async Task ToggleService<TType>(bool enabled) where TType : ExportService
+        {
+            var service = _allExportServices.FirstOrDefault(x => x.GetType() == typeof(TType));
+            if (enabled && service == null)
+            {
+                service = (TType)Activator.CreateInstance(typeof(TType));
+                _allExportServices.Add(service);
+                await service.Initialize();
+            }
+            else if (!enabled && service != null)
+            {
+                _allExportServices.Remove(service);
+                await service.Clear();
+                service.Dispose();
+            }
         }
 
         private void SubTokenUpdated(object o, ValueEventArgs<IEnumerable<TokenPermission>> e)
@@ -122,8 +189,14 @@ namespace Nekres.Stream_Out
 
         protected override async Task LoadAsync()
         {
-            // Generate some placeholder files for values that depend on a privileged API connection
-            foreach (var service in _allExportServices) await service.Initialize();
+            await ToggleService<CharacterService>(ExportCharacterInfo.Value);
+            await ToggleService<ClientService>(ExportClientInfo.Value);
+            await ToggleService<GuildService>(ExportGuildInfo.Value);
+            await ToggleService<KillProofService>(ExportKillProofs.Value);
+            await ToggleService<MapService>(ExportMapInfo.Value);
+            await ToggleService<PvpService>(ExportPvpInfo.Value);
+            await ToggleService<WvwService>(ExportWvwInfo.Value);
+            await ToggleService<WalletService>(ExportWalletInfo.Value);
         }
 
         protected override void OnModuleLoaded(EventArgs e)
@@ -141,6 +214,14 @@ namespace Nekres.Stream_Out
         /// <inheritdoc />
         protected override void Unload()
         {
+            ExportCharacterInfo.SettingChanged -= ToggleService<CharacterService>;
+            ExportClientInfo.SettingChanged -= ToggleService<ClientService>;
+            ExportGuildInfo.SettingChanged -= ToggleService<GuildService>;
+            ExportKillProofs.SettingChanged -= ToggleService<KillProofService>;
+            ExportMapInfo.SettingChanged -= ToggleService<MapService>;
+            ExportPvpInfo.SettingChanged -= ToggleService<PvpService>;
+            ExportWvwInfo.SettingChanged -= ToggleService<WvwService>;
+            ExportWalletInfo.SettingChanged -= ToggleService<WalletService>;
             Gw2ApiManager.SubtokenUpdated -= SubTokenUpdated;
             foreach (var service in _allExportServices) service?.Dispose();
             // All static members must be manually unset

@@ -5,6 +5,7 @@ using Gw2Sharp.WebApi.Exceptions;
 using Gw2Sharp.WebApi.V2.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using static Blish_HUD.GameService;
@@ -98,16 +99,11 @@ namespace Nekres.Stream_Out.Core.Services
             await FileUtil.WriteAllTextAsync($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{MAP_TYPE}", type);
         }
 
-        protected override async Task Update()
+        public override async Task Clear()
         {
-        }
-
-        public override async Task Initialize()
-        {
-        }
-
-        protected override async Task ResetDaily()
-        {
+            var dir = DirectoriesManager.GetFullDirectoryPath("stream_out");
+            await FileUtil.DeleteAsync(Path.Combine(dir, MAP_NAME));
+            await FileUtil.DeleteAsync(Path.Combine(dir, MAP_TYPE));
         }
 
         public override void Dispose()
