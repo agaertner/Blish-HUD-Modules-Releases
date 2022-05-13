@@ -146,7 +146,7 @@ namespace Nekres.Chat_Shorts.Services
 
         private bool IsTextValid(string text)
         {
-            return text is {Length: < 200};
+            return !string.IsNullOrEmpty(text) && text.Length < 200;
             // More checks? (Symbols: https://wiki.guildwars2.com/wiki/User:MithranArkanere/Charset)
         }
 

@@ -43,6 +43,9 @@ namespace Nekres.Chat_Shorts.UI.Controls
 
         public MacroModel Model { get; }
 
+        private bool _mouseOverSendButton;
+        private Rectangle _sendButtonBounds;
+
         public MacroDetails(MacroModel model)
         {
             this.Keys = model.KeyBinding.GetBindingDisplayText();
@@ -63,13 +66,15 @@ namespace Nekres.Chat_Shorts.UI.Controls
         {
             var relPos = RelativeMousePosition;
             _mouseOverEditButton = _editButtonBounds.Contains(relPos);
+            _mouseOverSendButton = _sendButtonBounds.Contains(relPos);
             base.OnMouseMoved(e);
         }
 
-        protected override void OnClick(MouseEventArgs e)
+        protected override async void OnClick(MouseEventArgs e)
         {
             GameService.Content.PlaySoundEffectByName("button-click");
             if (_mouseOverEditButton && !this.Active) EditClick?.Invoke(this, e);
+            if (_mouseOverSendButton) await ChatShorts.Instance.ChatService.Send(this.Model.Text, this.Model.SquadBroadcast);
             base.OnClick(e);
         }
 
@@ -94,7 +99,10 @@ namespace Nekres.Chat_Shorts.UI.Controls
             spriteBatch.DrawStringOnCtrl(this, wrappedText, Content.DefaultFont14, new Rectangle(89, 0, 216, this.Height - BOTTOMSECTION_HEIGHT), Color.White, false, true, 2);
 
             // Draw the user;
-            spriteBatch.DrawStringOnCtrl(this, this.Keys, Content.DefaultFont14, new Rectangle(5, bounds.Height - BOTTOMSECTION_HEIGHT, USER_WIDTH, 35), Color.White, false, false, 0);
+            _sendButtonBounds = new Rectangle(5, bounds.Height - BOTTOMSECTION_HEIGHT, USER_WIDTH, 35);
+            if (string.IsNullOrEmpty(this.Model.Text)) return;
+            var sendText = string.IsNullOrEmpty(this.Keys) ? "Click to send" : $"Click to send ({this.Keys})";
+            spriteBatch.DrawStringOnCtrl(this, sendText, Content.DefaultFont14, _sendButtonBounds, Color.White, false, false, 0);
         }
     }
 }
