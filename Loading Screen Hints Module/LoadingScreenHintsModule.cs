@@ -72,7 +72,7 @@ namespace Nekres.Loading_Screen_Hints
 
         protected override void Update(GameTime gameTime) {
 
-            if (!GameService.GameIntegration.Gw2Instance.IsInGame)
+            if (!GameService.Gw2Mumble.IsAvailable)
             {
                 if (!this.Created)
                 {
