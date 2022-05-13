@@ -24,7 +24,7 @@ namespace Nekres.Stream_Out.UI.Models
             _socialUrls = new Dictionary<Social, string>
             {
                 {Social.KoFi, "https://ko-fi.com/TypoTiger"},
-                {Social.Twitch, "https://twitch.com/sNekCmd"}
+                {Social.Twitch, "https://twitch.tv/sNekCmd"}
             };
             _socialLogos = new Dictionary<Social, Texture2D>
             {
