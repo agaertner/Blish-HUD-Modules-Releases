@@ -208,7 +208,19 @@ namespace Nekres.Stream_Out
         protected override async void Update(GameTime gameTime)
         {
             if (!HasSubToken) return;
-            foreach (var service in _allExportServices) await service.DoUpdate();
+            //TODO: Code-smell. This needs to be handled better.
+            try
+            {
+                foreach (var service in _allExportServices.ToList())
+                {
+                    if (service == null) continue;
+                    await service.DoUpdate();
+                }
+            }
+            catch (Exception e) when (e is InvalidOperationException or NullReferenceException)
+            {
+                /* NOOP */
+            }
         }
 
         /// <inheritdoc />
