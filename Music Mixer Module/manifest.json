@@ -1,0 +1,20 @@
+{
+  "name": "Music Mixer",
+  "version": "0.2.5",
+  "namespace": "Nekres.Music_Mixer",
+  "package": "Music Mixer.dll",
+  "manifest_version": 1,
+
+  "description": "Customize the soundtrack of the game. Create dynamic playlists depending on context.",
+  "dependencies": {
+    "bh.blishhud": ">=0.11.6"
+  },
+  "url": "https://github.com/blish-hud/",
+  "directories": [ "music_mixer" ],
+  "contributors": [
+    {
+      "name": "Nekres",
+      "username": "Nekres.1943"
+    }
+  ]
+}
