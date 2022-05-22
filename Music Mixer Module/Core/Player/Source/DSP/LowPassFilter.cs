@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nekres.Music_Mixer.Core.Player.Source
+namespace Nekres.Music_Mixer.Core.Player.Source.DSP
 {
     /// <summary>
     /// Used to apply a lowpass-filter to a signal.

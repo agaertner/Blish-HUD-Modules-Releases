@@ -1,18 +1,21 @@
 ﻿using Blish_HUD.Content;
-using Microsoft.Xna.Framework.Graphics;
+using Gapotchenko.FX.Diagnostics;
+using Nekres.Music_Mixer.Core.Player.API.Models;
+using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Blish_HUD;
 
 namespace Nekres.Music_Mixer.Core.Player.API
 {
     internal class youtube_dl
     {
 
-        public string ExecutablePath => Path.Combine(MusicMixerModule.ModuleInstance.ModuleDirectory, "bin/youtube-dl.exe");
+        public string ExecutablePath => Path.Combine(MusicMixer.Instance.ModuleDirectory, "bin/youtube-dl.exe");
 
         private readonly Regex _youtubeVideoId = new (@"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)(?<id>[a-zA-Z0-9-_]+)", RegexOptions.Compiled);
         private readonly Regex _progressReport = new (@"^\[download\].*?(?<percentage>(.*?))% of (?<size>(.*?))MiB at (?<speed>(.*?)) ETA (?<eta>(.*?))$", RegexOptions.Compiled); //[download]   2.7% of 4.62MiB at 200.00KiB/s ETA 00:23
@@ -20,7 +23,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
 
         private static youtube_dl _instance;
         private bool _isLoaded;
-        private AudioBitrate AverageBitrate => MusicMixerModule.ModuleInstance.AverageBitrateSetting.Value;
+        private AudioBitrate AverageBitrate => MusicMixer.Instance.AverageBitrateSetting.Value;
 
         public static youtube_dl Instance
         {
@@ -57,26 +60,42 @@ namespace Nekres.Music_Mixer.Core.Player.API
             _isLoaded = true;
         }
 
-        public async void GetThumbnail(string link, AsyncTexture2D texture)
+        public void GetThumbnail(AsyncTexture2D thumbnail, string id, string link, Action<AsyncTexture2D, string, string> callback)
         {
-            var youTubeId = GetYouTubeIdFromLink(link);
-            var thumbnailUrl = $"https://img.youtube.com/vi/{youTubeId}/mqdefault.jpg";
-            var textureDataResponse = await Blish_HUD.GameService.Gw2WebApi.AnonymousConnection.Client.Render.DownloadToByteArrayAsync(thumbnailUrl);
-            using var textureStream = new MemoryStream(textureDataResponse);
-            var loadedTexture = Texture2D.FromStream(Blish_HUD.GameService.Graphics.GraphicsDevice, textureStream);
-            texture.SwapTexture(loadedTexture);
+            using var p = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    FileName = ExecutablePath,
+                    Arguments = $"--get-thumbnail {link}"
+                }
+            };
+            p.OutputDataReceived += (_, e) => callback(thumbnail, id, e.Data);
+            p.Start();
+            p.BeginOutputReadLine();
         }
 
-        public string GetYouTubeIdFromLink(string youTubeLink)
+        public async Task<bool> IsUrlSupported(string link)
         {
-            var youtubeMatch = _youtubeVideoId.Match(youTubeLink);
-            if (!youtubeMatch.Success) return string.Empty;
-            return youtubeMatch.Groups["id"].Value;
+            using var p = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    FileName = ExecutablePath,
+                    Arguments = $"--dump-json {link}" // Url is supported if we get any results.
+                }
+            };
+            p.Start();
+            return await p.WaitForExitAsync().ContinueWith(t => !t.IsFaulted && p.ExitCode == 0);
         }
 
-        public async Task<Uri> GetAudioOnlyUrl(string youTubeLink)
+        public async Task<string> GetAudioOnlyUrl(string youTubeLink)
         {
-            await Load();
             using var p = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -89,16 +108,39 @@ namespace Nekres.Music_Mixer.Core.Player.API
                 }
             };
             p.Start();
-            var url = await p.StandardOutput.ReadToEndAsync();
-            p.WaitForExit();
-            if (string.IsNullOrEmpty(url) || url.ToLower().StartsWith("error")) return null;
-            return new Uri(url);
+            return await p.WaitForExitAsync().ContinueWith(t =>
+            {
+                if (t.IsFaulted || p.ExitCode != 0) return string.Empty;
+                var data = p.StandardOutput.ReadToEnd();
+                if (string.IsNullOrEmpty(data) || data.ToLower().StartsWith("error")) return string.Empty;
+                return data;
+            });
         }
 
-        public async Task Download(string link, string outputFolder, AudioFormat format, IProgress<string> progress)
+        public void GetMetaData(string youTubeLink, Func<MetaData, Task> callback)
         {
-            await Load();
+            using var p = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    FileName = ExecutablePath,
+                    Arguments = $"--dump-json {youTubeLink}"
+                }
+            };
+            p.OutputDataReceived += async (_, e) =>
+            {
+                if (string.IsNullOrEmpty(e.Data)) return;
+                await callback(JsonConvert.DeserializeObject<MetaData>(e.Data));
+            };
+            p.Start();
+            p.BeginOutputReadLine();
+        }
 
+        public void Download(string link, string outputFolder, AudioFormat format, IProgress<string> progress)
+        {
             Directory.CreateDirectory(outputFolder);
 
             using var p = new Process

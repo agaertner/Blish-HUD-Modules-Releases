@@ -2,38 +2,179 @@
 using Gw2Sharp.Models;
 using Nekres.Music_Mixer.Core.Services;
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using Blish_HUD.Content;
 
 namespace Nekres.Music_Mixer.Core.UI.Models
 {
     internal class MusicContextModel
     {
-        public Guid Id { get; set; }
-        public string Title { get; set; }
+        public event EventHandler<EventArgs> Changed;
+        public event EventHandler<ValueEventArgs<Guid>> Deleted;
 
-        public string Uri { get; set; }
+        private Guid _id;
+        public Guid Id { 
+            get => _id;
+            set
+            {
+                if (_id.Equals(value)) return;
+                _id = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
-        public List<int> MapIds { get; set; }
+        private string _title;
+        public string Title
+        {
+            get => _title;
+            set
+            {
+                if (!string.IsNullOrEmpty(_title) && _title.Equals(value)) return;
+                _title = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
-        public List<int> SectorIds { get; set; }
+        private string _artist;
+        public string Artist
+        {
+            get => _artist;
+            set
+            {
+                if (!string.IsNullOrEmpty(_artist) && _artist.Equals(value)) return;
+                _artist = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
-        public List<TyrianTime> DayTimes { get; set; }
+        private string _uri;
+        public string Uri
+        {
+            get => _uri;
+            set
+            {
+                if (!string.IsNullOrEmpty(_uri) && _uri.Equals(value)) return;
+                _uri = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
-        public List<MountType> MountTypes { get; set; }
+        private TimeSpan _duration;
+        public TimeSpan Duration
+        {
+            get => _duration;
+            set
+            {
+                if (_duration.Equals(value)) return;
+                _duration = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
-        public List<Gw2StateService.State> States { get; set; }
+        private ObservableCollection<int> _mapIds;
+        public ObservableCollection<int> MapIds
+        {
+            get => _mapIds;
+            set
+            {
+                if (value == null) return;
+                _mapIds = value;
+                _mapIds.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
-        public MusicContextModel()
+        private ObservableCollection<int> _excludedMapIds;
+        public ObservableCollection<int> ExcludedMapIds
+        {
+            get => _excludedMapIds;
+            set
+            {
+                if (value == null) return;
+                _excludedMapIds = value;
+                _excludedMapIds.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private ObservableCollection<int> _sectorIds;
+        public ObservableCollection<int> SectorIds
+        {
+            get => _sectorIds;
+            set
+            {
+                if (value == null) return;
+                _sectorIds = value;
+                _sectorIds.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private ObservableCollection<TyrianTime> _dayTimes;
+        public ObservableCollection<TyrianTime> DayTimes
+        {
+            get => _dayTimes;
+            set
+            {
+                if (value == null) return;
+                _dayTimes = value;
+                _dayTimes.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private ObservableCollection<MountType> _mountTypes;
+        public ObservableCollection<MountType> MountTypes
+        {
+            get => _mountTypes;
+            set
+            {
+                if (value == null) return;
+                _mountTypes = value;
+                _mountTypes.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private ObservableCollection<Gw2StateService.State> _states;
+        public ObservableCollection<Gw2StateService.State> States
+        {
+            get => _states;
+            set
+            {
+                if (value == null) return;
+                _states = value;
+                _states.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private AsyncTexture2D _thumbnail;
+        public AsyncTexture2D Thumbnail
+        {
+            get => _thumbnail;
+            set
+            {
+                if (value == null) return;
+                _thumbnail = value;
+                _thumbnail.TextureSwapped += (_,_) => Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public MusicContextModel(string title, string artist, string url, TimeSpan duration)
         {
             this.Id = Guid.NewGuid();
-            this.Title = string.Empty;
-            this.Uri = string.Empty;
-            this.MapIds = new List<int>();
-            this.SectorIds = new List<int>();
-            this.DayTimes = new List<TyrianTime>();
-            this.MountTypes = new List<MountType>();
-            this.States = new List<Gw2StateService.State>();
+            this.Title = title;
+            this.Artist = artist;
+            this.Uri = url;
+            this.Duration = duration;
+            this.MapIds = new ObservableCollection<int>();
+            this.ExcludedMapIds = new ObservableCollection<int>();
+            this.SectorIds = new ObservableCollection<int>();
+            this.DayTimes = new ObservableCollection<TyrianTime>();
+            this.MountTypes = new ObservableCollection<MountType>();
+            this.States = new ObservableCollection<Gw2StateService.State>();
+            this.Thumbnail = new AsyncTexture2D();
+        }
+
+        public void Delete()
+        {
+            Deleted?.Invoke(this, new ValueEventArgs<Guid>(this.Id));
         }
 
         public static bool CanPlay(MusicContextModel model)
@@ -41,7 +182,7 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             return (!model.DayTimes.Any() || model.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
                 && (!model.MapIds.Any() || model.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                 && (!model.MountTypes.Any() || model.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
-                && (!model.States.Any() || model.States.Contains(MusicMixerModule.ModuleInstance.Gw2State.CurrentState));
+                && (!model.States.Any() || model.States.Contains(MusicMixer.Instance.Gw2State.CurrentState));
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using NAudio.Wave;
+using Nekres.Music_Mixer.Core.Player.Source.DSP;
 
 namespace Nekres.Music_Mixer.Core.Player.Source
 {

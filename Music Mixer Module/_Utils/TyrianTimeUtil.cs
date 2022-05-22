@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Blish_HUD;
 
 namespace Nekres.Music_Mixer
 {
@@ -33,13 +34,20 @@ namespace Nekres.Music_Mixer
         /// </summary>
         /// <param name="time">The time to resolve the day cycle context of.</param>
         /// <returns>The full day cycle that is the context.</returns>
+        /// <remarks>
+        /// For the purposes of mechanics that can't transition smoothly between day and night behaviors,
+        /// dawn is usually considered night and dusk is considered day.<br/>
+        /// Food and Fishing are exceptions: Food will treat dawn as day and dusk as night, and
+        /// Fishing will treat dawn and dusk as both day and night at the same time.<br/>
+        /// See also: <seealso href="https://wiki.guildwars2.com/wiki/Day_and_night"/>
+        /// </remarks>
         public static TyrianTime Resolve(this TyrianTime time) {
             switch (time) {
-                case TyrianTime.Dawn:
                 case TyrianTime.Day:
-                    return TyrianTime.Day;
                 case TyrianTime.Dusk:
+                    return TyrianTime.Day;
                 case TyrianTime.Night:
+                case TyrianTime.Dawn:
                     return TyrianTime.Night;
                 default:
                     return TyrianTime.None;
@@ -58,11 +66,18 @@ namespace Nekres.Music_Mixer
     }
     internal static class TyrianTimeUtil
     {
-        private static IReadOnlyDictionary<TyrianTime, (TimeSpan,TimeSpan)> _dayCycleIntervals = new Dictionary<TyrianTime, (TimeSpan, TimeSpan)>() {
-            { TyrianTime.Dawn, (new TimeSpan(05,0,0), new TimeSpan(06,0,0)) },
-            { TyrianTime.Day, (new TimeSpan(06,0,0), new TimeSpan(20,0,0)) },
+        private static IReadOnlyDictionary<TyrianTime, (TimeSpan,TimeSpan)> _dayCycleIntervals = new Dictionary<TyrianTime, (TimeSpan, TimeSpan)> {
+            { TyrianTime.Dawn, (new TimeSpan(5,0,0), new TimeSpan(6,0,0)) },
+            { TyrianTime.Day, (new TimeSpan(6,0,0), new TimeSpan(20,0,0)) },
             { TyrianTime.Dusk, (new TimeSpan(20,0,0), new TimeSpan(21,0,0)) },
             { TyrianTime.Night, (new TimeSpan(21,0,0), new TimeSpan(05,0,0)) }
+        };
+
+        private static IReadOnlyDictionary<TyrianTime, (TimeSpan, TimeSpan)> _canthanDayCycleIntervals = new Dictionary<TyrianTime, (TimeSpan, TimeSpan)> {
+            { TyrianTime.Dawn, (new TimeSpan(7,0,0), new TimeSpan(8,0,0)) },
+            { TyrianTime.Day, (new TimeSpan(8,0,0), new TimeSpan(19,0,0)) },
+            { TyrianTime.Dusk, (new TimeSpan(19,0,0), new TimeSpan(20,0,0)) },
+            { TyrianTime.Night, (new TimeSpan(20,0,0), new TimeSpan(7,0,0)) }
         };
 
         /// <summary>
@@ -87,12 +102,25 @@ namespace Nekres.Music_Mixer
         /// <param name="tyrianTime">The Tyrian time to get the dominant day cycle of.</param>
         /// <returns>The day cycle.</returns>
         public static TyrianTime GetDayCycle(TimeSpan tyrianTime) {
-            foreach (var timePair in _dayCycleIntervals) {
+            if (GameService.Gw2Mumble.IsAvailable)
+            {
+                var x = GameService.Gw2Mumble.UI.MapPosition.X;
+                var y = GameService.Gw2Mumble.UI.MapPosition.Y;
+                // Canthan bounds
+                if (x is > 20000 and < 365000 && y is > 97000 and < 115000)
+                    return GetDayCycleFromRegion(_canthanDayCycleIntervals, tyrianTime);
+            }
+            return GetDayCycleFromRegion(_dayCycleIntervals, tyrianTime);
+        }
+
+        private static TyrianTime GetDayCycleFromRegion(IReadOnlyDictionary<TyrianTime, (TimeSpan, TimeSpan)> _dayCycles, TimeSpan tyrianTime)
+        {
+            foreach (var timePair in _dayCycleIntervals)
+            {
                 var key = timePair.Key;
                 var value = timePair.Value;
-
-                if (TimeBetween(tyrianTime, value.Item1, value.Item2))
-                    return key;
+                if (!TimeBetween(tyrianTime, value.Item1, value.Item2)) continue;
+                return key;
             }
             return TyrianTime.None;
         }

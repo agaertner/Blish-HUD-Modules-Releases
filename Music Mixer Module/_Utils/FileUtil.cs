@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-
+using System.Security;
+using System.Threading.Tasks;
 namespace Nekres.Music_Mixer
 {
     internal static class FileUtil
@@ -25,6 +26,28 @@ namespace Nekres.Music_Mixer
             for (var i = 0; i < temp.Length; i++)
                 temp[i] = temp[i].Trim();
             return string.Join(replacement, temp);
+        }
+
+        public static async Task<bool> DeleteAsync(string filePath)
+        {
+            return await Task.Run(() => {
+                var timeout = DateTime.UtcNow.AddMilliseconds(5000);
+                while (DateTime.UtcNow < timeout)
+                {
+                    try
+                    {
+                        File.Delete(filePath);
+                        return true;
+                    }
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException or SecurityException)
+                    {
+                        if (DateTime.UtcNow < timeout) continue;
+                        MusicMixer.Logger.Error(e, e.Message);
+                        break;
+                    }
+                }
+                return false;
+            });
         }
 
         /// <summary>

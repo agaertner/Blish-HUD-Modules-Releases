@@ -1,33 +1,33 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
+using Blish_HUD.Input;
 using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
-using System.Threading.Tasks;
-using Gw2Sharp.Models;
 using Nekres.Music_Mixer.Core.Player;
 using Nekres.Music_Mixer.Core.Player.API;
 using Nekres.Music_Mixer.Core.Services;
 using Nekres.Music_Mixer.Core.UI.Controls;
 using Nekres.Music_Mixer.Core.UI.Models;
+using Nekres.Music_Mixer.Core.UI.Views;
+using System;
+using System.ComponentModel.Composition;
+using System.IO;
+using System.Threading.Tasks;
 using static Blish_HUD.GameService;
 using static Nekres.Music_Mixer.Core.Services.Gw2StateService;
 namespace Nekres.Music_Mixer
 {
 
     [Export(typeof(Module))]
-    public class MusicMixerModule : Module
+    public class MusicMixer : Module
     {
 
-        internal static readonly Logger Logger = Logger.GetLogger(typeof(MusicMixerModule));
+        internal static readonly Logger Logger = Logger.GetLogger(typeof(MusicMixer));
 
-        internal static MusicMixerModule ModuleInstance;
+        internal static MusicMixer Instance;
 
         #region Service Managers
 
@@ -58,14 +58,20 @@ namespace Nekres.Music_Mixer
         private const string _youtubeDLPath = "bin/youtube-dl.exe";
 
         private DataPanel _debugPanel;
-        private WindowTab _moduleTab;
-        private Texture2D _tabIconTexture;
+
         private AudioEngine _audioEngine;
         internal DataService DataService;
         internal Gw2StateService Gw2State;
 
+        private StandardWindow _moduleWindow;
+        private CornerIcon _cornerIcon;
+
+        // Textures
+        private Texture2D _cornerTexture;
+        private Texture2D _backgroundTexture;
+
         [ImportingConstructor]
-        public MusicMixerModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { ModuleInstance = this; }
+        public MusicMixer([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { Instance = this; }
 
 
         protected override void DefineSettings(SettingCollection settings) {
@@ -85,9 +91,9 @@ namespace Nekres.Music_Mixer
                 () => "Use dusk and dawn day cycles", 
                 () => "Whether dusk and dawn track attributes should be interpreted as unique day cycles.\nOtherwise dusk and dawn will be interpreted as night and day respectively.");
             
-            ToggleKeepAudioFilesSetting = settings.DefineSetting("KeepAudioFiles", false, 
+            /*ToggleKeepAudioFilesSetting = settings.DefineSetting("KeepAudioFiles", false, 
                 () => "Keep audio files on disk",
-                () => "Whether streamed audio should be kept on disk.\nReduces delay for all future playback events after the first at the expense of disk space.\nMay also result in better audio quality.");
+                () => "Whether streamed audio should be kept on disk.\nReduces delay for all future playback events after the first at the expense of disk space.\nMay also result in better audio quality.");*/
 
             AverageBitrateSetting = settings.DefineSetting("AverageBitrate", AudioBitrate.B320, 
                 () => "Average bitrate limit", 
@@ -103,13 +109,14 @@ namespace Nekres.Music_Mixer
             Gw2State = new Gw2StateService();
             DataService = new DataService(this.ModuleDirectory);
 
-            _audioEngine = new AudioEngine() { Volume = this.MasterVolume };
+            _audioEngine = new AudioEngine { Volume = this.MasterVolume };
 
-            _tabIconTexture = ContentsManager.GetTexture("tab_icon.png");
+            _cornerTexture = ContentsManager.GetTexture("corner_icon.png");
+            _backgroundTexture = ContentsManager.GetTexture("background.png");
         }
 
         protected override void Update(GameTime gameTime) {
-            Gw2State.Update();
+            this.Gw2State.Update();
         }
 
         protected override async Task LoadAsync() {
@@ -117,32 +124,27 @@ namespace Nekres.Music_Mixer
                 ExtractFile(_FFmpegPath);
                 ExtractFile(_youtubeDLPath);
             });
-
-            //TODO: Remove
-            await this.DataService.Upsert(new MusicContextModel
-            {
-                Uri = "https://www.youtube.com/watch?v=ax9JF36iEaI",
-                States = new List<Gw2StateService.State> { Gw2StateService.State.Mounted },
-                MapIds = new List<int>(),
-                MountTypes = new List<MountType> { MountType.Raptor },
-                DayTimes = new List<TyrianTime>(),
-                SectorIds = new List<int>(),
-                Title = "Chocobo Theme"
-            });
-            await this.DataService.Upsert(new MusicContextModel
-            {
-                Uri = "https://www.youtube.com/watch?v=YSRbX9bztpk",
-                States = new List<Gw2StateService.State> { Gw2StateService.State.Mounted },
-                MapIds = new List<int>(),
-                MountTypes = new List<MountType> { MountType.Skimmer },
-                DayTimes = new List<TyrianTime>(),
-                SectorIds = new List<int>(),
-                Title = "FFXIV OST Mount BGM ( The Rider's Boon )"
-            });
         }
 
         protected override void OnModuleLoaded(EventArgs e) {
             MasterVolumeSetting.Value = MathHelper.Clamp(MasterVolumeSetting.Value, 0f, 100f);
+
+            var windowRegion = new Rectangle(40, 26, 423, 780 - 56);
+            var contentRegion = new Rectangle(70, 41, 380, 780 - 42);
+            _moduleWindow = new StandardWindow(_backgroundTexture, windowRegion, contentRegion)
+            {
+                Parent = GameService.Graphics.SpriteScreen,
+                Emblem = _cornerTexture,
+                Location = new Point((GameService.Graphics.SpriteScreen.Width - windowRegion.Width) / 2, (GameService.Graphics.SpriteScreen.Height) / 2),
+                SavesPosition = true,
+                Title = this.Name,
+                Id = $"{nameof(MusicMixer)}_{nameof(LibraryView)}_d42b52ce-74f1-4e6d-ae6b-a8724029f0a3"
+            };
+            _cornerIcon = new CornerIcon
+            {
+                Icon = _cornerTexture
+            };
+            _cornerIcon.Click += OnModuleIconClick;
 
             ToggleDebugHelper.SettingChanged += OnToggleDebugHelperChanged;
             MasterVolumeSetting.SettingChanged += MasterVolumeSettingChanged;
@@ -155,13 +157,19 @@ namespace Nekres.Music_Mixer
             // Base handler must be called
             base.OnModuleLoaded(e);
         }
+        public void OnModuleIconClick(object o, MouseEventArgs e)
+        {
+            _moduleWindow?.ToggleWindow(new LibraryView(new LibraryModel()));
+        }
 
         private async void OnStateChanged(object o, ValueChangedEventArgs<State> e)
         {
+            if (_debugPanel != null) _debugPanel.CurrentState = e.NewValue;
+
             _audioEngine.Stop();
             var track = await this.DataService.GetRandom();
             if (track == null) return;
-            _audioEngine.Play(track.Uri);
+            await _audioEngine.Play(track.Uri);
         }
 
         private void MasterVolumeSettingChanged(object o, ValueChangedEventArgs<float> e)
@@ -171,7 +179,7 @@ namespace Nekres.Music_Mixer
 
         private void OnIsSubmergedChanged(object o, ValueEventArgs<bool> e)
         {
-            _audioEngine?.ToggleSubmerged(e.Value);
+            _audioEngine.ToggleSubmerged(e.Value);
         }
 
         private void OnToggleDebugHelperChanged(object o, ValueChangedEventArgs<bool> e) {
@@ -197,16 +205,18 @@ namespace Nekres.Music_Mixer
         /// <inheritdoc />
         protected override void Unload()
         {
-            Overlay.BlishHudWindow.RemoveTab(_moduleTab);
             MasterVolumeSetting.SettingChanged -= MasterVolumeSettingChanged;
             Gw2State.IsSubmergedChanged -= OnIsSubmergedChanged;
             Gw2State.StateChanged -= OnStateChanged;
             ToggleDebugHelper.SettingChanged -= OnToggleDebugHelperChanged;
+            _moduleWindow?.Dispose();
+            _cornerIcon?.Dispose();
             _audioEngine?.Dispose();
+            _debugPanel?.Dispose();
             this.Gw2State?.Dispose();
             this.DataService?.Dispose();
             // All static members must be manually unset
-            ModuleInstance = null;
+            Instance = null;
         }
 
         private void ExtractFile(string filePath) {

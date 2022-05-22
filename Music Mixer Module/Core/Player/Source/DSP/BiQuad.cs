@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Nekres.Music_Mixer.Core.Player.Source
+namespace Nekres.Music_Mixer.Core.Player.Source.DSP
 {
     /// <summary>
     /// Represents a biquad-filter.

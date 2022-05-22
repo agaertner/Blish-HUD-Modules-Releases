@@ -1,5 +1,7 @@
 ﻿using Nekres.Music_Mixer.Core.Player.API;
 using System;
+using System.Threading.Tasks;
+using Blish_HUD;
 
 namespace Nekres.Music_Mixer.Core.Player
 {
@@ -19,15 +21,28 @@ namespace Nekres.Music_Mixer.Core.Player
             }
         }
 
+        public bool Loading { get; private set; }
+
         public AudioEngine()
         {
         }
 
-        public async void Play(string url)
+        public async Task Play(string url)
         {
-            
-            _soundtrack = Soundtrack.Play(await youtube_dl.Instance.GetAudioOnlyUrl(url), this.Volume);
+            if (this.Loading) return;
+            this.Loading = true;
+            AudioUrlReceived(await youtube_dl.Instance.GetAudioOnlyUrl(url));
+        }
+
+        private void AudioUrlReceived(string url)
+        {
+            if (!Soundtrack.TryGetStream(url, this.Volume, out _soundtrack))
+            {
+                this.Loading = false;
+                return;
+            }
             _soundtrack.FadeIn();
+            this.Loading = false;
         }
 
         public void ToggleSubmerged(bool enable) => _soundtrack?.ToggleSubmergedFx(enable);

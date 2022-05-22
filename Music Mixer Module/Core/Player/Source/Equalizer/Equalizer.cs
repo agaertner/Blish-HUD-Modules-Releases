@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NAudio.Wave;
 
-namespace Nekres.Music_Mixer.Core.Player.Source
+namespace Nekres.Music_Mixer.Core.Player.Source.Equalizer
 {
     /// <summary>
     ///     Represents an equalizer which can be dynamically modified by adding, removing or modifying

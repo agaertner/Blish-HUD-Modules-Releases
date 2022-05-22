@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Timers;
 
-namespace Nekres.Music_Mixer.Core.UI.Controls
+namespace Nekres.Music_Mixer.Core.Player
 {
     public class NTimer : IDisposable
     {

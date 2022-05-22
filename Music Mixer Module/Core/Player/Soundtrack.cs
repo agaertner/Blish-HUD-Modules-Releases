@@ -6,6 +6,8 @@ using Nekres.Music_Mixer.Core.Player.Source;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Nekres.Music_Mixer.Core.Player.Source.DSP;
+using Nekres.Music_Mixer.Core.Player.Source.Equalizer;
 
 namespace Nekres.Music_Mixer.Core.Player
 {
@@ -47,11 +49,20 @@ namespace Nekres.Music_Mixer.Core.Player
             _volume = volume;
             _outputDevice = new WasapiOut(GameService.GameIntegration.Audio.AudioDevice, AudioClientShareMode.Shared, false, 100);
             _mediaProvider = new MediaFoundationReader(url);
+            
         }
 
-        public static Soundtrack Play(Uri url, float volume)
+        public static bool TryGetStream(string url, float volume, out Soundtrack soundTrack)
         {
-            return new Soundtrack(url.ToString(), volume);
+            try {
+                soundTrack = new Soundtrack(url, volume);
+                return true;
+            } catch (InvalidCastException e)
+            {
+                soundTrack = null;
+                MusicMixer.Logger.Error(e, e.Message);
+                return false;
+            }
         }
 
         private void Play(int fadeInDuration = 500)

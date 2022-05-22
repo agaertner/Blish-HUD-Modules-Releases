@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Nekres.Music_Mixer.Core.Player.Source
+namespace Nekres.Music_Mixer.Core.Player.Source.Equalizer
 {
     /// <summary>
     ///     Represents an EqualizerFilter which holds an <see cref="EqualizerChannelFilter" /> for each channel.

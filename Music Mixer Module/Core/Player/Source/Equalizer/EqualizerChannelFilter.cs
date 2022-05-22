@@ -1,7 +1,7 @@
-﻿using Nekres.Music_Mixer.Core.Player.Source.DSP;
-using System;
+﻿using System;
+using Nekres.Music_Mixer.Core.Player.Source.DSP;
 
-namespace Nekres.Music_Mixer.Core.Player.Source
+namespace Nekres.Music_Mixer.Core.Player.Source.Equalizer
 {
     /// <summary>
     ///     Represents an EqualizerFilter for a single channel.

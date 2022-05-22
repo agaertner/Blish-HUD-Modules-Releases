@@ -3,26 +3,47 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Nekres.Music_Mixer.Core.Player.API
 {
     internal static class ffmpeg
     {
-        public static string ExecutablePath
-        {
-            get { return Path.Combine(MusicMixerModule.ModuleInstance.ModuleDirectory, "bin/ffmpeg.exe"); }
-        }
+        public static string ExecutablePath => Path.Combine(MusicMixer.Instance.ModuleDirectory, "bin/ffmpeg.exe");
 
         /// <summary>
         /// Converts the file
         /// </summary>
         /// <param name="fileName">The path to the file which should become converted</param>
         /// <param name="newFileName">The name of the new file WITHOUT extension</param>
-        /// <param name="settings"></param>
         public static Task ConvertFile(string fileName, string newFileName)
         {
             return ConvertFile(fileName, newFileName, AudioBitrate.B256, AudioFormat.Best);
+        }
+
+        public static async Task<Stream> ConvertImage(string sourceFile, string outFile)
+        {
+            if (File.Exists(outFile)) return new FileStream(outFile, FileMode.Open, FileAccess.Read);
+
+            var p = new Process
+            {
+                StartInfo =
+                {
+                    CreateNoWindow = true,
+                    FileName = ExecutablePath,
+                    Arguments = $"-i {sourceFile} {outFile}",
+                    UseShellExecute = false,
+                    WorkingDirectory = Path.GetDirectoryName(ExecutablePath)
+                }
+            };
+            p.Start();
+            p.WaitForExit();
+            if (p.ExitCode != 0) return null;
+            var path = Path.Combine(Path.GetDirectoryName(ExecutablePath), outFile);
+            return await Task.Delay(200).ContinueWith(_ => new FileStream(path, FileMode.Open, FileAccess.Read));
         }
 
         /// <summary>
@@ -62,7 +83,8 @@ namespace Nekres.Music_Mixer.Core.Player.API
 
         private static string GetParameter(string inputFile, string outputFile, AudioBitrate bitrate, AudioFormat format)
         {
-            return string.Format("-i \"{0}\" -c:a {1} -vn -b:a {2}k \"{3}\"", inputFile, GetAudioLibraryFromFormat(format), bitrate.ToString().Remove(0, 1), outputFile);
+            return
+                $"-i \"{inputFile}\" -c:a {GetAudioLibraryFromFormat(format)} -vn -b:a {bitrate.ToString().Remove(0, 1)}k \"{outputFile}\"";
         }
 
         public static string GetAudioLibraryFromFormat(AudioFormat format)
@@ -72,7 +94,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
                 case AudioFormat.Best:
                     return "copy";
                 case AudioFormat.MP3:
-                    return "libmp3lame"; //works
+                    return "libmp3lame";
                 case AudioFormat.AAC:
                     return "libfdk_aac";
                 case AudioFormat.WMA:

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Blish_HUD;
 using Gw2Sharp.Models;
@@ -19,11 +20,20 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         [BsonField("title")]
         public string Title { get; set; }
 
+        [BsonField("artist")]
+        public string Artist { get; set; }
+
         [BsonField("uri")]
         public string Uri { get; set; }
 
+        [BsonField("duration")]
+        public TimeSpan Duration { get; set; }
+
         [BsonField("mapIds")]
         public List<int> MapIds { get; set; }
+
+        [BsonField("excludedMapIds")]
+        public List<int> ExcludedMapIds { get; set; }
 
         [BsonField("sectorIds")]
         public List<int> SectorIds { get; set; }
@@ -37,12 +47,25 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         [BsonField("states")]
         public List<Gw2StateService.State> States { get; set; }
 
+        public MusicContextModel ToModel()
+        {
+            return new MusicContextModel(this.Title, this.Artist, this.Uri, this.Duration)
+            {
+                Id = this.Id,
+                MapIds = new ObservableCollection<int>(this.MapIds),
+                SectorIds = new ObservableCollection<int>(this.SectorIds),
+                DayTimes = new ObservableCollection<TyrianTime>(this.DayTimes),
+                MountTypes = new ObservableCollection<MountType>(this.MountTypes),
+                States = new ObservableCollection<Gw2StateService.State>(this.States)
+            };
+        }
+
         public static bool CanPlay(MusicContextEntity entity)
         {
             return (!entity.DayTimes.Any() || entity.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
                    && (!entity.MapIds.Any() || entity.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                    && (!entity.MountTypes.Any() || entity.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
-                   && (!entity.States.Any() || entity.States.Contains(MusicMixerModule.ModuleInstance.Gw2State.CurrentState));
+                   && (!entity.States.Any() || entity.States.Contains(MusicMixer.Instance.Gw2State.CurrentState));
         }
 
         public static MusicContextEntity FromModel(MusicContextModel model)
@@ -51,12 +74,15 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
             {
                 Id = model.Id,
                 Title = model.Title,
-                MapIds = model.MapIds,
-                SectorIds = model.SectorIds,
+                Artist = model.Artist,
                 Uri = model.Uri,
-                DayTimes = model.DayTimes,
-                MountTypes = model.MountTypes,
-                States = model.States,
+                Duration = model.Duration,
+                MapIds = model.MapIds.ToList(),
+                ExcludedMapIds = model.ExcludedMapIds.ToList(),
+                SectorIds = model.SectorIds.ToList(),
+                DayTimes = model.DayTimes.ToList(),
+                MountTypes = model.MountTypes.ToList(),
+                States = model.States.ToList(),
             };
         }
     }
