@@ -8,7 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Blish_HUD;
 
 namespace Nekres.Music_Mixer.Core.Player.API
 {
@@ -19,10 +18,9 @@ namespace Nekres.Music_Mixer.Core.Player.API
 
         private readonly Regex _youtubeVideoId = new (@"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)(?<id>[a-zA-Z0-9-_]+)", RegexOptions.Compiled);
         private readonly Regex _progressReport = new (@"^\[download\].*?(?<percentage>(.*?))% of (?<size>(.*?))MiB at (?<speed>(.*?)) ETA (?<eta>(.*?))$", RegexOptions.Compiled); //[download]   2.7% of 4.62MiB at 200.00KiB/s ETA 00:23
-        private readonly Regex _version = new (@"Updating to version (?<version>(.*?)) \.\.\.", RegexOptions.Compiled); //Updating to version 2015.01.16 ...
+        private readonly Regex _version = new (@"^Updating to version (?<toVersion>(.*?)) \.\.\.$|^youtube-dl is up-to-date \((?<isVersion>(.*?))\)$", RegexOptions.Compiled); //Updating to version 2015.01.16 ... | youtube-dl is up-to-date (2021.12.17)
 
         private static youtube_dl _instance;
-        private bool _isLoaded;
         private AudioBitrate AverageBitrate => MusicMixer.Instance.AverageBitrateSetting.Value;
 
         public static youtube_dl Instance
@@ -34,10 +32,8 @@ namespace Nekres.Music_Mixer.Core.Player.API
         {
         }
 
-        public async Task Load()
+        public async Task<string> Load()
         {
-            if (_isLoaded) return;
-
             var p = new Process
             {
                 StartInfo =
@@ -49,15 +45,15 @@ namespace Nekres.Music_Mixer.Core.Player.API
                     UseShellExecute = false,
                 }
             };
-
             p.Start();
-            var info = await p.StandardOutput.ReadLineAsync();
-            var match = _version.Match(info);
-            if (match.Success)
+            return await p.WaitForExitAsync().ContinueWith(t =>
             {
-                await Task.Run(() => p.WaitForExit());
-            }
-            _isLoaded = true;
+                if (t.IsFaulted || p.ExitCode != 0) return string.Empty;
+                var data = p.StandardOutput.ReadToEnd();
+                var toVersion = _version.Match(data).Groups["toVersion"]?.Value;
+                var isVersion = _version.Match(data).Groups["isVersion"]?.Value;
+                return string.IsNullOrEmpty(isVersion) ? toVersion : isVersion;
+            });
         }
 
         public void GetThumbnail(AsyncTexture2D thumbnail, string id, string link, Action<AsyncTexture2D, string, string> callback)

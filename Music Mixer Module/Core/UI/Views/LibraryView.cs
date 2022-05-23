@@ -10,6 +10,7 @@ using Nekres.Music_Mixer.Core.UI.Presenters;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Nekres.Music_Mixer.Core.Services;
 
 namespace Nekres.Music_Mixer.Core.UI.Views
 {
@@ -19,6 +20,7 @@ namespace Nekres.Music_Mixer.Core.UI.Views
 
         private const string FILTER_MAP = "Current Map";
         private const string FILTER_ALL = "All";
+        private const string FILTER_DELIMITER = "----------------------";
 
         public FlowPanel MusicContextPanel;
         private LoadingSpinner _addNewLoadingSpinner;
@@ -52,8 +54,6 @@ namespace Nekres.Music_Mixer.Core.UI.Views
         {
             return await Task.Run(async () =>
             {
-                this.Presenter.Model.Pager = new Pager(await MusicMixer.Instance.DataService.Count(), 1, 20, 20);
-
                 this.Presenter.Model.MusicContextModels = (await MusicMixer.Instance.DataService.GetAll()).Select(x => x.ToModel()).ToList();
 
                 foreach (var model in this.Presenter.Model.MusicContextModels)
@@ -86,9 +86,24 @@ namespace Nekres.Music_Mixer.Core.UI.Views
             ddSortMethod.Items.Add(FILTER_ALL);
             ddSortMethod.Items.Add(FILTER_MAP);
 
+            ddSortMethod.Items.Add(FILTER_DELIMITER);
+
+            // Add all day times as a filter
+            foreach (var dayTime in Enum.GetValues(typeof(TyrianTime)).Cast<TyrianTime>().Where(x => x != TyrianTime.None))
+                ddSortMethod.Items.Add(dayTime.ToString());
+
+            ddSortMethod.Items.Add(FILTER_DELIMITER);
+
+            // Add all states as a filter
+            foreach (var state in Enum.GetValues(typeof(Gw2StateService.State)).Cast<Gw2StateService.State>())
+                ddSortMethod.Items.Add(state.ToString());
+
+            ddSortMethod.Items.Add(FILTER_DELIMITER);
+
             // Add all mounts as a filter
             foreach (var mount in Enum.GetValues(typeof(MountType)).Cast<MountType>().Where(x => x != MountType.None))
                 ddSortMethod.Items.Add(mount.ToString());
+
 
             ddSortMethod.SelectedItem = FILTER_ALL;
             ddSortMethod.ValueChanged += OnSortChanged;
@@ -144,13 +159,19 @@ namespace Nekres.Music_Mixer.Core.UI.Views
             var filter = ((Dropdown)o).SelectedItem;
             this.MusicContextPanel.SortChildren<MusicContextDetails>((x, y) =>
             {
-                x.Visible = filter.Equals(FILTER_ALL) 
+                x.Visible = filter.Equals(FILTER_DELIMITER)
+                            || filter.Equals(FILTER_ALL)
+                            || x.Model.DayTimes.Any(q => q.ToString().Equals(filter))
+                            || x.Model.States.Any(q => q.ToString().Equals(filter))
                             || x.Model.MountTypes.Any(q => q.ToString().Equals(filter))
-                            || x.Model.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id);
+                            || filter.Equals(FILTER_MAP) && x.Model.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id);
 
-                y.Visible = filter.Equals(FILTER_ALL)
+                y.Visible = filter.Equals(FILTER_DELIMITER)
+                            ||filter.Equals(FILTER_ALL)
+                            || y.Model.DayTimes.Any(q => q.ToString().Equals(filter))
+                            || y.Model.States.Any(q => q.ToString().Equals(filter))
                             || y.Model.MountTypes.Any(q => q.ToString().Equals(filter))
-                            || y.Model.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id);
+                            || filter.Equals(FILTER_MAP) && y.Model.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id);
 
                 if (!x.Visible || !y.Visible) return 0;
                 return string.Compare(x.Title, y.Title, StringComparison.InvariantCultureIgnoreCase);

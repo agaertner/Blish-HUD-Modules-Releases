@@ -57,7 +57,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             base.OnMouseMoved(e);
         }
 
-        protected override async void OnClick(MouseEventArgs e)
+        protected override void OnClick(MouseEventArgs e)
         {
             GameService.Content.PlaySoundEffectByName("button-click");
             if (_mouseOverEditButton && !this.Active) EditClick?.Invoke(this, e);

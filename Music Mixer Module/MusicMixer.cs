@@ -123,6 +123,15 @@ namespace Nekres.Music_Mixer
             await Task.Run(() => {
                 ExtractFile(_FFmpegPath);
                 ExtractFile(_youtubeDLPath);
+            }).ContinueWith(async _ =>
+            {
+                var ver = await youtube_dl.Instance.Load();
+                if (string.IsNullOrEmpty(ver))
+                {
+                    Logger.Warn($"Failed to update youtube-dl. Version could not be retrieved.");
+                    return;
+                }
+                Logger.Info($"Using youtube-dl version: {ver}");
             });
         }
 
@@ -157,6 +166,7 @@ namespace Nekres.Music_Mixer
             // Base handler must be called
             base.OnModuleLoaded(e);
         }
+
         public void OnModuleIconClick(object o, MouseEventArgs e)
         {
             _moduleWindow?.ToggleWindow(new LibraryView(new LibraryModel()));

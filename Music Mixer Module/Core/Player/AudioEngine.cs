@@ -1,7 +1,7 @@
 ﻿using Nekres.Music_Mixer.Core.Player.API;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
-using Blish_HUD;
 
 namespace Nekres.Music_Mixer.Core.Player
 {
@@ -23,13 +23,15 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public bool Loading { get; private set; }
 
+        private TaskScheduler _scheduler;
         public AudioEngine()
         {
+            _scheduler = System.Threading.Tasks.TaskScheduler.FromCurrentSynchronizationContext();
         }
 
         public async Task Play(string url)
         {
-            if (this.Loading) return;
+            if (this.Loading || string.IsNullOrEmpty(url)) return;
             this.Loading = true;
             AudioUrlReceived(await youtube_dl.Instance.GetAudioOnlyUrl(url));
         }
@@ -41,6 +43,7 @@ namespace Nekres.Music_Mixer.Core.Player
                 this.Loading = false;
                 return;
             }
+            _soundtrack.Finished += OnSoundtrackFinished;
             _soundtrack.FadeIn();
             this.Loading = false;
         }
@@ -50,6 +53,15 @@ namespace Nekres.Music_Mixer.Core.Player
         public void Stop()
         {
             _soundtrack?.FadeOut();
+        }
+
+        private async void OnSoundtrackFinished(object o, EventArgs e)
+        {
+            _soundtrack.Finished -= OnSoundtrackFinished;
+            if (this.Loading || !_soundtrack.Stopped) return;
+            await Task.Factory.StartNew(
+                async () => await this.Play((await MusicMixer.Instance.DataService.GetRandom())?.Uri), 
+                CancellationToken.None, TaskCreationOptions.None, _scheduler).Unwrap();
         }
 
         public void Dispose()

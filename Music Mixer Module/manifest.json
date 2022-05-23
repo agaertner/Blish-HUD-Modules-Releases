@@ -1,11 +1,11 @@
 {
   "name": "Music Mixer",
-  "version": "0.2.5",
+  "version": "0.3.7",
   "namespace": "Nekres.Music_Mixer",
   "package": "Music Mixer.dll",
   "manifest_version": 1,
 
-  "description": "Customize the soundtrack of the game. Create dynamic playlists depending on context.",
+  "description": "Customize the soundtrack of the game. Create a responsive playlist for any situation using YouTube & Co.",
   "dependencies": {
     "bh.blishhud": ">=0.11.6"
   },

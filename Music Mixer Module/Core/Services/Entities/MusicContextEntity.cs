@@ -64,6 +64,7 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         {
             return (!entity.DayTimes.Any() || entity.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
                    && (!entity.MapIds.Any() || entity.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
+                   && (!entity.ExcludedMapIds.Any() || !entity.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                    && (!entity.MountTypes.Any() || entity.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
                    && (!entity.States.Any() || entity.States.Contains(MusicMixer.Instance.Gw2State.CurrentState));
         }

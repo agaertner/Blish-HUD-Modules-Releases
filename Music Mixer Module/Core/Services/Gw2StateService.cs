@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.ArcDps;
 using Gw2Sharp.Models;
 using Stateless;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using static Blish_HUD.GameService;
 using static Nekres.Music_Mixer.MusicMixer;
 using Timer = System.Timers.Timer;

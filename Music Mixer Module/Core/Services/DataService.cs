@@ -6,14 +6,13 @@ using Nekres.Music_Mixer.Core.Player.API;
 using Nekres.Music_Mixer.Core.Services.Entities;
 using Nekres.Music_Mixer.Core.UI.Models;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using SixLabors.ImageSharp.Formats.Jpeg;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Nekres.Music_Mixer.Core.Services
@@ -126,6 +125,7 @@ namespace Nekres.Music_Mixer.Core.Services
             var actives = await _ctx.CountAsync(x =>
                 (!x.DayTimes.Any() || x.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
                  && (!x.MapIds.Any() || x.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
+                 && (!x.ExcludedMapIds.Any() || !x.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                  && (!x.MountTypes.Any() || x.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
                  && (!x.States.Any() || x.States.Contains(MusicMixer.Instance.Gw2State.CurrentState)) 
                 && !_prevRandom.Equals(x.Id));
@@ -133,6 +133,7 @@ namespace Nekres.Music_Mixer.Core.Services
             return (await _ctx.FindAsync(x => 
                 (!x.DayTimes.Any() || x.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
                   && (!x.MapIds.Any() || x.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
+                  && (!x.ExcludedMapIds.Any() || !x.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                   && (!x.MountTypes.Any() || x.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
                   && (!x.States.Any() || x.States.Contains(MusicMixer.Instance.Gw2State.CurrentState)) 
                 && !_prevRandom.Equals(x.Id), RandomUtil.GetRandom(0, actives - 1), 1)).ToArray()[0];

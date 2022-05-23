@@ -19,8 +19,6 @@ namespace Nekres.Music_Mixer.Core.UI.Views
 {
     internal class MusicContextConfigView : View<MusicContextConfigPresenter>
     {
-        public event EventHandler<ValueEventArgs<Guid>> Deleted;
-
         private const int MARGIN = 10;
         private bool _deleted;
         private IList<Map> _maps;
@@ -159,7 +157,8 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                     Parent = statesPanel,
                     Text = state.ToString(),
                     BasicTooltipText = state.GetDescription(),
-                    Size = new Point(statesPanel.ContentRegion.Width - 10, 26)
+                    Size = new Point(statesPanel.ContentRegion.Width - 10, 26),
+                    Checked = this.Presenter.Model.States.Contains(state)
                 };
                 cbx.CheckedChanged += OnStateCheckboxCheckedChange;
             }
@@ -183,7 +182,8 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 {
                     Parent = mountPanel,
                     Text = mount.ToString(),
-                    Size = new Point(mountPanel.ContentRegion.Width - 10, 26)
+                    Size = new Point(mountPanel.ContentRegion.Width - 10, 26),
+                    Checked = this.Presenter.Model.MountTypes.Contains(mount)
                 };
                 cbx.CheckedChanged += OnMountCheckboxCheckedChange;
             }
@@ -207,7 +207,8 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 {
                     Parent = dayTimePanel,
                     Text = dayTime.ToString(),
-                    Size = new Point(dayTimePanel.ContentRegion.Width - 10, 26)
+                    Size = new Point(dayTimePanel.ContentRegion.Width - 10, 26),
+                    Checked = this.Presenter.Model.DayTimes.Contains(dayTime)
                 };
                 cbx.CheckedChanged += OnDayTimeCheckboxCheckedChange;
             }

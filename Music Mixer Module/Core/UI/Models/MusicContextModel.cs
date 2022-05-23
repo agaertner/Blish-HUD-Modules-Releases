@@ -181,6 +181,7 @@ namespace Nekres.Music_Mixer.Core.UI.Models
         {
             return (!model.DayTimes.Any() || model.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
                 && (!model.MapIds.Any() || model.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
+                && (!model.ExcludedMapIds.Any() || !model.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                 && (!model.MountTypes.Any() || model.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
                 && (!model.States.Any() || model.States.Contains(MusicMixer.Instance.Gw2State.CurrentState));
         }
