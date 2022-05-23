@@ -58,7 +58,7 @@ namespace Nekres.Music_Mixer.Core.Player
         private async void OnSoundtrackFinished(object o, EventArgs e)
         {
             _soundtrack.Finished -= OnSoundtrackFinished;
-            if (this.Loading || !_soundtrack.Stopped) return;
+            if (this.Loading) return;
             await Task.Factory.StartNew(
                 async () => await this.Play((await MusicMixer.Instance.DataService.GetRandom())?.Uri), 
                 CancellationToken.None, TaskCreationOptions.None, _scheduler).Unwrap();

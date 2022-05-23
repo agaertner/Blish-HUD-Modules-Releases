@@ -6,7 +6,6 @@ using Nekres.Music_Mixer.Core.Player.Source;
 using Nekres.Music_Mixer.Core.Player.Source.DSP;
 using Nekres.Music_Mixer.Core.Player.Source.Equalizer;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Nekres.Music_Mixer.Core.Player
@@ -14,14 +13,6 @@ namespace Nekres.Music_Mixer.Core.Player
     internal class Soundtrack : IDisposable
     {
         public event EventHandler<EventArgs> Finished;
-
-        enum StreamingPlaybackState
-        {
-            Stopped,
-            Playing,
-            Buffering,
-            Paused
-        }
 
         private WasapiOut _outputDevice;
         private MediaFoundationReader _mediaProvider;
@@ -31,8 +22,6 @@ namespace Nekres.Music_Mixer.Core.Player
         private BiQuadFilterSource _lowPassFilter;
         private Equalizer _equalizer;
 
-        private volatile StreamingPlaybackState _playbackState;
-        public bool Stopped => _playbackState == StreamingPlaybackState.Stopped;
 
         private float _volume;
         public float Volume
@@ -68,8 +57,6 @@ namespace Nekres.Music_Mixer.Core.Player
 
         private void Play(int fadeInDuration = 500)
         {
-            _playbackState = StreamingPlaybackState.Playing;
-
             _endOfStream = new EndOfStreamProvider(_mediaProvider.ToSampleProvider());
             _endOfStream.Ended += OnEndOfStreamReached;
 
@@ -95,6 +82,8 @@ namespace Nekres.Music_Mixer.Core.Player
 
         private void OnEndOfStreamReached(object o, EventArgs e)
         {
+            _endOfStream.Ended -= OnEndOfStreamReached;
+            this.Finished?.Invoke(this, EventArgs.Empty);
             this.Dispose();
         }
 
@@ -120,9 +109,6 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public void Dispose()
         {
-            _playbackState = StreamingPlaybackState.Stopped;
-            _endOfStream.Ended -= OnEndOfStreamReached;
-            this.Finished?.Invoke(this, EventArgs.Empty);
             _outputDevice?.Dispose();
             _mediaProvider?.Dispose();
         }
