@@ -93,6 +93,7 @@ namespace Nekres.Music_Mixer.Core.Player
                 Visible = false
             };
             _mediaWidget.Model = model;
+            _mediaWidget.Soundtrack = _soundtrack;
             _mediaWidget.Show();
             await MusicMixer.Instance.DataService.GetThumbnail(model);
         }

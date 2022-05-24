@@ -6,20 +6,7 @@ namespace Nekres.Music_Mixer
     {
         public static string ToShortForm(this TimeSpan t)
         {
-            var shortForm = string.Empty;
-            if (t.Hours > 0)
-            {
-                shortForm += $"{t.Hours}:";
-            }
-            if (t.Minutes > 0)
-            {
-                shortForm += $"{t.Minutes}:";
-            }
-            if (t.Seconds > 0)
-            {
-                shortForm += $"{t.Seconds}";
-            }
-            return shortForm;
+            return (t.Hours > 0 ? $"{t.Hours}:" : string.Empty) + t.ToString(t.Minutes > 9 ? "mm\\:ss" : "m\\:ss");
         }
     }
 }

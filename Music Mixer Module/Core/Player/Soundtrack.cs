@@ -36,6 +36,11 @@ namespace Nekres.Music_Mixer.Core.Player
             }
         }
 
+        public TimeSpan CurrentTime => _mediaProvider.CurrentTime;
+        public TimeSpan TotalTime => _mediaProvider.TotalTime;
+        public bool IsMuted => _volumeProvider.Volume == 0;
+        public bool IsPaused => _outputDevice.PlaybackState == PlaybackState.Paused;
+
         private Soundtrack(string url, float volume)
         {
             _volume = volume;
@@ -58,6 +63,11 @@ namespace Nekres.Music_Mixer.Core.Player
 
         private void Play(int fadeInDuration = 500)
         {
+            if (this.IsPaused) {
+                _outputDevice.Play();
+                return;
+            }
+
             _endOfStream = new EndOfStreamProvider(_mediaProvider.ToSampleProvider());
             _endOfStream.Ended += OnEndOfStreamReached;
 
@@ -74,11 +84,33 @@ namespace Nekres.Music_Mixer.Core.Player
                 Filter = new LowPassFilter(_fadeInOut.WaveFormat.SampleRate, 400)
             };
             _equalizer = Equalizer.Create10BandEqualizer(_lowPassFilter);
-
+            
             _outputDevice.Init(_equalizer);
             _outputDevice.Play();
 
             _fadeInOut.BeginFadeIn(fadeInDuration);
+        }
+
+        public void Seek(float seconds)
+        {
+            _mediaProvider?.SetPosition(seconds);
+        }
+
+        public void Pause()
+        {
+            _outputDevice?.Pause();
+        }
+
+        public void ToggleMuted()
+        {
+            if (this.IsMuted)
+            {
+                this.Volume = MusicMixer.Instance.MasterVolume;
+            }
+            else
+            {
+                this.Volume = 0;
+            }
         }
 
         private void OnEndOfStreamReached(object o, EventArgs e)
