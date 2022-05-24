@@ -142,8 +142,15 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public void Dispose()
         {
-            _outputDevice?.Dispose();
-            _mediaProvider?.Dispose();
+            try
+            {
+                _outputDevice?.Dispose();
+                _mediaProvider?.Dispose();
+            }
+            catch (Exception e) when (e is NullReferenceException or ObjectDisposedException)
+            {
+                /* NOOP - Module was unloaded */
+            }
         }
     }
 }

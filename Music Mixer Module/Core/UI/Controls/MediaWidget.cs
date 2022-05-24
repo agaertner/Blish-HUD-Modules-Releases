@@ -66,7 +66,8 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 
         private readonly TrackBar2 _seekTrackBar;
 
-        private readonly Tooltip _volumeTooltip;
+        private AudioVolumeWidget _volumeWidget;
+
         public MediaWidget()
         {
             this.Size = new Point(387, 82);
@@ -92,6 +93,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 
         protected override void DisposeControl()
         {
+            _volumeWidget?.Dispose();
             _seekTrackBar.ValueChanged -= HandleTrackBarChanged;
             _seekTrackBar.Dispose();
             base.DisposeControl();
@@ -109,7 +111,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 
             if (_mouseOverAudioBtn)
             {
-                this.BasicTooltipText = "Mute";
+                this.BasicTooltipText = $"{Math.Ceiling(this.Soundtrack.Volume * 1000)}%";
             }
             else if (_mouseOverTitle)
             {
@@ -159,7 +161,13 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             } 
             else if (_mouseOverAudioBtn)
             {
-                this.Soundtrack?.ToggleMuted();
+                _volumeWidget?.Dispose();
+                _volumeWidget = null;
+                _volumeWidget = new AudioVolumeWidget(this)
+                {
+                    Parent = GameService.Graphics.SpriteScreen,
+                    Location = new Point(this.Right, this.Top)
+                };
             }
             base.OnClick(e);
         }

@@ -46,7 +46,7 @@ namespace Nekres.Music_Mixer.Core.Player
                 return;
             }
 
-            await Play(model.AudioUrl);
+            if (!await TryPlay(model.AudioUrl)) return;
             await Notify(model);
         }
 
@@ -57,7 +57,7 @@ namespace Nekres.Music_Mixer.Core.Player
                 model.AudioUrl = url;
                 await MusicMixer.Instance.DataService.Upsert(model);
 
-                await Play(model.AudioUrl);
+                if (!await TryPlay(model.AudioUrl)) return;
                 await Notify(model);
             }
             catch (Exception e) when (e is NullReferenceException or ObjectDisposedException)
@@ -66,21 +66,22 @@ namespace Nekres.Music_Mixer.Core.Player
             }
         }
 
-        private async Task Play(string audioUri)
+        private async Task<bool> TryPlay(string audioUri)
         {
             // Making sure WasApiOut is initialized in main synchronization context. Otherwise it will fail.
             // https://github.com/naudio/NAudio/issues/425
-            await Task.Factory.StartNew(() => {
+            return await Task.Factory.StartNew(() => {
                     if (!Soundtrack.TryGetStream(audioUri, this.Volume, out _soundtrack))
                     {
                         this.Loading = false;
-                        return;
+                        return false;
                     }
 
                     _soundtrack.Finished += OnSoundtrackFinished;
                     _soundtrack.FadeIn();
 
                     this.Loading = false;
+                    return true;
             }, CancellationToken.None, TaskCreationOptions.None, _scheduler);
         }
 
