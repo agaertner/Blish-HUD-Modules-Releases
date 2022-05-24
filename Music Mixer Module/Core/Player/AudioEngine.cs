@@ -1,4 +1,7 @@
-﻿using Nekres.Music_Mixer.Core.Player.API;
+﻿using Blish_HUD;
+using Nekres.Music_Mixer.Core.Player.API;
+using Nekres.Music_Mixer.Core.UI.Controls;
+using Nekres.Music_Mixer.Core.UI.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +10,8 @@ namespace Nekres.Music_Mixer.Core.Player
 {
     internal class AudioEngine : IDisposable
     {
+        private MediaWidget _mediaWidget;
+
         private Soundtrack _soundtrack;
 
         private float _volume;
@@ -26,46 +31,91 @@ namespace Nekres.Music_Mixer.Core.Player
         private TaskScheduler _scheduler;
         public AudioEngine()
         {
-            _scheduler = System.Threading.Tasks.TaskScheduler.FromCurrentSynchronizationContext();
+            _scheduler = TaskScheduler.FromCurrentSynchronizationContext();
         }
 
-        public async Task Play(string url)
+        public async Task Play(MusicContextModel model)
         {
-            if (this.Loading || string.IsNullOrEmpty(url)) return;
+            if (this.Loading || model == null) return;
             this.Loading = true;
-            AudioUrlReceived(await youtube_dl.Instance.GetAudioOnlyUrl(url));
-        }
 
-        private void AudioUrlReceived(string url)
-        {
-            if (!Soundtrack.TryGetStream(url, this.Volume, out _soundtrack))
+            if (string.IsNullOrEmpty(model.AudioUrl))
             {
-                this.Loading = false;
+                if (string.IsNullOrEmpty(model.Uri)) return;
+                youtube_dl.Instance.GetAudioOnlyUrl(model.Uri, AudioUrlReceived, model);
                 return;
             }
-            _soundtrack.Finished += OnSoundtrackFinished;
-            _soundtrack.FadeIn();
-            this.Loading = false;
+
+            await Play(model.AudioUrl);
+            await Notify(model);
+        }
+
+        private async Task AudioUrlReceived(string url, MusicContextModel model)
+        {
+            try
+            {
+                model.AudioUrl = url;
+                await MusicMixer.Instance.DataService.Upsert(model);
+
+                await Play(model.AudioUrl);
+                await Notify(model);
+            }
+            catch (Exception e) when (e is NullReferenceException or ObjectDisposedException)
+            {
+                /* NOOP - Module was being unloaded while youtube-dl exited and invoked this callback. */
+            }
+        }
+
+        private async Task Play(string audioUri)
+        {
+            // Making sure WasApiOut is initialized in main synchronization context. Otherwise it will fail.
+            // https://github.com/naudio/NAudio/issues/425
+            await Task.Factory.StartNew(() => {
+                    if (!Soundtrack.TryGetStream(audioUri, this.Volume, out _soundtrack))
+                    {
+                        this.Loading = false;
+                        return;
+                    }
+
+                    _soundtrack.Finished += OnSoundtrackFinished;
+                    _soundtrack.FadeIn();
+
+                    this.Loading = false;
+            }, CancellationToken.None, TaskCreationOptions.None, _scheduler);
+        }
+
+        private async Task Notify(MusicContextModel model)
+        {
+            _mediaWidget ??= new MediaWidget
+            {
+                Parent = GameService.Graphics.SpriteScreen,
+                Location = MusicMixer.Instance.MediaWidgetLocation.Value,
+                Visible = false
+            };
+            _mediaWidget.Model = model;
+            _mediaWidget.Show();
+            await MusicMixer.Instance.DataService.GetThumbnail(model);
         }
 
         public void ToggleSubmerged(bool enable) => _soundtrack?.ToggleSubmergedFx(enable);
 
         public void Stop()
         {
+            _mediaWidget?.Hide();
             _soundtrack?.FadeOut();
         }
 
         private async void OnSoundtrackFinished(object o, EventArgs e)
         {
             _soundtrack.Finished -= OnSoundtrackFinished;
+            _mediaWidget?.Hide();
             if (this.Loading) return;
-            await Task.Factory.StartNew(
-                async () => await this.Play((await MusicMixer.Instance.DataService.GetRandom())?.Uri), 
-                CancellationToken.None, TaskCreationOptions.None, _scheduler).Unwrap();
+            await this.Play((await MusicMixer.Instance.DataService.GetRandom())?.ToModel());
         }
 
         public void Dispose()
         {
+            _mediaWidget?.Dispose();
             _soundtrack?.Dispose();
         }
     }

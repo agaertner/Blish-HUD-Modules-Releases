@@ -48,7 +48,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             var calcTopMargin = _topMargin;
             var calcLeftMargin = _leftMargin;
             
-            text = $"State: " + CurrentState.ToString();
+            text = $"State: " + CurrentState;
             width = (int)_font.MeasureString(text).Width;
             height = (int)_font.MeasureString(text).Height;
             rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);

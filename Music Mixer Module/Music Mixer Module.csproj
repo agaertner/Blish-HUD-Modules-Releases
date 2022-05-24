@@ -147,6 +147,7 @@
     <Compile Include="Core\Player\NTimer.cs" />
     <Compile Include="Core\Services\DataService.cs" />
     <Compile Include="Core\Services\Gw2StateService.cs" />
+    <Compile Include="Core\UI\Controls\MediaWidget.cs" />
     <Compile Include="Core\UI\Models\MusicContextModel.cs" />
     <Compile Include="Core\UI\Presenters\MusicContextConfigPresenter.cs" />
     <Compile Include="Core\UI\Views\MusicContextConfigView.cs" />

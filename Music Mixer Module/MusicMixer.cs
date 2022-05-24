@@ -16,8 +16,6 @@ using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
-using static Blish_HUD.GameService;
-using static Nekres.Music_Mixer.Core.Services.Gw2StateService;
 namespace Nekres.Music_Mixer
 {
 
@@ -47,7 +45,8 @@ namespace Nekres.Music_Mixer
         internal SettingEntry<bool> ToggleKeepAudioFilesSetting;
         internal SettingEntry<AudioBitrate> AverageBitrateSetting;
         internal SettingEntry<bool> ToggleDebugHelper;
-
+        internal SettingEntry<Point> MediaWidgetLocation;
+        private SettingEntry<bool> MuteWhenInBackgroundSetting;
         #endregion
 
         public float MasterVolume => MathHelper.Clamp(MasterVolumeSetting.Value / 1000f, 0, 1);
@@ -79,6 +78,9 @@ namespace Nekres.Music_Mixer
                 () => "Master Volume", 
                 () => "Sets the audio volume.");
 
+            MuteWhenInBackgroundSetting = settings.DefineSetting("MuteWhenInBackground", false,
+                () => "Mute when GW2 is in the background");
+
             ToggleSubmergedPlaylistSetting = settings.DefineSetting("EnableSubmergedPlaylist", false, 
                 () => "Use submerged playlist", 
                 () => "Whether songs of the underwater playlist should be played while submerged.");
@@ -102,6 +104,9 @@ namespace Nekres.Music_Mixer
             ToggleDebugHelper = settings.DefineSetting("EnableDebugHelper", false, 
                 () => "Developer Mode", 
                 () => "Exposes internal information helpful for development.");
+
+            var selfManaged = settings.AddSubCollection("selfManaged", false, false);
+            MediaWidgetLocation = selfManaged.DefineSetting("mediaWidgetLocation", new Point((int)(0.82 * GameService.Graphics.SpriteScreen.Size.X), 30));
         }
 
         protected override void Initialize() {
@@ -123,16 +128,7 @@ namespace Nekres.Music_Mixer
             await Task.Run(() => {
                 ExtractFile(_FFmpegPath);
                 ExtractFile(_youtubeDLPath);
-            }).ContinueWith(async _ =>
-            {
-                var ver = await youtube_dl.Instance.Load();
-                if (string.IsNullOrEmpty(ver))
-                {
-                    Logger.Warn($"Failed to update youtube-dl. Version could not be retrieved.");
-                    return;
-                }
-                Logger.Info($"Using youtube-dl version: {ver}");
-            });
+            }).ContinueWith(_ => youtube_dl.Instance.Load());
         }
 
         protected override void OnModuleLoaded(EventArgs e) {
@@ -159,6 +155,9 @@ namespace Nekres.Music_Mixer
             MasterVolumeSetting.SettingChanged += MasterVolumeSettingChanged;
             Gw2State.IsSubmergedChanged += OnIsSubmergedChanged;
             Gw2State.StateChanged += OnStateChanged;
+            GameService.GameIntegration.Gw2Instance.Gw2LostFocus += OnGw2LostFocus;
+            GameService.GameIntegration.Gw2Instance.Gw2AcquiredFocus += OnGw2AcquiredFocus;
+            GameService.GameIntegration.Gw2Instance.Gw2Closed += OnGw2Closed;
 
             if (ToggleDebugHelper.Value)
                 BuildDebugPanel();
@@ -167,19 +166,32 @@ namespace Nekres.Music_Mixer
             base.OnModuleLoaded(e);
         }
 
+        private void OnGw2LostFocus(object o, EventArgs e)
+        {
+            if (_audioEngine == null || !MuteWhenInBackgroundSetting.Value) return;
+            _audioEngine.Volume = 0;
+        }
+
+        private void OnGw2AcquiredFocus(object o, EventArgs e)
+        {
+            if (_audioEngine == null) return;
+            _audioEngine.Volume = this.MasterVolume;
+        }
+        private void OnGw2Closed(object o, EventArgs e)
+        {
+            _audioEngine?.Stop();
+        }
+
         public void OnModuleIconClick(object o, MouseEventArgs e)
         {
             _moduleWindow?.ToggleWindow(new LibraryView(new LibraryModel()));
         }
 
-        private async void OnStateChanged(object o, ValueChangedEventArgs<State> e)
+        private async void OnStateChanged(object o, ValueChangedEventArgs<Gw2StateService.State> e)
         {
             if (_debugPanel != null) _debugPanel.CurrentState = e.NewValue;
-
             _audioEngine.Stop();
-            var track = await this.DataService.GetRandom();
-            if (track == null) return;
-            await _audioEngine.Play(track.Uri);
+            await _audioEngine.Play((await this.DataService.GetRandom())?.ToModel());
         }
 
         private void MasterVolumeSettingChanged(object o, ValueChangedEventArgs<float> e)
@@ -193,7 +205,7 @@ namespace Nekres.Music_Mixer
         }
 
         private void OnToggleDebugHelperChanged(object o, ValueChangedEventArgs<bool> e) {
-            if (!GameIntegration.Gw2Instance.Gw2IsRunning) return;
+            if (!GameService.GameIntegration.Gw2Instance.Gw2IsRunning) return;
             if (!e.NewValue) {
                 _debugPanel?.Dispose();
                 _debugPanel = null;
@@ -204,8 +216,8 @@ namespace Nekres.Music_Mixer
         private void BuildDebugPanel() {
             _debugPanel?.Dispose();
             _debugPanel = new DataPanel {
-                Parent = Graphics.SpriteScreen,
-                Size = new Point(Graphics.SpriteScreen.Width, Graphics.SpriteScreen.Height),
+                Parent = GameService.Graphics.SpriteScreen,
+                Size = new Point(GameService.Graphics.SpriteScreen.Width, GameService.Graphics.SpriteScreen.Height),
                 Location = new Point(0,0),
                 ZIndex = -9999,
                 CurrentState = Gw2State.CurrentState
@@ -215,6 +227,9 @@ namespace Nekres.Music_Mixer
         /// <inheritdoc />
         protected override void Unload()
         {
+            GameService.GameIntegration.Gw2Instance.Gw2LostFocus -= OnGw2LostFocus;
+            GameService.GameIntegration.Gw2Instance.Gw2AcquiredFocus -= OnGw2AcquiredFocus;
+            GameService.GameIntegration.Gw2Instance.Gw2Closed -= OnGw2Closed;
             MasterVolumeSetting.SettingChanged -= MasterVolumeSettingChanged;
             Gw2State.IsSubmergedChanged -= OnIsSubmergedChanged;
             Gw2State.StateChanged -= OnStateChanged;

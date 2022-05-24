@@ -6,6 +6,7 @@ using Nekres.Music_Mixer.Core.Player.Source;
 using Nekres.Music_Mixer.Core.Player.Source.DSP;
 using Nekres.Music_Mixer.Core.Player.Source.Equalizer;
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Nekres.Music_Mixer.Core.Player
@@ -47,7 +48,7 @@ namespace Nekres.Music_Mixer.Core.Player
             try {
                 soundTrack = new Soundtrack(url, volume);
                 return true;
-            } catch (Exception e) when (e is InvalidCastException or UnauthorizedAccessException)
+            } catch (Exception e) when (e is InvalidCastException or UnauthorizedAccessException or COMException)
             {
                 soundTrack = null;
                 MusicMixer.Logger.Error(e, e.Message);

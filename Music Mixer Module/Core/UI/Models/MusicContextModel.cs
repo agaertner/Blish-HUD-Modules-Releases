@@ -60,6 +60,18 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             }
         }
 
+        private string _audioUrl;
+        public string AudioUrl
+        {
+            get => _audioUrl;
+            set
+            {
+                if (!string.IsNullOrEmpty(_audioUrl) && _audioUrl.Equals(value)) return;
+                _audioUrl = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         private TimeSpan _duration;
         public TimeSpan Duration
         {

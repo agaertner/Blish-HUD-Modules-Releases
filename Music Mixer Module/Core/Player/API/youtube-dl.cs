@@ -32,7 +32,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
         {
         }
 
-        public async Task<string> Load()
+        public void Load()
         {
             var p = new Process
             {
@@ -42,18 +42,30 @@ namespace Nekres.Music_Mixer.Core.Player.API
                     FileName = ExecutablePath,
                     Arguments = "-U",
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     UseShellExecute = false,
                 }
             };
-            p.Start();
-            return await p.WaitForExitAsync().ContinueWith(t =>
+            p.OutputDataReceived += (_, e) =>
             {
-                if (t.IsFaulted || p.ExitCode != 0) return string.Empty;
-                var data = p.StandardOutput.ReadToEnd();
-                var toVersion = _version.Match(data).Groups["toVersion"]?.Value;
-                var isVersion = _version.Match(data).Groups["isVersion"]?.Value;
-                return string.IsNullOrEmpty(isVersion) ? toVersion : isVersion;
-            });
+                if (string.IsNullOrEmpty(e.Data)) return;
+                var data = e.Data;
+                var match = _version.Match(data);
+                if (!match.Success) return;
+                var toVersion = match.Groups["toVersion"].Value;
+                var isVersion = match.Groups["isVersion"].Value;
+                var version = string.IsNullOrEmpty(isVersion) ? toVersion : isVersion;
+                MusicMixer.Logger.Info($"Using youtube-dl version {version}");
+            };
+            p.ErrorDataReceived += (_, e) =>
+            {
+                if (string.IsNullOrEmpty(e.Data)) return;
+                MusicMixer.Logger.Error($"Failed to load or update youtube-dl: \"{e.Data}\"");
+            };
+            p.Start();
+            p.BeginOutputReadLine();
+            p.BeginErrorReadLine();
+            
         }
 
         public void GetThumbnail(AsyncTexture2D thumbnail, string id, string link, Action<AsyncTexture2D, string, string> callback)
@@ -90,7 +102,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
             return await p.WaitForExitAsync().ContinueWith(t => !t.IsFaulted && p.ExitCode == 0);
         }
 
-        public async Task<string> GetAudioOnlyUrl(string youTubeLink)
+        public void GetAudioOnlyUrl<TModel>(string link, Func<string, TModel, Task> callback, TModel model = default)
         {
             using var p = new Process
             {
@@ -100,20 +112,19 @@ namespace Nekres.Music_Mixer.Core.Player.API
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     FileName = ExecutablePath,
-                    Arguments = string.Format("-g {0} -f \"bestaudio[ext=m4a][abr<={1}]/bestaudio[ext=aac][abr<={1}]/bestaudio[abr<={1}]/bestaudio\"", youTubeLink, AverageBitrate.ToString().Substring(1))
+                    Arguments = string.Format("-g {0} -f \"bestaudio[ext=m4a][abr<={1}]/bestaudio[ext=aac][abr<={1}]/bestaudio[abr<={1}]/bestaudio\"", link, AverageBitrate.ToString().Substring(1))
                 }
             };
-            p.Start();
-            return await p.WaitForExitAsync().ContinueWith(t =>
+            p.OutputDataReceived += async (_, e) =>
             {
-                if (t.IsFaulted || p.ExitCode != 0) return string.Empty;
-                var data = p.StandardOutput.ReadToEnd();
-                if (string.IsNullOrEmpty(data) || data.ToLower().StartsWith("error")) return string.Empty;
-                return data;
-            });
+                if (string.IsNullOrEmpty(e.Data) || e.Data.ToLower().StartsWith("error")) return;
+                await callback.Invoke(e.Data, model);
+            };
+            p.Start();
+            p.BeginOutputReadLine();
         }
 
-        public void GetMetaData(string youTubeLink, Func<MetaData, Task> callback)
+        public void GetMetaData(string link, Func<MetaData, Task> callback)
         {
             using var p = new Process
             {
@@ -123,13 +134,13 @@ namespace Nekres.Music_Mixer.Core.Player.API
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     FileName = ExecutablePath,
-                    Arguments = $"--dump-json {youTubeLink}"
+                    Arguments = $"--dump-json {link}"
                 }
             };
             p.OutputDataReceived += async (_, e) =>
             {
                 if (string.IsNullOrEmpty(e.Data)) return;
-                await callback(JsonConvert.DeserializeObject<MetaData>(e.Data));
+                await callback.Invoke(JsonConvert.DeserializeObject<MetaData>(e.Data));
             };
             p.Start();
             p.BeginOutputReadLine();
@@ -165,6 +176,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
                 Debug.WriteLine(message);
             };
             p.Start();
+            p.BeginErrorReadLine();
         }
     }
 }

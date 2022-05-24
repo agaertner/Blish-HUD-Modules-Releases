@@ -6,6 +6,7 @@ using Blish_HUD;
 using Gw2Sharp.Models;
 using LiteDB;
 using Nekres.Music_Mixer.Core.UI.Models;
+using SharpDX.MediaFoundation;
 
 namespace Nekres.Music_Mixer.Core.Services.Entities
 {
@@ -25,6 +26,9 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
 
         [BsonField("uri")]
         public string Uri { get; set; }
+
+        [BsonField("audioUrl")]
+        public string AudioUrl { get; set; }
 
         [BsonField("duration")]
         public TimeSpan Duration { get; set; }
@@ -52,7 +56,9 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
             return new MusicContextModel(this.Title, this.Artist, this.Uri, this.Duration)
             {
                 Id = this.Id,
+                AudioUrl = this.AudioUrl,
                 MapIds = new ObservableCollection<int>(this.MapIds),
+                ExcludedMapIds = new ObservableCollection<int>(this.ExcludedMapIds),
                 SectorIds = new ObservableCollection<int>(this.SectorIds),
                 DayTimes = new ObservableCollection<TyrianTime>(this.DayTimes),
                 MountTypes = new ObservableCollection<MountType>(this.MountTypes),
@@ -77,6 +83,7 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
                 Title = model.Title,
                 Artist = model.Artist,
                 Uri = model.Uri,
+                AudioUrl = model.AudioUrl,
                 Duration = model.Duration,
                 MapIds = model.MapIds.ToList(),
                 ExcludedMapIds = model.ExcludedMapIds.ToList(),
