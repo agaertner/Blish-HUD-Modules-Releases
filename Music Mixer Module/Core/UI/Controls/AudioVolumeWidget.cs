@@ -37,8 +37,9 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
                 Visible = true
             };
             _volumeTrackBar.ValueChanged += OnValueChanged;
+            this.RefreshValue(MusicMixer.Instance.MasterVolumeSetting.Value);
             _activeBounds = _mediaWidget.AbsoluteBounds.Add(this.AbsoluteBounds);
-            this.ZIndex = 99999;
+            this.ZIndex = _mediaWidget.ZIndex + 1;
         }
 
         private void OnValueChanged(object o, ValueEventArgs<float> e)
