@@ -38,9 +38,6 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         [BsonField("excludedMapIds")]
         public List<int> ExcludedMapIds { get; set; }
 
-        [BsonField("sectorIds")]
-        public List<int> SectorIds { get; set; }
-
         [BsonField("dayTimes")]
         public List<TyrianTime> DayTimes { get; set; }
 
@@ -58,7 +55,6 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
                 AudioUrl = this.AudioUrl,
                 MapIds = new ObservableCollection<int>(this.MapIds),
                 ExcludedMapIds = new ObservableCollection<int>(this.ExcludedMapIds),
-                SectorIds = new ObservableCollection<int>(this.SectorIds),
                 DayTimes = new ObservableCollection<TyrianTime>(this.DayTimes),
                 MountTypes = new ObservableCollection<MountType>(this.MountTypes)
             };
@@ -86,7 +82,6 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
                 State = model.State,
                 MapIds = model.MapIds.ToList(),
                 ExcludedMapIds = model.ExcludedMapIds.ToList(),
-                SectorIds = model.SectorIds.ToList(),
                 DayTimes = model.DayTimes.ToList(),
                 MountTypes = model.MountTypes.ToList()
             };

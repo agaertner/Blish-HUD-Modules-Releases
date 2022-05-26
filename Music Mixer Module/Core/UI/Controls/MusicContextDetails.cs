@@ -47,12 +47,6 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
         {
             this.Title = model.Title;
             this.Model = model;
-            this.Model.Changed += OnModelChanged;
-        }
-
-        private void OnModelChanged(object o, EventArgs e)
-        {
-            this.Title = this.Model.Title;
         }
 
         protected override void OnMouseMoved(MouseEventArgs e)

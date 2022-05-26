@@ -108,18 +108,6 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             }
         }
 
-        private ObservableCollection<int> _sectorIds;
-        public ObservableCollection<int> SectorIds
-        {
-            get => _sectorIds;
-            set
-            {
-                if (value == null) return;
-                _sectorIds = value;
-                _sectorIds.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
         private ObservableCollection<TyrianTime> _dayTimes;
         public ObservableCollection<TyrianTime> DayTimes
         {
@@ -178,7 +166,6 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             this.State = state;
             this.MapIds = new ObservableCollection<int>();
             this.ExcludedMapIds = new ObservableCollection<int>();
-            this.SectorIds = new ObservableCollection<int>();
             this.DayTimes = new ObservableCollection<TyrianTime>();
             this.MountTypes = new ObservableCollection<MountType>();
             this.Thumbnail = new AsyncTexture2D();

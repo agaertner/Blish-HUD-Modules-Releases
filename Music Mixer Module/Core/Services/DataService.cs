@@ -96,7 +96,7 @@ namespace Nekres.Music_Mixer.Core.Services
             {
                 entity.DayTimes = model.DayTimes.ToList();
                 entity.MapIds = model.MapIds.ToList();
-                entity.SectorIds = model.SectorIds.ToList();
+                entity.ExcludedMapIds = model.ExcludedMapIds.ToList();
                 entity.MountTypes = model.MountTypes.ToList();
                 entity.State = model.State;
                 await _ctx.UpdateAsync(entity);

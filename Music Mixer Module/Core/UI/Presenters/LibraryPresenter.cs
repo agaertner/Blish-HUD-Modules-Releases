@@ -62,7 +62,9 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
         {
             var ctrl = (MusicContextDetails)o;
             var view = new MusicContextConfigView(ctrl.Model);
+            ctrl.Active = true;
             this.View.ConfigView.Show(view);
+            view.Unloaded += delegate { ctrl.Active = false; };
         }
     }
 }
