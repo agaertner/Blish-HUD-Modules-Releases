@@ -98,7 +98,7 @@ namespace Nekres.Music_Mixer.Core.Services
                 entity.MapIds = model.MapIds.ToList();
                 entity.SectorIds = model.SectorIds.ToList();
                 entity.MountTypes = model.MountTypes.ToList();
-                entity.States = model.States.ToList();
+                entity.State = model.State;
                 await _ctx.UpdateAsync(entity);
             }
             await _ctx.EnsureIndexAsync(x => x.Id);
@@ -111,8 +111,7 @@ namespace Nekres.Music_Mixer.Core.Services
 
         public async Task Delete(MusicContextModel model)
         {
-            await _ctx.DeleteManyAsync(x => model.Id.Equals(model.Id));
-            model.Delete();
+            await _ctx.DeleteManyAsync(x => x.Id.Equals(model.Id));
         }
 
         public async Task<MusicContextEntity> FindById(Guid id)
@@ -127,16 +126,18 @@ namespace Nekres.Music_Mixer.Core.Services
                  && (!x.MapIds.Any() || x.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                  && (!x.ExcludedMapIds.Any() || !x.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                  && (!x.MountTypes.Any() || x.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
-                 && (!x.States.Any() || x.States.Contains(MusicMixer.Instance.Gw2State.CurrentState)) 
-                && !_prevRandom.Equals(x.Id));
+                 && x.State == MusicMixer.Instance.Gw2State.CurrentState 
+                 && !_prevRandom.Equals(x.Id));
             if (actives <= 0) return null;
-            return (await _ctx.FindAsync(x => 
+            var random = (await _ctx.FindAsync(x => 
                 (!x.DayTimes.Any() || x.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
                   && (!x.MapIds.Any() || x.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                   && (!x.ExcludedMapIds.Any() || !x.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                   && (!x.MountTypes.Any() || x.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
-                  && (!x.States.Any() || x.States.Contains(MusicMixer.Instance.Gw2State.CurrentState)) 
-                && !_prevRandom.Equals(x.Id), RandomUtil.GetRandom(0, actives - 1), 1)).ToArray()[0];
+                  && x.State == MusicMixer.Instance.Gw2State.CurrentState
+                  && !_prevRandom.Equals(x.Id), RandomUtil.GetRandom(0, actives - 1), 1)).ToArray()[0];
+            _prevRandom = random.Id;
+            return random;
         }
 
         public async Task<IEnumerable<MusicContextEntity>> GetPage(int startIndex, int pageSize)
@@ -147,6 +148,11 @@ namespace Nekres.Music_Mixer.Core.Services
         public async Task<IEnumerable<MusicContextEntity>> GetAll()
         {
             return await _ctx.FindAllAsync();
+        }
+
+        public async Task<IEnumerable<MusicContextEntity>> GetByState(Gw2StateService.State state)
+        {
+            return await _ctx.FindAsync(x => x.State == state);
         }
 
         public void Dispose()

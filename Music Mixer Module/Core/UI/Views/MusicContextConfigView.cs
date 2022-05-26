@@ -20,7 +20,6 @@ namespace Nekres.Music_Mixer.Core.UI.Views
     internal class MusicContextConfigView : View<MusicContextConfigPresenter>
     {
         private const int MARGIN = 10;
-        private bool _deleted;
         private IList<Map> _maps;
 
         private FlowPanel _mapsPanel;
@@ -40,30 +39,27 @@ namespace Nekres.Music_Mixer.Core.UI.Views
             return _maps.Any();
         }
 
-        protected override async void Unload()
-        {
-            if (!_deleted) await MusicMixer.Instance.DataService.Upsert(this.Presenter.Model);
-            base.Unload();
-        }
-
         protected override void Build(Container buildPanel)
         {
             var thumbnail = new LoadingImage(this.Presenter.Model.Thumbnail)
             {
                 Parent = buildPanel,
-                Size = new Point(256, 144),
+                Size = new Point(128, 72),
                 Location = new Point(Panel.LEFT_PADDING, Panel.TOP_PADDING)
             };
+
+            var artistHeight = GameService.Content.DefaultFont12.MeasureString(this.Presenter.Model.Artist).Height;
 
             var title = new Label
             {
                 Parent = buildPanel,
                 Text = this.Presenter.Model.Title,
-                Size = new Point(buildPanel.ContentRegion.Width - thumbnail.Width - MARGIN * 2 - 100, thumbnail.Height / 2),
+                Size = new Point(buildPanel.Width - thumbnail.Width - MARGIN * 2 - 100, thumbnail.Height - (int)artistHeight),
                 Location = new Point(thumbnail.Right + MARGIN, thumbnail.Location.Y),
                 Font = GameService.Content.DefaultFont18,
                 StrokeText = true,
-                WrapText = true
+                WrapText = true,
+                VerticalAlignment = VerticalAlignment.Top
             };
 
             var artist = new Label
@@ -71,7 +67,7 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 Parent = buildPanel,
                 Text = this.Presenter.Model.Artist,
                 Size = new Point(title.Width, title.Height),
-                Location = new Point(title.Location.X, title.Bottom),
+                Location = new Point(title.Location.X, thumbnail.Bottom - (int)artistHeight),
                 Font = GameService.Content.DefaultFont12,
                 TextColor = Color.LightGray,
                 VerticalAlignment = VerticalAlignment.Top
@@ -82,7 +78,7 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 Parent = buildPanel,
                 Text = this.Presenter.Model.Duration.ToShortForm(),
                 Size = new Point(buildPanel.ContentRegion.Width - thumbnail.Width - title.Width, thumbnail.Height),
-                Location = new Point(title.Right, thumbnail.Location.Y),
+                Location = new Point(title.Right + 5, thumbnail.Location.Y),
                 Font = GameService.Content.DefaultFont16,
                 TextColor = Color.LightGray
             };
@@ -91,7 +87,7 @@ namespace Nekres.Music_Mixer.Core.UI.Views
             _mapsPanel = new FlowPanel
             {
                 Parent = buildPanel,
-                Size = new Point(200, buildPanel.ContentRegion.Height - 350),
+                Size = new Point(210, buildPanel.ContentRegion.Height - 350),
                 Location = new Point(0, buildPanel.ContentRegion.Height / 2 - Panel.BOTTOM_PADDING),
                 FlowDirection = ControlFlowDirection.LeftToRight,
                 ControlPadding = new Vector2(5, 5),
@@ -138,68 +134,26 @@ namespace Nekres.Music_Mixer.Core.UI.Views
             };
             btnExcludeMap.Click += BtnExcludeMap_Click;
 
-            var statesPanel = new FlowPanel
+            var dayTimeLabel = new Label
             {
                 Parent = buildPanel,
-                Size = new Point(_mapsPanel.Width, _mapsPanel.Height),
-                Location = new Point(_mapsExclusionPanel.Right + 5, _mapsPanel.Location.Y),
-                FlowDirection = ControlFlowDirection.TopToBottom,
-                ControlPadding = new Vector2(5, 5),
-                OuterControlPadding = new Vector2(5, 5),
-                CanCollapse = false,
-                CanScroll = false,
-                Collapsed = false
+                Text = "Play during..",
+                Size = new Point(buildPanel.Width, 30),
+                Location = new Point(thumbnail.Location.X, thumbnail.Bottom + 5),
             };
-            foreach (var state in Enum.GetValues(typeof(Gw2StateService.State)).Cast<Gw2StateService.State>())
-            {
-                var cbx = new Checkbox
-                {
-                    Parent = statesPanel,
-                    Text = state.ToString(),
-                    BasicTooltipText = state.GetDescription(),
-                    Size = new Point(statesPanel.ContentRegion.Width - 10, 26),
-                    Checked = this.Presenter.Model.States.Contains(state)
-                };
-                cbx.CheckedChanged += OnStateCheckboxCheckedChange;
-            }
-
-            var mountPanel = new FlowPanel
-            {
-                Parent = buildPanel,
-                Size = new Point(_mapsPanel.Width, _mapsPanel.Height),
-                Location = new Point(statesPanel.Right + 5, _mapsPanel.Location.Y),
-                FlowDirection = ControlFlowDirection.TopToBottom,
-                ControlPadding = new Vector2(5, 5),
-                OuterControlPadding = new Vector2(5, 5),
-                CanCollapse = false,
-                CanScroll = false,
-                Collapsed = false
-            };
-            foreach (var mount in Enum.GetValues(typeof(MountType)).Cast<MountType>())
-            {
-                if (mount == MountType.None) continue;
-                var cbx = new Checkbox
-                {
-                    Parent = mountPanel,
-                    Text = mount.ToString(),
-                    Size = new Point(mountPanel.ContentRegion.Width - 10, 26),
-                    Checked = this.Presenter.Model.MountTypes.Contains(mount)
-                };
-                cbx.CheckedChanged += OnMountCheckboxCheckedChange;
-            }
-
             var dayTimePanel = new FlowPanel
             {
                 Parent = buildPanel,
-                Size = new Point(_mapsPanel.Width, _mapsPanel.Height / 2),
-                Location = new Point(_mapsPanel.Location.X, _mapsPanel.Top - _mapsPanel.Height / 2 - MARGIN),
-                FlowDirection = ControlFlowDirection.TopToBottom,
+                Size = new Point(buildPanel.Width, 40),
+                Location = new Point(dayTimeLabel.Location.X, dayTimeLabel.Bottom),
+                FlowDirection = ControlFlowDirection.LeftToRight,
                 ControlPadding = new Vector2(5, 5),
                 OuterControlPadding = new Vector2(5, 5),
                 CanCollapse = false,
                 CanScroll = false,
                 Collapsed = false
             };
+
             foreach (var dayTime in Enum.GetValues(typeof(TyrianTime)).Cast<TyrianTime>())
             {
                 if (dayTime == TyrianTime.None) continue;
@@ -213,14 +167,41 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 cbx.CheckedChanged += OnDayTimeCheckboxCheckedChange;
             }
 
-            var delBtn = new DeleteButton(MusicMixer.Instance.ContentsManager)
+            if (this.Presenter.Model.State == Gw2StateService.State.Mounted)
             {
-                Parent = buildPanel,
-                Size = new Point(42, 42),
-                Location = new Point(buildPanel.ContentRegion.Width - 42, btnIncludeMap.Location.Y + btnIncludeMap.Height - 42),
-                BasicTooltipText = "Delete"
-            };
-            delBtn.Click += DeleteButton_Click;
+                var mountLabel = new Label
+                {
+                    Parent = buildPanel,
+                    Text = "When I'm on my..",
+                    Size = new Point(buildPanel.Width, 30),
+                    Location = new Point(dayTimePanel.Location.X, dayTimePanel.Bottom),
+                };
+
+                var mountPanel = new FlowPanel
+                {
+                    Parent = buildPanel,
+                    Size = new Point(buildPanel.Width, _mapsPanel.Height / 2),
+                    Location = new Point(mountLabel.Location.X, mountLabel.Bottom),
+                    FlowDirection = ControlFlowDirection.TopToBottom,
+                    ControlPadding = new Vector2(5, 5),
+                    OuterControlPadding = new Vector2(5, 5),
+                    CanCollapse = false,
+                    CanScroll = false,
+                    Collapsed = false
+                };
+                foreach (var mount in Enum.GetValues(typeof(MountType)).Cast<MountType>())
+                {
+                    if (mount == MountType.None) continue;
+                    var cbx = new Checkbox
+                    {
+                        Parent = mountPanel,
+                        Text = mount.ToString(),
+                        Size = new Point(mountPanel.ContentRegion.Width - 10, 26),
+                        Checked = this.Presenter.Model.MountTypes.Contains(mount)
+                    };
+                    cbx.CheckedChanged += OnMountCheckboxCheckedChange;
+                }
+            }
         }
 
         private async void BtnIncludeMap_Click(object o, MouseEventArgs e)
@@ -280,18 +261,6 @@ namespace Nekres.Music_Mixer.Core.UI.Views
             ctrl.Dispose();
         }
 
-        private void OnStateCheckboxCheckedChange(object o, CheckChangedEvent e)
-        {
-            var ctrl = (Checkbox)o;
-            var state = (Gw2StateService.State)Enum.Parse(typeof(Gw2StateService.State), ctrl.Text);
-            if (e.Checked)
-            {
-                this.Presenter.Model.States.Add(state);
-                return;
-            }
-            this.Presenter.Model.States.Remove(state);
-        }
-
         private void OnMountCheckboxCheckedChange(object o, CheckChangedEvent e)
         {
             var ctrl = (Checkbox)o;
@@ -314,13 +283,6 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 return;
             }
             this.Presenter.Model.DayTimes.Remove(dayTime);
-        }
-
-        private async void DeleteButton_Click(object o, MouseEventArgs e)
-        {
-            _deleted = true;
-            await this.Presenter.Delete();
-            ((DeleteButton)o).Parent.Hide();
         }
     }
 }

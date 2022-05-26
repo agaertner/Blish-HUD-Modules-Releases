@@ -1,6 +1,6 @@
 {
   "name": "Music Mixer",
-  "version": "0.4.1-pre.1",
+  "version": "0.5.1",
   "namespace": "Nekres.Music_Mixer",
   "package": "Music Mixer.dll",
   "manifest_version": 1,

@@ -23,25 +23,14 @@ namespace Nekres.Music_Mixer.Core.Services
 
         public enum State
         {
-            [Description("During loading screens, vistas, cinematics, character selection and similar game states.")]
-            StandBy,
-            [Description("Default ambient music when nothing else applies.")]
-            Ambient,
-            [Description("Riding your trusty mount.")]
+            StandBy, // nothing
+            Ambient, // Settings: Defeated, Victory
             Mounted,
-            [Description("Upon being in combat with growing enemy numbers.")]
             Battle,
-            [Description("When in Structured Player VS. Player or its lobby.")]
-            SPvP,
-            [Description("When in World VS. World.")]
-            WvW,
-            [Description("When in story instances.")]
-            StoryInstance,
-            [Description("Upon diving underwater.")]
+            Competitive,
+            StoryInstance, // silence
             Submerged,
-            [Description("Upon being defeated.")]
             Defeated,
-            [Description("Upon claiming victory over world bosses and other great feats.")]
             Victory
         }
 
@@ -184,7 +173,7 @@ namespace Nekres.Music_Mixer.Core.Services
                         .Ignore(Trigger.Emerging)
                         .Ignore(Trigger.InCombat);
 
-            _stateMachine.Configure(State.SPvP)
+            _stateMachine.Configure(State.Competitive)
                         .OnEntry(t => StateChanged?.Invoke(this, new ValueChangedEventArgs<State>(t.Source, t.Destination)))
                         .PermitDynamic(Trigger.StandBy, GameModeStateSelector)
                         .Permit(Trigger.Victory, State.Victory)
@@ -251,7 +240,7 @@ namespace Nekres.Music_Mixer.Core.Services
                 return State.Submerged;
 
             if (Gw2Mumble.CurrentMap.IsCompetitiveMode)
-                return Gw2Mumble.CurrentMap.Type.IsWvW() ? State.WvW : State.SPvP;
+                return State.Competitive;
 
             if (Gw2Mumble.CurrentMap.Type.IsInstance())
                 return State.StoryInstance;

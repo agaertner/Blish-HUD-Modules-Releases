@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Gw2Sharp.Models;
 using LiteDB;
 using Nekres.Music_Mixer.Core.UI.Models;
-using SharpDX.MediaFoundation;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Nekres.Music_Mixer.Core.Services.Entities
 {
@@ -49,11 +48,11 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         public List<MountType> MountTypes { get; set; }
 
         [BsonField("states")]
-        public List<Gw2StateService.State> States { get; set; }
+        public Gw2StateService.State State { get; set; }
 
         public MusicContextModel ToModel()
         {
-            return new MusicContextModel(this.Title, this.Artist, this.Uri, this.Duration)
+            return new MusicContextModel(this.State, this.Title, this.Artist, this.Uri, this.Duration)
             {
                 Id = this.Id,
                 AudioUrl = this.AudioUrl,
@@ -61,8 +60,7 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
                 ExcludedMapIds = new ObservableCollection<int>(this.ExcludedMapIds),
                 SectorIds = new ObservableCollection<int>(this.SectorIds),
                 DayTimes = new ObservableCollection<TyrianTime>(this.DayTimes),
-                MountTypes = new ObservableCollection<MountType>(this.MountTypes),
-                States = new ObservableCollection<Gw2StateService.State>(this.States)
+                MountTypes = new ObservableCollection<MountType>(this.MountTypes)
             };
         }
 
@@ -72,7 +70,7 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
                    && (!entity.MapIds.Any() || entity.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                    && (!entity.ExcludedMapIds.Any() || !entity.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                    && (!entity.MountTypes.Any() || entity.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
-                   && (!entity.States.Any() || entity.States.Contains(MusicMixer.Instance.Gw2State.CurrentState));
+                   && entity.State == MusicMixer.Instance.Gw2State.CurrentState;
         }
 
         public static MusicContextEntity FromModel(MusicContextModel model)
@@ -85,12 +83,12 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
                 Uri = model.Uri,
                 AudioUrl = model.AudioUrl,
                 Duration = model.Duration,
+                State = model.State,
                 MapIds = model.MapIds.ToList(),
                 ExcludedMapIds = model.ExcludedMapIds.ToList(),
                 SectorIds = model.SectorIds.ToList(),
                 DayTimes = model.DayTimes.ToList(),
-                MountTypes = model.MountTypes.ToList(),
-                States = model.States.ToList(),
+                MountTypes = model.MountTypes.ToList()
             };
         }
     }

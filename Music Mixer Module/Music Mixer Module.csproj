@@ -141,7 +141,6 @@
     <Compile Include="Core\Player\Source\DSP\LowPassFilter.cs" />
     <Compile Include="Core\UI\Controls\AudioVolumeWidget.cs" />
     <Compile Include="Core\UI\Controls\ClipboardButton.cs" />
-    <Compile Include="Core\UI\Controls\DeleteButton.cs" />
     <Compile Include="Core\UI\Controls\LoadingImage.cs" />
     <Compile Include="Core\UI\Controls\MapEntry.cs" />
     <Compile Include="Core\UI\Controls\DataPanel.cs" />
@@ -153,15 +152,14 @@
     <Compile Include="Core\UI\Models\MusicContextModel.cs" />
     <Compile Include="Core\UI\Presenters\MusicContextConfigPresenter.cs" />
     <Compile Include="Core\UI\Views\MusicContextConfigView.cs" />
+    <Compile Include="Core\UI\Views\StateView.cs" />
     <Compile Include="MusicMixer.cs" />
     <Compile Include="Core\Player\API\ffmpeg.cs" />
     <Compile Include="Core\Player\API\youtube-dl.cs" />
     <Compile Include="Core\Player\Soundtrack.cs" />
     <Compile Include="Core\Services\Entities\MusicContextEntity.cs" />
     <Compile Include="Core\UI\Controls\MusicContextDetails.cs" />
-    <Compile Include="Core\UI\Models\LibraryModel.cs" />
     <Compile Include="Core\UI\Presenters\LibraryPresenter.cs" />
-    <Compile Include="Core\UI\Views\LibraryView.cs" />
     <Compile Include="_Converters\TimeSpanFromSecondsConverter.cs" />
     <Compile Include="_Extensions\EnumExtensions.cs" />
     <Compile Include="_Extensions\MapTypeExtensions.cs" />

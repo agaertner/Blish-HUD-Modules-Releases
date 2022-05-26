@@ -16,6 +16,8 @@ using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
+using Nekres.Music_Mixer.Core.UI.Views.StateViews;
+
 namespace Nekres.Music_Mixer
 {
 
@@ -62,12 +64,20 @@ namespace Nekres.Music_Mixer
         internal DataService DataService;
         internal Gw2StateService Gw2State;
 
-        private StandardWindow _moduleWindow;
+        private TabbedWindow2 _moduleWindow;
         private CornerIcon _cornerIcon;
 
         // Textures
         private Texture2D _cornerTexture;
         private Texture2D _backgroundTexture;
+
+        private Texture2D _mountTabIcon;
+        private Texture2D _ambientTabIcon;
+        private Texture2D _competitiveTabIcon;
+        private Texture2D _submergedTabIcon;
+        private Texture2D _battleTabIcon;
+        private Texture2D _defeatedTabIcon;
+        private Texture2D _victoryTabIcon;
 
         [ImportingConstructor]
         public MusicMixer([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { Instance = this; }
@@ -117,7 +127,15 @@ namespace Nekres.Music_Mixer
             _audioEngine = new AudioEngine { Volume = this.MasterVolume };
 
             _cornerTexture = ContentsManager.GetTexture("corner_icon.png");
-            _backgroundTexture = ContentsManager.GetTexture("background.png");
+            _backgroundTexture = GameService.Content.GetTexture("controls/window/502049");
+
+            _mountTabIcon = ContentsManager.GetTexture("tabs/raptor.png");
+            _ambientTabIcon = ContentsManager.GetTexture("tabs/campfire.png");
+            _competitiveTabIcon = ContentsManager.GetTexture("tabs/arena.png");
+            _submergedTabIcon = ContentsManager.GetTexture("tabs/waterdrop.png");
+            _battleTabIcon = ContentsManager.GetTexture("tabs/enemy.png");
+            _defeatedTabIcon = ContentsManager.GetTexture("tabs/downed_enemy.png");
+            _victoryTabIcon = ContentsManager.GetTexture("tabs/raptor.png");
         }
 
         protected override void Update(GameTime gameTime) {
@@ -134,17 +152,22 @@ namespace Nekres.Music_Mixer
         protected override void OnModuleLoaded(EventArgs e) {
             MasterVolumeSetting.Value = MathHelper.Clamp(MasterVolumeSetting.Value, 0f, 100f);
 
-            var windowRegion = new Rectangle(40, 26, 423, 780 - 56);
-            var contentRegion = new Rectangle(70, 41, 380, 780 - 42);
-            _moduleWindow = new StandardWindow(_backgroundTexture, windowRegion, contentRegion)
+            var windowRegion = new Rectangle(40, 26, 895 + 38, 780 - 56);
+            var contentRegion = new Rectangle(70, 41, 895 - 43, 780 - 142);
+            _moduleWindow = new TabbedWindow2(_backgroundTexture, windowRegion, contentRegion)
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 Emblem = _cornerTexture,
                 Location = new Point((GameService.Graphics.SpriteScreen.Width - windowRegion.Width) / 2, (GameService.Graphics.SpriteScreen.Height) / 2),
                 SavesPosition = true,
                 Title = this.Name,
-                Id = $"{nameof(MusicMixer)}_{nameof(LibraryView)}_d42b52ce-74f1-4e6d-ae6b-a8724029f0a3"
-            };
+                Id = $"{nameof(MusicMixer)}_d42b52ce-74f1-4e6d-ae6b-a8724029f0a3"
+            };   
+            _moduleWindow.Tabs.Add(new Tab(_mountTabIcon, () => new StateView(Gw2StateService.State.Mounted), "Mounted"));
+            _moduleWindow.Tabs.Add(new Tab(_ambientTabIcon, () => new StateView(Gw2StateService.State.Ambient), "Ambient"));
+            _moduleWindow.Tabs.Add(new Tab(_competitiveTabIcon, () => new StateView(Gw2StateService.State.Competitive), "Competitive"));
+            _moduleWindow.Tabs.Add(new Tab(_submergedTabIcon, () => new StateView(Gw2StateService.State.Submerged), "Submerged"));
+            _moduleWindow.Tabs.Add(new Tab(_battleTabIcon, () => new StateView(Gw2StateService.State.Battle), "Battle"));
             _cornerIcon = new CornerIcon
             {
                 Icon = _cornerTexture
@@ -184,7 +207,7 @@ namespace Nekres.Music_Mixer
 
         public void OnModuleIconClick(object o, MouseEventArgs e)
         {
-            _moduleWindow?.ToggleWindow(new LibraryView(new LibraryModel()));
+            _moduleWindow?.ToggleWindow();
         }
 
         private async void OnStateChanged(object o, ValueChangedEventArgs<Gw2StateService.State> e)

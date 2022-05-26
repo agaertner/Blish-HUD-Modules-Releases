@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Blish_HUD.Graphics.UI;
+﻿using Blish_HUD.Graphics.UI;
 using Nekres.Music_Mixer.Core.UI.Models;
 using Nekres.Music_Mixer.Core.UI.Views;
+using System;
 
 namespace Nekres.Music_Mixer.Core.UI.Presenters
 {
@@ -11,11 +10,6 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
         public MusicContextConfigPresenter(MusicContextConfigView view, MusicContextModel model) : base(view, model)
         {
             model.Changed += View_OnModelChanged;
-        }
-
-        public async Task Delete()
-        {
-            await MusicMixer.Instance.DataService.Delete(this.Model);
         }
 
         private async void View_OnModelChanged(object o, EventArgs e)

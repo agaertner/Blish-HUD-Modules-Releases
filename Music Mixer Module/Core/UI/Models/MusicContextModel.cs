@@ -144,15 +144,15 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             }
         }
 
-        private ObservableCollection<Gw2StateService.State> _states;
-        public ObservableCollection<Gw2StateService.State> States
+        private Gw2StateService.State _state;
+        public Gw2StateService.State State
         {
-            get => _states;
+            get => _state;
             set
             {
-                if (value == null) return;
-                _states = value;
-                _states.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+                if (value == _state) return;
+                _state = value;
+                Changed?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -168,19 +168,19 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             }
         }
 
-        public MusicContextModel(string title, string artist, string url, TimeSpan duration)
+        public MusicContextModel(Gw2StateService.State state, string title, string artist, string url, TimeSpan duration)
         {
             this.Id = Guid.NewGuid();
             this.Title = title;
             this.Artist = artist;
             this.Uri = url;
             this.Duration = duration;
+            this.State = state;
             this.MapIds = new ObservableCollection<int>();
             this.ExcludedMapIds = new ObservableCollection<int>();
             this.SectorIds = new ObservableCollection<int>();
             this.DayTimes = new ObservableCollection<TyrianTime>();
             this.MountTypes = new ObservableCollection<MountType>();
-            this.States = new ObservableCollection<Gw2StateService.State>();
             this.Thumbnail = new AsyncTexture2D();
         }
 
@@ -195,7 +195,7 @@ namespace Nekres.Music_Mixer.Core.UI.Models
                 && (!model.MapIds.Any() || model.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                 && (!model.ExcludedMapIds.Any() || !model.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                 && (!model.MountTypes.Any() || model.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
-                && (!model.States.Any() || model.States.Contains(MusicMixer.Instance.Gw2State.CurrentState));
+                && (model.State == MusicMixer.Instance.Gw2State.CurrentState);
         }
     }
 }
