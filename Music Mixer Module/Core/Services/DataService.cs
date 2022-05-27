@@ -126,17 +126,14 @@ namespace Nekres.Music_Mixer.Core.Services
             // Get all tracks for state.
             var tracks = (await GetByState(MusicMixer.Instance.Gw2State.CurrentState)).ToList();
 
-            // Get tracks not already played.
-            var notPlayed = tracks.Where(x => !playlist.Contains(x.Id)).ToList();
-
             // Clear if all songs have been played.
-            if (!notPlayed.Any())
+            if (!tracks.Select(x => x.Id).Except(playlist).Any())
             {
                 playlist.Clear();
             }
 
             // Get songs playable
-            var actives = notPlayed.Where(MusicContextEntity.CanPlay).ToList();
+            var actives = tracks.Where(x => MusicContextEntity.CanPlay(x) && !playlist.Contains(x.Id)).ToList();
             if (actives.Count <= 0) return null;
 
             // Get one random
