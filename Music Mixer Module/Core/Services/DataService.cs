@@ -22,10 +22,14 @@ namespace Nekres.Music_Mixer.Core.Services
         private LiteDatabaseAsync _db;
         private ILiteCollectionAsync<MusicContextEntity> _ctx;
         private ILiteStorageAsync<string> _thumbnails;
-        private Guid _prevRandom;
-
+        private Dictionary<Gw2StateService.State, HashSet<Guid>> _playlists;
         public DataService(string cacheDir)
         {
+            _playlists = new Dictionary<Gw2StateService.State, HashSet<Guid>>();
+            foreach (var state in Enum.GetValues(typeof(Gw2StateService.State)).Cast<Gw2StateService.State>())
+            {
+                _playlists.Add(state, new HashSet<Guid>());
+            }
             _db = new LiteDatabaseAsync(Path.Combine(cacheDir, "data.db"));
             _ctx = _db.GetCollection<MusicContextEntity>("music_contexts");
             _thumbnails = _db.GetStorage<string>("thumbnails", "thumbnail_chunks");
@@ -104,11 +108,6 @@ namespace Nekres.Music_Mixer.Core.Services
             await _ctx.EnsureIndexAsync(x => x.Id);
         }
 
-        public async Task<int> Count()
-        {
-            return await _ctx.CountAsync();
-        }
-
         public async Task Delete(MusicContextModel model)
         {
             await _ctx.DeleteManyAsync(x => x.Id.Equals(model.Id));
@@ -121,28 +120,28 @@ namespace Nekres.Music_Mixer.Core.Services
 
         public async Task<MusicContextEntity> GetRandom()
         {
-            var actives = await _ctx.CountAsync(x =>
-                (!x.DayTimes.Any() || x.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
-                 && (!x.MapIds.Any() || x.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
-                 && (!x.ExcludedMapIds.Any() || !x.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
-                 && (!x.MountTypes.Any() || x.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
-                 && x.State == MusicMixer.Instance.Gw2State.CurrentState 
-                 && !_prevRandom.Equals(x.Id));
-            if (actives <= 0) return null;
-            var random = (await _ctx.FindAsync(x => 
-                (!x.DayTimes.Any() || x.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
-                  && (!x.MapIds.Any() || x.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
-                  && (!x.ExcludedMapIds.Any() || !x.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
-                  && (!x.MountTypes.Any() || x.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
-                  && x.State == MusicMixer.Instance.Gw2State.CurrentState
-                  && !_prevRandom.Equals(x.Id), RandomUtil.GetRandom(0, actives - 1), 1)).ToArray()[0];
-            _prevRandom = random.Id;
-            return random;
-        }
+            // Get already played songs
+            var playlist = _playlists[MusicMixer.Instance.Gw2State.CurrentState];
 
-        public async Task<IEnumerable<MusicContextEntity>> GetPage(int startIndex, int pageSize)
-        {
-            return await _ctx.FindAsync(x => true, startIndex, pageSize);
+            // Get tracks not already played.
+            var tracks = (await GetByState(MusicMixer.Instance.Gw2State.CurrentState)).Where(x => !playlist.Contains(x.Id)).ToList();
+            
+
+            // Clear if all songs have been played.
+            if (!tracks.Select(x => x.Id).Except(playlist).Any())
+            {
+                playlist.Clear();
+            }
+
+            // Get songs playable
+            var actives = tracks.Where(MusicContextEntity.CanPlay).ToList();
+            if (actives.Count <= 0) return null;
+
+            // Get one random
+            var random = actives[RandomUtil.GetRandom(0, actives.Count - 1)];
+            playlist.Add(random.Id);
+
+            return random;
         }
 
         public async Task<IEnumerable<MusicContextEntity>> GetAll()

@@ -50,15 +50,23 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public static bool TryGetStream(string url, float volume, out Soundtrack soundTrack)
         {
-            try {
-                soundTrack = new Soundtrack(url, volume);
-                return true;
-            } catch (Exception e) when (e is InvalidCastException or UnauthorizedAccessException or COMException)
+            var timeout = DateTime.UtcNow.AddMilliseconds(500);
+            while (DateTime.UtcNow < timeout)
             {
-                soundTrack = null;
-                MusicMixer.Logger.Error(e, e.Message);
-                return false;
+                try
+                {
+                    soundTrack = new Soundtrack(url, volume);
+                    return true;
+                }
+                catch (Exception e) when (e is InvalidCastException or UnauthorizedAccessException or COMException)
+                {
+                    if (DateTime.UtcNow < timeout) continue;
+                    MusicMixer.Logger.Error(e, e.Message);
+                    break;
+                }
             }
+            soundTrack = null;
+            return false;
         }
 
         private void Play(int fadeInDuration = 500)

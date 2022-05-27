@@ -3,9 +3,6 @@ using Blish_HUD.ArcDps;
 using Gw2Sharp.Models;
 using Stateless;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using static Blish_HUD.GameService;
 using static Nekres.Music_Mixer.MusicMixer;
 using Timer = System.Timers.Timer;
@@ -18,13 +15,10 @@ namespace Nekres.Music_Mixer.Core.Services
         public event EventHandler<ValueEventArgs<bool>> IsSubmergedChanged;
         public event EventHandler<ValueEventArgs<bool>> IsDownedChanged;
 
-        private List<ulong> _enemyIds;
-        private ulong _playerId;
-
         public enum State
         {
-            StandBy, // nothing
-            Ambient, // Settings: Defeated, Victory
+            StandBy, // silence
+            Ambient,
             Mounted,
             Battle,
             Competitive,
@@ -47,8 +41,6 @@ namespace Nekres.Music_Mixer.Core.Services
             Victory,
             Death
         }
-
-        private const int _enemyThreshold = 6;
 
         #region Public Fields
 
@@ -90,22 +82,33 @@ namespace Nekres.Music_Mixer.Core.Services
         #endregion
 
         private StateMachine<State, Trigger> _stateMachine;
-        private Timer _arcDpsTimeOut;
+        private Timer _inCombatTimer;
+        private Timer _outOfCombatTimer;
 
         public Gw2StateService() {
             _stateMachine = new StateMachine<State, Trigger>(GameModeStateSelector());
-            _playerId = 0;
-            _enemyIds = new List<ulong>();
-            _arcDpsTimeOut = new Timer(2500) { AutoReset = false };
-            _arcDpsTimeOut.Elapsed += (o,e) =>
-            {
-                ArcDps.RawCombatEvent += CombatEventReceived;
-            };
+            _inCombatTimer = new Timer(3000) { AutoReset = false };
+            _inCombatTimer.Elapsed += InCombatTimerElapsed;
+            _outOfCombatTimer = new Timer(3000) { AutoReset = false };
+            _outOfCombatTimer.Elapsed += OutOfCombatTimerElapsed;
             this.Initialize();
         }
 
+        private void InCombatTimerElapsed(object sender, EventArgs e)
+        {
+            _stateMachine.Fire(Trigger.InCombat);
+        }
+
+        private void OutOfCombatTimerElapsed(object sender, EventArgs e)
+        {
+            _stateMachine.Fire(Trigger.OutOfCombat);
+        }
+
         public void Dispose() {
-            _arcDpsTimeOut?.Dispose();
+            _inCombatTimer.Elapsed -= InCombatTimerElapsed;
+            _inCombatTimer?.Close();
+            _outOfCombatTimer.Elapsed -= OutOfCombatTimerElapsed;
+            _outOfCombatTimer?.Close();
             GameIntegration.Gw2Instance.Gw2Closed -= OnGw2Closed;
             ArcDps.RawCombatEvent -= CombatEventReceived;
             Gw2Mumble.PlayerCharacter.CurrentMountChanged -= OnMountChanged;
@@ -176,6 +179,7 @@ namespace Nekres.Music_Mixer.Core.Services
             _stateMachine.Configure(State.Competitive)
                         .OnEntry(t => StateChanged?.Invoke(this, new ValueChangedEventArgs<State>(t.Source, t.Destination)))
                         .PermitDynamic(Trigger.StandBy, GameModeStateSelector)
+                        .PermitIf(Trigger.Mounting, State.Mounted, () => Instance.ToggleMountedPlaylistSetting.Value)
                         .Permit(Trigger.Victory, State.Victory)
                         .Permit(Trigger.Death, State.Defeated)
                         .PermitDynamic(Trigger.MapChanged, GameModeStateSelector)
@@ -239,7 +243,7 @@ namespace Nekres.Music_Mixer.Core.Services
             if (Instance.ToggleSubmergedPlaylistSetting.Value && _prevIsSubmerged)
                 return State.Submerged;
 
-            if (Gw2Mumble.CurrentMap.IsCompetitiveMode)
+            if (Gw2Mumble.CurrentMap.IsCompetitiveMode && !Gw2Mumble.CurrentMap.Type.IsWvW() && Gw2Mumble.CurrentMap.Id != 350)
                 return State.Competitive;
 
             if (Gw2Mumble.CurrentMap.Type.IsInstance())
@@ -262,22 +266,14 @@ namespace Nekres.Music_Mixer.Core.Services
 
         #region ArcDps Events
 
-        private void TimeOutCombatEvents() {
-            ArcDps.RawCombatEvent -= CombatEventReceived;
-            _arcDpsTimeOut.Restart();
-        }
-
         private void CombatEventReceived(object o, RawCombatEventArgs e) {
             if (e.CombatEvent == null || 
                 e.CombatEvent.Ev == null || 
                 e.EventType == RawCombatEventArgs.CombatEventType.Local) return;
 
-            var ev = e.CombatEvent.Ev;
-
-            // Save id and check state changes of local player.
+            // Check state changes of local player.
             if (e.CombatEvent.Src.Self > 0) {
-                _playerId = e.CombatEvent.Src.Id;
-                switch (ev.IsStateChange)
+                switch (e.CombatEvent.Ev.IsStateChange)
                 {
                     case ArcDpsEnums.StateChange.ChangeDown:
                         IsDowned = true;
@@ -290,31 +286,6 @@ namespace Nekres.Music_Mixer.Core.Services
                         return;
                     default: break;
                 }
-            } else if (e.CombatEvent.Dst.Self > 0)
-                _playerId = e.CombatEvent.Dst.Id;
-
-            if (ev.Iff == ArcDpsEnums.IFF.Foe) {
-                
-                ulong enemyId = e.CombatEvent.Src.Self > 0 ? e.CombatEvent.Dst.Id : e.CombatEvent.Src.Id;
-
-                // allied minion/pet event
-                if (_playerId != 0) {
-                    if (ev.SrcMasterInstId == _playerId)
-                        enemyId = e.CombatEvent.Dst.Id;
-                    else if (ev.DstMasterInstId == _playerId)
-                        enemyId = e.CombatEvent.Src.Id;
-                }
-
-                // track enemy and start combat if threshold is reached.
-                if (_enemyIds.Any(x => x.Equals(enemyId))) {
-                    if (enemyId.Equals(ev.SrcAgent) && ev.IsStateChange == ArcDpsEnums.StateChange.ChangeDead)
-                        _enemyIds.Remove(enemyId);
-                } else if (_enemyIds.Count() < _enemyThreshold) {
-                    _enemyIds.Add(enemyId);
-                } else {
-                    _stateMachine.Fire(Trigger.InCombat);
-                }
-
             }
         }
 
@@ -325,12 +296,18 @@ namespace Nekres.Music_Mixer.Core.Services
         private void OnMountChanged(object o, ValueEventArgs<MountType> e) => _stateMachine.Fire(e.Value > 0 ? Trigger.Mounting : Trigger.UnMounting);
         private void OnMapChanged(object o, ValueEventArgs<int> e) => _stateMachine.Fire(Trigger.MapChanged);
         private void OnIsInCombatChanged(object o, ValueEventArgs<bool> e) {
-            if (!e.Value) {
-                TimeOutCombatEvents(); 
-                _enemyIds.Clear();
-                _stateMachine.Fire(Trigger.OutOfCombat);
-            } else if (!ArcDps.Loaded) 
-                _stateMachine.Fire(Trigger.InCombat);
+            if (e.Value)
+            {
+                _inCombatTimer.Restart();
+            }
+            else if (this.CurrentState == State.Battle)
+            {
+                _outOfCombatTimer.Restart();
+            }
+            else
+            {
+                _inCombatTimer.Stop();
+            }
         }
 
         #endregion
