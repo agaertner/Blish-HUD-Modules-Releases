@@ -120,25 +120,27 @@ namespace Nekres.Music_Mixer.Core.Services
 
         public async Task<MusicContextEntity> GetRandom()
         {
-            // Get already played songs
+            // Get already played tracks.
             var playlist = _playlists[MusicMixer.Instance.Gw2State.CurrentState];
 
+            // Get all tracks for state.
+            var tracks = (await GetByState(MusicMixer.Instance.Gw2State.CurrentState)).ToList();
+
             // Get tracks not already played.
-            var tracks = (await GetByState(MusicMixer.Instance.Gw2State.CurrentState)).Where(x => !playlist.Contains(x.Id)).ToList();
-            
+            var notPlayed = tracks.Where(x => !playlist.Contains(x.Id)).ToList();
 
             // Clear if all songs have been played.
-            if (!tracks.Select(x => x.Id).Except(playlist).Any())
+            if (!notPlayed.Any())
             {
                 playlist.Clear();
             }
 
             // Get songs playable
-            var actives = tracks.Where(MusicContextEntity.CanPlay).ToList();
+            var actives = notPlayed.Where(MusicContextEntity.CanPlay).ToList();
             if (actives.Count <= 0) return null;
 
             // Get one random
-            var random = actives[RandomUtil.GetRandom(0, actives.Count - 1)];
+            var random = actives[RandomUtil.GetRandom(0, Math.Max(0, actives.Count - 1))];
             playlist.Add(random.Id);
 
             return random;

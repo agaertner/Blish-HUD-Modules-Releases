@@ -87,9 +87,9 @@ namespace Nekres.Music_Mixer.Core.Services
 
         public Gw2StateService() {
             _stateMachine = new StateMachine<State, Trigger>(GameModeStateSelector());
-            _inCombatTimer = new Timer(3000) { AutoReset = false };
+            _inCombatTimer = new Timer(6500) { AutoReset = false };
             _inCombatTimer.Elapsed += InCombatTimerElapsed;
-            _outOfCombatTimer = new Timer(3000) { AutoReset = false };
+            _outOfCombatTimer = new Timer(3250) { AutoReset = false };
             _outOfCombatTimer.Elapsed += OutOfCombatTimerElapsed;
             this.Initialize();
         }
