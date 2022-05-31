@@ -3,12 +3,10 @@ using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nekres.Music_Mixer.Core.Player;
 using Nekres.Music_Mixer.Core.UI.Models;
 using System;
 using System.Linq;
-using Glide;
-using Nekres.Music_Mixer.Core.Player;
-using Nekres.Music_Mixer.Core.UI.Views;
 
 namespace Nekres.Music_Mixer.Core.UI.Controls
 {

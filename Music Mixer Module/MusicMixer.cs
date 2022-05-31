@@ -10,13 +10,11 @@ using Nekres.Music_Mixer.Core.Player;
 using Nekres.Music_Mixer.Core.Player.API;
 using Nekres.Music_Mixer.Core.Services;
 using Nekres.Music_Mixer.Core.UI.Controls;
-using Nekres.Music_Mixer.Core.UI.Models;
-using Nekres.Music_Mixer.Core.UI.Views;
+using Nekres.Music_Mixer.Core.UI.Views.StateViews;
 using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
-using Nekres.Music_Mixer.Core.UI.Views.StateViews;
 
 namespace Nekres.Music_Mixer
 {
@@ -76,8 +74,6 @@ namespace Nekres.Music_Mixer
         private Texture2D _competitiveTabIcon;
         private Texture2D _submergedTabIcon;
         private Texture2D _battleTabIcon;
-        private Texture2D _defeatedTabIcon;
-        private Texture2D _victoryTabIcon;
 
         [ImportingConstructor]
         public MusicMixer([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { Instance = this; }
@@ -134,8 +130,6 @@ namespace Nekres.Music_Mixer
             _competitiveTabIcon = ContentsManager.GetTexture("tabs/arena.png");
             _submergedTabIcon = ContentsManager.GetTexture("tabs/waterdrop.png");
             _battleTabIcon = ContentsManager.GetTexture("tabs/enemy.png");
-            _defeatedTabIcon = ContentsManager.GetTexture("tabs/downed_enemy.png");
-            _victoryTabIcon = ContentsManager.GetTexture("tabs/raptor.png");
         }
 
         protected override void Update(GameTime gameTime) {
