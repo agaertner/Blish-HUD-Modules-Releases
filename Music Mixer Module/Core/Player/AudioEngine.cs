@@ -42,7 +42,7 @@ namespace Nekres.Music_Mixer.Core.Player
             if (string.IsNullOrEmpty(model.AudioUrl))
             {
                 if (string.IsNullOrEmpty(model.Uri)) return;
-                youtube_dl.Instance.GetAudioOnlyUrl(model.Uri, AudioUrlReceived, model);
+                youtube_dl.GetAudioOnlyUrl(model.Uri, AudioUrlReceived, model);
                 return;
             }
 

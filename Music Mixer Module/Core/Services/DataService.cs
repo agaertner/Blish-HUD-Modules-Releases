@@ -37,7 +37,7 @@ namespace Nekres.Music_Mixer.Core.Services
 
         public void DownloadThumbnail(MusicContextModel model)
         { 
-            youtube_dl.Instance.GetThumbnail(model.Thumbnail, model.Uri, model.Uri, ThumbnailUrlReceived);
+            youtube_dl.GetThumbnail(model.Thumbnail, model.Uri, model.Uri, ThumbnailUrlReceived);
         }
 
         private void ThumbnailUrlReceived(AsyncTexture2D tex, string id, string url)

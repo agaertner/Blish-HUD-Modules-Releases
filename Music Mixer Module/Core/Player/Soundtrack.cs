@@ -8,6 +8,7 @@ using Nekres.Music_Mixer.Core.Player.Source.Equalizer;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Nekres.Music_Mixer.Core.Services;
 
 namespace Nekres.Music_Mixer.Core.Player
 {
@@ -89,7 +90,8 @@ namespace Nekres.Music_Mixer.Core.Player
             // Filter is toggled when submerged.
             _lowPassFilter = new BiQuadFilterSource(_fadeInOut)
             {
-                Filter = new LowPassFilter(_fadeInOut.WaveFormat.SampleRate, 400)
+                Filter = new LowPassFilter(_fadeInOut.WaveFormat.SampleRate, 400),
+                Enabled = MusicMixer.Instance.Gw2State.CurrentState != Gw2StateService.State.Submerged && MusicMixer.Instance.Gw2State.IsSubmerged
             };
             _equalizer = Equalizer.Create10BandEqualizer(_lowPassFilter);
             

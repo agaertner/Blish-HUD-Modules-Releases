@@ -17,6 +17,9 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         [BsonField("id")]
         public Guid Id { get; set; }
 
+        [BsonField("state")]
+        public Gw2StateService.State State { get; set; }
+
         [BsonField("title")]
         public string Title { get; set; }
 
@@ -43,9 +46,6 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
 
         [BsonField("mountTypes")]
         public List<MountType> MountTypes { get; set; }
-
-        [BsonField("state")]
-        public Gw2StateService.State State { get; set; }
 
         public MusicContextModel ToModel()
         {

@@ -13,26 +13,14 @@ namespace Nekres.Music_Mixer.Core.Player.API
 {
     internal class youtube_dl
     {
+        private static string ExecutablePath => Path.Combine(MusicMixer.Instance.ModuleDirectory, "bin/youtube-dl.exe");
+        private static AudioBitrate AverageBitrate => MusicMixer.Instance.AverageBitrateSetting.Value;
 
-        public string ExecutablePath => Path.Combine(MusicMixer.Instance.ModuleDirectory, "bin/youtube-dl.exe");
+        private static readonly Regex _youtubeVideoId = new (@"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)(?<id>[a-zA-Z0-9-_]+)", RegexOptions.Compiled);
+        private static readonly Regex _progressReport = new (@"^\[download\].*?(?<percentage>(.*?))% of (?<size>(.*?))MiB at (?<speed>(.*?)) ETA (?<eta>(.*?))$", RegexOptions.Compiled); //[download]   2.7% of 4.62MiB at 200.00KiB/s ETA 00:23
+        private static readonly Regex _version = new (@"^Updating to version (?<toVersion>(.*?)) \.\.\.$|^youtube-dl is up-to-date \((?<isVersion>(.*?))\)$", RegexOptions.Compiled); //Updating to version 2015.01.16 ... | youtube-dl is up-to-date (2021.12.17)
 
-        private readonly Regex _youtubeVideoId = new (@"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)(?<id>[a-zA-Z0-9-_]+)", RegexOptions.Compiled);
-        private readonly Regex _progressReport = new (@"^\[download\].*?(?<percentage>(.*?))% of (?<size>(.*?))MiB at (?<speed>(.*?)) ETA (?<eta>(.*?))$", RegexOptions.Compiled); //[download]   2.7% of 4.62MiB at 200.00KiB/s ETA 00:23
-        private readonly Regex _version = new (@"^Updating to version (?<toVersion>(.*?)) \.\.\.$|^youtube-dl is up-to-date \((?<isVersion>(.*?))\)$", RegexOptions.Compiled); //Updating to version 2015.01.16 ... | youtube-dl is up-to-date (2021.12.17)
-
-        private static youtube_dl _instance;
-        private AudioBitrate AverageBitrate => MusicMixer.Instance.AverageBitrateSetting.Value;
-
-        public static youtube_dl Instance
-        {
-            get { return _instance ??= new youtube_dl(); }
-        }
-
-        private youtube_dl()
-        {
-        }
-
-        public void Load()
+        public static void Load()
         {
             var p = new Process
             {
@@ -68,7 +56,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
             
         }
 
-        public void GetThumbnail(AsyncTexture2D thumbnail, string id, string link, Action<AsyncTexture2D, string, string> callback)
+        public static void GetThumbnail(AsyncTexture2D thumbnail, string id, string link, Action<AsyncTexture2D, string, string> callback)
         {
             using var p = new Process
             {
@@ -86,7 +74,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
             p.BeginOutputReadLine();
         }
 
-        public async Task<bool> IsUrlSupported(string link)
+        public static async Task<bool> IsUrlSupported(string link)
         {
             using var p = new Process
             {
@@ -102,7 +90,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
             return await p.WaitForExitAsync().ContinueWith(t => !t.IsFaulted && p.ExitCode == 0);
         }
 
-        public void GetAudioOnlyUrl<TModel>(string link, Func<string, TModel, Task> callback, TModel model = default)
+        public static void GetAudioOnlyUrl<TModel>(string link, Func<string, TModel, Task> callback, TModel model = default)
         {
             using var p = new Process
             {
@@ -124,7 +112,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
             p.BeginOutputReadLine();
         }
 
-        public void GetMetaData(string link, Func<MetaData, Task> callback)
+        public static void GetMetaData(string link, Func<MetaData, Task> callback)
         {
             using var p = new Process
             {
@@ -146,7 +134,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
             p.BeginOutputReadLine();
         }
 
-        public void Download(string link, string outputFolder, AudioFormat format, IProgress<string> progress)
+        public static void Download(string link, string outputFolder, AudioFormat format, IProgress<string> progress)
         {
             Directory.CreateDirectory(outputFolder);
 

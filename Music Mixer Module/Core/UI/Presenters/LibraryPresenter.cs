@@ -27,7 +27,7 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
         {
             var url = await ClipboardUtil.WindowsClipboardService.GetTextAsync();
             e.Report("Checking link validity..");
-            if (!await youtube_dl.Instance.IsUrlSupported(url))
+            if (!await youtube_dl.IsUrlSupported(url))
             {
                 GameService.Content.PlaySoundEffectByName("error");
                 ScreenNotification.ShowNotification("Your clipboard does not contain a suitable video link.", ScreenNotification.NotificationType.Error);
@@ -35,7 +35,7 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
                 return;
             }
             e.Report("Ok! Fetching metadata...");
-            youtube_dl.Instance.GetMetaData(url, MetaDataReceived);
+            youtube_dl.GetMetaData(url, MetaDataReceived);
         }
 
         private async Task MetaDataReceived(MetaData data)

@@ -140,7 +140,7 @@ namespace Nekres.Music_Mixer
             await Task.Run(() => {
                 ExtractFile(_FFmpegPath);
                 ExtractFile(_youtubeDLPath);
-            }).ContinueWith(_ => youtube_dl.Instance.Load());
+            }).ContinueWith(_ => youtube_dl.Load());
         }
 
         protected override void OnModuleLoaded(EventArgs e) {
