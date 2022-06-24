@@ -1,6 +1,6 @@
 {
   "name": "Screenshot Manager",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "namespace": "Nekres.Screenshot_Manager",
   "package": "ScreenshotManager.dll",
   "manifest_version": 1,
