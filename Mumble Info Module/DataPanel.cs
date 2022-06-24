@@ -76,6 +76,12 @@ namespace Nekres.Mumble_Info
             Graphics.SpriteScreen.Resized += UpdateLocation;
         }
 
+        protected override void DisposeControl()
+        {
+            Graphics.SpriteScreen.Resized -= UpdateLocation;
+            base.DisposeControl();
+        }
+
         protected override void OnMouseMoved(MouseEventArgs e)
         {
             var relPos = RelativeMousePosition;

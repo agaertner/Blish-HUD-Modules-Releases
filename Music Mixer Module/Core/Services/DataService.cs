@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using LiteDB;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Nekres.Music_Mixer.Core.Services
@@ -30,7 +31,11 @@ namespace Nekres.Music_Mixer.Core.Services
             {
                 _playlists.Add(state, new HashSet<Guid>());
             }
-            _db = new LiteDatabaseAsync(Path.Combine(cacheDir, "data.db"));
+            _db = new LiteDatabaseAsync(new ConnectionString
+            {
+                Filename = Path.Combine(cacheDir, "data.db"),
+                Connection = ConnectionType.Shared
+            });
             _ctx = _db.GetCollection<MusicContextEntity>("music_contexts");
             _thumbnails = _db.GetStorage<string>("thumbnails", "thumbnail_chunks");
         }
