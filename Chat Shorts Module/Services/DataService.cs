@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using LiteDB;
 
 namespace Nekres.Chat_Shorts.Services
 {
@@ -22,7 +23,11 @@ namespace Nekres.Chat_Shorts.Services
         public DataService(string cacheDir)
         {
             _cacheDir = cacheDir;
-            _db = new LiteDatabaseAsync(Path.Combine(_cacheDir, "data.db"));
+            _db = new LiteDatabaseAsync(new ConnectionString
+            {
+                Filename = Path.Combine(_cacheDir, "data.db"),
+                Connection = ConnectionType.Shared
+            });
             _ctx = _db.GetCollection<MacroEntity>("macros");
         }
 
