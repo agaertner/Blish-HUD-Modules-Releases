@@ -1,6 +1,5 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
-using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
 using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
@@ -126,11 +125,6 @@ namespace Nekres.Screenshot_Manager
         }
 
         private void OnHideCornerIconSettingChanged(object o, ValueChangedEventArgs<bool> e) => CreateOrDisposeCornerIcon(e.NewValue);
-
-        public override IView GetSettingsView()
-        {
-            return new CustomSettingsView(new CustomSettingsModel(SettingsManager.ModuleSettings));
-        }
 
         private void LoadTextures()
         {

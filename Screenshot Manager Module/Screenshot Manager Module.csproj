@@ -145,17 +145,13 @@
     <Compile Include="UI\Controls\ScreenshotNotification.cs" />
     <Compile Include="ScreenshotManagerModule.cs" />
     <Compile Include="UI\Controls\ThumbnailBase.cs" />
-    <Compile Include="UI\Models\CustomSettingsModel.cs" />
     <Compile Include="UI\Models\ScreenshotManagerModel.cs" />
-    <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
     <Compile Include="UI\Presenters\ScreenshotManagerPresenter.cs" />
-    <Compile Include="UI\Views\CustomSettingsView.cs" />
     <Compile Include="UI\Views\ScreenshotManagerView.cs" />
     <Compile Include="_Extensions\BitmapExtensions.cs" />
     <Compile Include="_Extensions\GraphicsExtensions.cs" />
     <Compile Include="_Extensions\RectangleExtensions.cs" />
     <Compile Include="_Extensions\SizeExtensions.cs" />
-    <Compile Include="_Utils\BrowserUtil.cs" />
     <Compile Include="_Utils\FileUtil.cs" />
     <Compile Include="_Utils\TextureUtil.cs" />
   </ItemGroup>
