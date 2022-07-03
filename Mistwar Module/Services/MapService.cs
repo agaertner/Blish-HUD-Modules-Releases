@@ -109,23 +109,28 @@ namespace Nekres.Mistwar.Services
                 _mapCache.Add(id, cacheTex);
             }
 
-            await ReloadMap(); // We set the async texture on the control here for the case that we are already in WvW when the module loads.
-
             var filePath = $"{_dir.GetFullDirectoryPath("mistwar")}/{id}.png";
-            if (File.Exists(filePath))
+
+            if (LoadFromCache(filePath, cacheTex))
             {
-                using var fil = new MemoryStream(File.ReadAllBytes(filePath));
-                var tex = Texture2D.FromStream(GameService.Graphics.GraphicsDevice, fil);
-                cacheTex.SwapTexture(tex);
+                await ReloadMap();
                 return;
             }
 
             await MapUtil.BuildMap(await MapUtil.RequestMap(id), filePath, true, _loadingIndicator).ContinueWith(async _ =>
             {
-                using var fil = new MemoryStream(File.ReadAllBytes(filePath));
-                var tex = Texture2D.FromStream(GameService.Graphics.GraphicsDevice, fil);
-                cacheTex.SwapTexture(tex);
+                if (!LoadFromCache(filePath, cacheTex)) return;
+                await ReloadMap();
             });
+        }
+
+        private bool LoadFromCache(string filePath, AsyncTexture2D cacheTex)
+        {
+            if (!File.Exists(filePath)) return false;
+            using var fil = new MemoryStream(File.ReadAllBytes(filePath));
+            var tex = Texture2D.FromStream(GameService.Graphics.GraphicsDevice, fil);
+            cacheTex.SwapTexture(tex);
+            return true;
         }
 
         public async Task ReloadMap()

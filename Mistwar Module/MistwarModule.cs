@@ -64,7 +64,8 @@ namespace Nekres.Mistwar
 
         protected override async Task LoadAsync()
         {
-
+            if (!this.Gw2ApiManager.HasPermission(TokenPermission.Account)) return;
+            _mapService.DownloadMaps(await _wvwService.GetWvWMapIds(await _wvwService.GetWorldId()));
         }
 
         protected override void OnModuleLoaded(EventArgs e)
@@ -82,6 +83,7 @@ namespace Nekres.Mistwar
 
             _moduleIcon.Click += OnModuleIconClick;
             // Base handler must be called
+
             base.OnModuleLoaded(e);
         }
 
