@@ -130,13 +130,10 @@ namespace Nekres.Mistwar.Services
 
         public async Task ReloadMap()
         {
-            _mapControl.Hide();
-            _mapControl.Enabled = false;
             if (GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() && _mapCache.TryGetValue(GameService.Gw2Mumble.CurrentMap.Id, out var tex))
             {
-                _mapControl.Texture = tex;
+                _mapControl.Texture.SwapTexture(tex);
                 _mapControl.WvwObjectives = await _wvw.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id);
-                _mapControl.Enabled = true;
             }
         }
 
@@ -158,14 +155,12 @@ namespace Nekres.Mistwar.Services
         {
             if (!e.Value) return;
             _mapControl.Hide();
-            _mapControl.Enabled = false;
         }
 
         private void OnIsInGameChanged(object o, ValueEventArgs<bool> e)
         {
             if (!e.Value) return;
             _mapControl.Hide();
-            _mapControl.Enabled = false;
         }
 
         private async void OnMapChanged(object o, ValueEventArgs<int> e)

@@ -13,11 +13,15 @@ namespace Nekres.Mistwar.UI.Controls
     {
         public IEnumerable<WvwObjectiveEntity> WvwObjectives;
 
+        public float TextureOpacity { get; private set; }
+
+        public float ScaleRatio { get; private set; } = MathHelper.Clamp(MistwarModule.ModuleInstance.ScaleRatioSetting.Value / 100f, 0, 1);
+
         protected AsyncTexture2D _texture;
         public AsyncTexture2D Texture
         {
             get => _texture;
-            set => SetProperty(ref _texture, value);
+            private init => SetProperty(ref _texture, value);
         }
 
         private SpriteEffects _spriteEffects;
@@ -43,32 +47,31 @@ namespace Nekres.Mistwar.UI.Controls
 
         private Effect _grayscaleEffect;
 
-        public float ScaleRatio { get; private set; } = MathHelper.Clamp(MistwarModule.ModuleInstance.ScaleRatioSetting.Value / 100f, 0, 1);
-
         private MapImageDynamic _dynamicLayer;
-        public float TextureOpacity { get; private set; }
+
+        private bool _isVisible;
+
         public MapImage()
         {
             this.Texture = new AsyncTexture2D();
-            this.Size = _texture.Texture.Bounds.Size;
-            _grayscaleEffect ??= MistwarModule.ModuleInstance.ContentsManager.GetEffect<Effect>(@"effects\grayscale.mgfx");
+            _grayscaleEffect = MistwarModule.ModuleInstance.ContentsManager.GetEffect<Effect>(@"effects\grayscale.mgfx");
             _spriteBatchParameters = new SpriteBatchParameters
             {
                 Effect = _grayscaleEffect
             };
-            _texture.TextureSwapped += OnTextureSwapped;
             _dynamicLayer = new MapImageDynamic(this)
             {
                 Size = this.Size
             };
+            this.Texture.TextureSwapped += OnTextureSwapped;
             MistwarModule.ModuleInstance.ScaleRatioSetting.SettingChanged += OnScaleRatioChanged;
         }
 
         public void Toggle(float tDuration = 0.1f, bool silent = false)
         {
-            if (_enabled)
+            if (_isVisible)
             {
-                _enabled = false;
+                _isVisible = false;
                 if (silent)
                 {
                     this.Hide();
@@ -78,7 +81,7 @@ namespace Nekres.Mistwar.UI.Controls
                 GameService.Animation.Tweener.Tween(this, new { Opacity = 0.0f }, tDuration).OnComplete(this.Hide);
                 return;
             }
-            _enabled = true;
+            _isVisible = true;
             this.Show();
             if (silent) return;
             GameService.Content.PlaySoundEffectByName("page-open-" + RandomUtil.GetRandom(1, 3));
@@ -107,8 +110,9 @@ namespace Nekres.Mistwar.UI.Controls
         private new void Dispose()
         {
             _dynamicLayer?.Dispose();
-            Texture.TextureSwapped -= OnTextureSwapped;
+            _texture.TextureSwapped -= OnTextureSwapped;
             _texture?.Dispose();
+            _grayscaleEffect?.Dispose();
             MistwarModule.ModuleInstance.ScaleRatioSetting.SettingChanged -= OnScaleRatioChanged;
             base.Dispose();
         }

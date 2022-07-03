@@ -1,4 +1,5 @@
-﻿using Gw2Sharp.Models;
+﻿using Blish_HUD;
+using Gw2Sharp.Models;
 using Gw2Sharp.WebApi.Exceptions;
 using Gw2Sharp.WebApi.V2.Models;
 using System;
@@ -6,11 +7,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Blish_HUD;
-using File = System.IO.File;
 using Rectangle = Gw2Sharp.WebApi.V2.Models.Rectangle;
 namespace Nekres.Mistwar
 {

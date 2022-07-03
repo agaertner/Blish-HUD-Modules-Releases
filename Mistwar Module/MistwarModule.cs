@@ -142,12 +142,12 @@ namespace Nekres.Mistwar
         {
             if (GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld())
             {
-                _moduleIcon.Hide();
-                ToggleKeySetting.Value.Enabled = false;
+                _moduleIcon.Show();
+                ToggleKeySetting.Value.Enabled = true;
                 return;
             }
-            _moduleIcon.Show();
-            ToggleKeySetting.Value.Enabled = true;
+            _moduleIcon.Hide();
+            ToggleKeySetting.Value.Enabled = false;
         }
 
         /// <inheritdoc />
