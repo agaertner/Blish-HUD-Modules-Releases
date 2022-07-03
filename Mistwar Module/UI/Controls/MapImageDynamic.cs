@@ -8,7 +8,6 @@ using MonoGame.Extended.BitmapFonts;
 using Nekres.Mistwar.Entities;
 using System.Collections.Generic;
 using System.Linq;
-using MonoGame.Extended.Triangulation;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -147,23 +146,14 @@ namespace Nekres.Mistwar.UI.Controls
                 var scale = 0.5;
                 if (objectiveEntity.IsClaimed())
                 {
-                    if (MistwarModule.ModuleInstance.UseCustomIconsSetting.Value)
-                        spriteBatch.DrawOnCtrl(this, objectiveEntity.CustomClaimedTexture,
-                            new Rectangle(dest.X - width - 5, dest.Y + 10, (int)(scale * objectiveEntity.CustomClaimedTexture.Width), (int)(scale * objectiveEntity.CustomClaimedTexture.Height)), objectiveEntity.CustomClaimedTexture.Bounds);
-                    else
-                        spriteBatch.DrawOnCtrl(this, objectiveEntity.ClaimedTexture,
+                    spriteBatch.DrawOnCtrl(this, objectiveEntity.ClaimedTexture,
                             new Rectangle(dest.X + (int)(0.6 * width) - objectiveEntity.ClaimedTexture.Width / 2, dest.Y + (int)(0.9 * height) - height / 2, objectiveEntity.ClaimedTexture.Width, objectiveEntity.ClaimedTexture.Height), objectiveEntity.ClaimedTexture.Bounds);
-
                 }
 
                 // draw upgrade tier indicator
                 if (objectiveEntity.HasUpgraded())
                 {
-                    if (MistwarModule.ModuleInstance.UseCustomIconsSetting.Value)
-                        spriteBatch.DrawOnCtrl(this, objectiveEntity.CustomUpgradeTexture,
-                            new Rectangle(dest.X + width / 2 - 2, dest.Y + 5, (int)(scale * objectiveEntity.CustomUpgradeTexture.Width), (int)(scale * objectiveEntity.CustomUpgradeTexture.Height)), objectiveEntity.CustomUpgradeTexture.Bounds);
-                    else
-                        spriteBatch.DrawOnCtrl(this, objectiveEntity.UpgradeTexture, new Rectangle(dest.X - objectiveEntity.UpgradeTexture.Width / 2, dest.Y - height / 2 - (int)(0.7 * objectiveEntity.UpgradeTexture.Height), objectiveEntity.UpgradeTexture.Width, objectiveEntity.UpgradeTexture.Height), objectiveEntity.UpgradeTexture.Bounds);
+                    spriteBatch.DrawOnCtrl(this, objectiveEntity.UpgradeTexture, new Rectangle(dest.X - objectiveEntity.UpgradeTexture.Width / 2, dest.Y - height / 2 - (int)(0.7 * objectiveEntity.UpgradeTexture.Height), objectiveEntity.UpgradeTexture.Width, objectiveEntity.UpgradeTexture.Height), objectiveEntity.UpgradeTexture.Bounds);
                 }
 
                 // draw name

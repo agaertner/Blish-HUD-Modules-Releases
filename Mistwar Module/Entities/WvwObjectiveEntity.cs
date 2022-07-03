@@ -14,11 +14,6 @@ namespace Nekres.Mistwar.Entities
         private static readonly Texture2D TextureReinforced = MistwarModule.ModuleInstance.ContentsManager.GetTexture("1324350.png");
         private static readonly Texture2D TextureSecured = MistwarModule.ModuleInstance.ContentsManager.GetTexture("1324349.png");
         private static readonly Texture2D TextureClaimed = MistwarModule.ModuleInstance.ContentsManager.GetTexture("1304078.png");
-
-        private static readonly Texture2D CustomTextureFortified = MistwarModule.ModuleInstance.ContentsManager.GetTexture("obj-fortified.png");
-        private static readonly Texture2D CustomTextureReinforced = MistwarModule.ModuleInstance.ContentsManager.GetTexture("obj-reinforced.png");
-        private static readonly Texture2D CustomTextureSecured = MistwarModule.ModuleInstance.ContentsManager.GetTexture("obj-secured.png");
-        private static readonly Texture2D CustomTextureClaimed = MistwarModule.ModuleInstance.ContentsManager.GetTexture("claimed.png");
         private static readonly Texture2D TextureBuff = MistwarModule.ModuleInstance.ContentsManager.GetTexture("righteous_indignation.png");
         private static readonly Color ColorRed = new Color(213, 71, 67);
         private static readonly Color ColorGreen = new Color(73, 190, 111);
@@ -90,14 +85,11 @@ namespace Nekres.Mistwar.Entities
         /// Texture reflecting the upgrade tier of the objective.
         /// </summary>
         public Texture2D UpgradeTexture => GetUpgradeTierTexture();
-        public Texture2D CustomUpgradeTexture => GetUpgradeTierTexture(true);
-
 
         /// <summary>
         /// Texture indicating that a guild has claimed the objective.
         /// </summary>
         public Texture2D ClaimedTexture => TextureClaimed;
-        public Texture2D CustomClaimedTexture => CustomTextureClaimed;
 
         /// <summary>
         /// Texture of the protection buff.
@@ -166,13 +158,9 @@ namespace Nekres.Mistwar.Entities
             return remainingTime.Ticks > 0;
         }
 
-        private Texture2D GetUpgradeTierTexture(bool useCustom = false)
+        private Texture2D GetUpgradeTierTexture()
         {
-            return YaksDelivered >= 140 ? 
-                useCustom ? CustomTextureFortified : TextureFortified :
-                YaksDelivered >= 60 ?
-                    useCustom ? CustomTextureReinforced : TextureReinforced : 
-                    useCustom ? CustomTextureSecured : TextureSecured;
+            return YaksDelivered >= 140 ? TextureFortified : YaksDelivered >= 60 ? TextureReinforced : TextureSecured;
         }
     }
 }

@@ -130,6 +130,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\MapService.cs" />
+    <Compile Include="Services\WvwService.cs" />
     <Compile Include="UI\Controls\MapImageDynamic.cs" />
     <Compile Include="UI\Controls\MapImage.cs" />
     <Compile Include="_Extensions\BitmapExtensions.cs" />
@@ -141,11 +143,7 @@
     <Compile Include="_Extensions\PointExtensions.cs" />
     <Compile Include="MistwarModule.cs" />
     <Compile Include="Entities\WvwObjectiveEntity.cs" />
-    <Compile Include="UI\Models\CustomSettingsModel.cs" />
-    <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
-    <Compile Include="UI\Views\CustomSettingsView.cs" />
     <Compile Include="_Extensions\SpriteBatchExtensions.cs" />
-    <Compile Include="_Utils\BrowserUtil.cs" />
     <Compile Include="_Utils\CommonStrings.cs" />
     <Compile Include="_Utils\ConvexHullUtil.cs" />
     <Compile Include="_Utils\MapUtil.cs" />

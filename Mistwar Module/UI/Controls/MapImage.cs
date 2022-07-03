@@ -41,17 +41,6 @@ namespace Nekres.Mistwar.UI.Controls
             set => SetProperty(ref _tint, value);
         }
 
-        private float _grayscaleIntensity;
-        public float GrayscaleIntensity
-        {
-            get => _grayscaleIntensity;
-            set
-            {
-                SetProperty(ref _grayscaleIntensity, value);
-                _grayscaleEffect.Parameters["Intensity"].SetValue(MathHelper.Clamp(value, 0, 1));
-            }
-        }
-
         private Effect _grayscaleEffect;
 
         public float ScaleRatio { get; private set; } = MathHelper.Clamp(MistwarModule.ModuleInstance.ScaleRatioSetting.Value / 100f, 0, 1);
@@ -75,10 +64,36 @@ namespace Nekres.Mistwar.UI.Controls
             MistwarModule.ModuleInstance.ScaleRatioSetting.SettingChanged += OnScaleRatioChanged;
         }
 
+        public void Toggle(float tDuration = 0.1f, bool silent = false)
+        {
+            if (_enabled)
+            {
+                _enabled = false;
+                if (silent)
+                {
+                    this.Hide();
+                    return;
+                }
+                GameService.Content.PlaySoundEffectByName("window-close");
+                GameService.Animation.Tweener.Tween(this, new { Opacity = 0.0f }, tDuration).OnComplete(this.Hide);
+                return;
+            }
+            _enabled = true;
+            this.Show();
+            if (silent) return;
+            GameService.Content.PlaySoundEffectByName("page-open-" + RandomUtil.GetRandom(1, 3));
+            GameService.Animation.Tweener.Tween(this, new { Opacity = 1.0f }, 0.35f);
+        }
+
         internal void SetOpacity(float opacity)
         {
             TextureOpacity = opacity;
             _grayscaleEffect.Parameters["Opacity"].SetValue(opacity);
+        }
+
+        public void SetColorIntensity(float colorIntensity)
+        {
+            _grayscaleEffect.Parameters["Intensity"].SetValue(MathHelper.Clamp(colorIntensity, 0, 1));
         }
 
         private void OnScaleRatioChanged(object o, ValueChangedEventArgs<float> e)
@@ -93,6 +108,7 @@ namespace Nekres.Mistwar.UI.Controls
         {
             _dynamicLayer?.Dispose();
             Texture.TextureSwapped -= OnTextureSwapped;
+            _texture?.Dispose();
             MistwarModule.ModuleInstance.ScaleRatioSetting.SettingChanged -= OnScaleRatioChanged;
             base.Dispose();
         }

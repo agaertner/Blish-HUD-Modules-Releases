@@ -1,4 +1,5 @@
 ﻿using Gw2Sharp.Models;
+using Gw2Sharp.WebApi.Exceptions;
 using Gw2Sharp.WebApi.V2.Models;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Gw2Sharp.WebApi.Exceptions;
+using Blish_HUD;
 using File = System.IO.File;
 using Rectangle = Gw2Sharp.WebApi.V2.Models.Rectangle;
 namespace Nekres.Mistwar
@@ -57,13 +58,9 @@ namespace Nekres.Mistwar
             return new Bitmap(responseStream);
         }
 
-        public static async Task<Stream> DrawMapImage(int mapId, bool removeBackground = false, string filePath = null)
+        public static async Task BuildMap(Map map, string filePath, bool removeBackground = false, IProgress<string> progress = null)
         {
-            var map = await RequestMap(mapId);
-            if (map == null) return null;
-
-            if (File.Exists(filePath))
-                return new MemoryStream(File.ReadAllBytes(filePath));
+            if (map == null) return;
 
             var area = map.ContinentRect;
 
@@ -85,7 +82,7 @@ namespace Nekres.Mistwar
                 // get tiles & combine into one
                 foreach (var p in tileArea)
                 {
-                    Console.WriteLine("Downloading[" + p + "]: " + tileArea.IndexOf(p) + " of " + tileArea.Count);
+                    progress?.Report($"Downloading {map.Name.Trim()} ({map.Id})... {tileArea.IndexOf(p) / (float)(tileArea.Count - 1) * 100:N0}%");
 
                     var tile = await GetTileImage(0, map.ContinentId, map.DefaultFloor, p.X, p.Y, zoom);
                     if (tile == null) continue;
@@ -100,7 +97,6 @@ namespace Nekres.Mistwar
 
                 if (removeBackground)
                 {
-
                     var sectors = await RequestSectorsForFloor(map.ContinentId, map.DefaultFloor, map.RegionId, map.Id);
 
                     var polygonPath = new GraphicsPath();
@@ -121,14 +117,8 @@ namespace Nekres.Mistwar
 
             //bmpDestination.MakeGrayscale();
 
-            if (!string.IsNullOrEmpty(filePath)) 
-                bmpDestination.Save(filePath, ImageFormat.Png);
-
-            var stream = new MemoryStream();
-            bmpDestination.Save(stream, ImageFormat.Png);
+            bmpDestination.Save(filePath, ImageFormat.Png);
             bmpDestination.Dispose();
-
-            return stream;
         }
 
         public static Point Refit(Coordinates2 value, Coordinates2 destTopLeft, int padding = 0, int tileSize = 256)
@@ -151,7 +141,7 @@ namespace Nekres.Mistwar
         {
             try
             {
-                return await MistwarModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Continents[continentId].Floors[floor].Regions[regionId].Maps[mapId].Sectors.AllAsync();
+                return await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents[continentId].Floors[floor].Regions[regionId].Maps[mapId].Sectors.AllAsync();
             }
             catch (Exception ex) when (ex is BadRequestException or NotFoundException)
             {
@@ -163,11 +153,12 @@ namespace Nekres.Mistwar
                 return Enumerable.Empty<ContinentFloorRegionMapSector>();
             }
         }
+
         public static async Task<Map> RequestMap(int id)
         {
             try
             {
-                return await MistwarModule.ModuleInstance.Gw2ApiManager.Gw2ApiClient.V2.Maps.GetAsync(id);
+                return await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Maps.GetAsync(id);
             }
             catch (Exception ex) when (ex is BadRequestException or NotFoundException)
             {
@@ -177,7 +168,7 @@ namespace Nekres.Mistwar
             {
                 MistwarModule.Logger.Warn(CommonStrings.WebApiDown);
                 return null;
-            } 
+            }
         }
     }
 }
