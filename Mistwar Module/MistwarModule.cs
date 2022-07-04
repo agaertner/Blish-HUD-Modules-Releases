@@ -1,4 +1,6 @@
 ﻿using Blish_HUD;
+using Blish_HUD.Content;
+using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
@@ -12,7 +14,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
-using Blish_HUD.Controls;
 
 namespace Nekres.Mistwar
 {
@@ -55,9 +56,12 @@ namespace Nekres.Mistwar
         private CornerIcon _moduleIcon;
         private WvwService _wvwService;
         private MapService _mapService;
+
+        private AsyncTexture2D _cornerTex;
         protected override void Initialize()
         {
-            _moduleIcon = new CornerIcon(ContentsManager.GetTexture("corner_icon.png"), this.Name);
+            _cornerTex = new AsyncTexture2D(ContentsManager.GetTexture("corner_icon.png"));
+            _moduleIcon = new CornerIcon(_cornerTex, this.Name);
             _wvwService = new WvwService(Gw2ApiManager);
             _mapService = new MapService(Gw2ApiManager, DirectoriesManager, _wvwService, GetModuleProgressHandler());
         }
@@ -97,7 +101,7 @@ namespace Nekres.Mistwar
             if (_moduleIcon == null) return;
             _moduleIcon.LoadingMessage = loadingMessage;
             if (loadingMessage == null && !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()) {
-                _moduleIcon.Hide(); // Show during initialization, but hide on completion if we are not in WvW.
+                _moduleIcon?.Dispose(); // Show during initialization, but hide on completion if we are not in WvW.
             }
         }
 
@@ -144,11 +148,12 @@ namespace Nekres.Mistwar
         {
             if (GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld())
             {
-                _moduleIcon.Show();
+                _moduleIcon = new CornerIcon(_cornerTex, this.Name);
+                _moduleIcon.Click += OnModuleIconClick;
                 ToggleKeySetting.Value.Enabled = true;
                 return;
             }
-            _moduleIcon.Hide();
+            _moduleIcon?.Dispose();
             ToggleKeySetting.Value.Enabled = false;
         }
 
