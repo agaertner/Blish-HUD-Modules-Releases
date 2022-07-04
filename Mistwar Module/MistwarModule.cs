@@ -148,6 +148,7 @@ namespace Nekres.Mistwar
         {
             if (GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld())
             {
+                _moduleIcon?.Dispose();
                 _moduleIcon = new CornerIcon(_cornerTex, this.Name);
                 _moduleIcon.Click += OnModuleIconClick;
                 ToggleKeySetting.Value.Enabled = true;
