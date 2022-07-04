@@ -179,6 +179,10 @@ namespace Nekres.Mistwar.Services
             GameService.Gw2Mumble.UI.IsMapOpenChanged -= OnIsMapOpenChanged;
             GameService.GameIntegration.Gw2Instance.IsInGameChanged -= OnIsInGameChanged;
             _mapControl?.Dispose();
+            foreach (var tex in _mapCache.Values)
+            {
+                tex?.Dispose();
+            }
         }
     }
 }

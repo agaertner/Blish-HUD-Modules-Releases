@@ -163,6 +163,7 @@ namespace Nekres.Mistwar
         {
             _mapService?.Dispose();
             _moduleIcon?.Dispose();
+            _cornerTex?.Dispose();
             GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
             GameService.Gw2Mumble.UI.IsMapOpenChanged -= OnIsMapOpenChanged;
             ToggleKeySetting.Value.Enabled = false;
