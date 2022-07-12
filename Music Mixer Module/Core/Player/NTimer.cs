@@ -6,11 +6,14 @@ namespace Nekres.Music_Mixer.Core.Player
 {
     public class NTimer : IDisposable
     {
+        public event ElapsedEventHandler Elapsed;
+
         private Timer _timer;
         private Stopwatch _stopWatch;
         private bool _paused;
         private double _remainingTimeBeforePause;
-        public event ElapsedEventHandler Elapsed;
+        public bool Paused => _paused;
+        public bool IsRunning => _stopWatch.IsRunning;
 
         public NTimer()
         {
@@ -20,14 +23,14 @@ namespace Nekres.Music_Mixer.Core.Player
             _timer.AutoReset = false;
             _timer.Elapsed += (sender, arguments) =>
             {
+                _stopWatch.Stop();
                 Elapsed?.Invoke(sender, arguments);
-
+                
                 if (_timer != null && _timer.AutoReset)
                 {
                     _stopWatch.Restart();
                 }
             };
-
         }
 
         public NTimer(double interval) : this()
@@ -53,8 +56,6 @@ namespace Nekres.Music_Mixer.Core.Player
             set => _timer.Interval = value;
         }
 
-        public bool Paused => _paused;
-
         public void Start()
         {
             _timer.Start();
@@ -64,6 +65,7 @@ namespace Nekres.Music_Mixer.Core.Player
         public void Restart() {
             if (!_timer.Enabled)
                 _timer.Start();
+            _stopWatch.Restart();
             _timer.Interval = _timer.Interval;
         }
 

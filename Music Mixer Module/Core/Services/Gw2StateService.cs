@@ -1,11 +1,11 @@
 ﻿using Blish_HUD;
 using Blish_HUD.ArcDps;
 using Gw2Sharp.Models;
+using Nekres.Music_Mixer.Core.Player;
 using Stateless;
 using System;
 using static Blish_HUD.GameService;
 using static Nekres.Music_Mixer.MusicMixer;
-using Timer = System.Timers.Timer;
 namespace Nekres.Music_Mixer.Core.Services
 {
     public class Gw2StateService : IDisposable
@@ -82,16 +82,18 @@ namespace Nekres.Music_Mixer.Core.Services
         #endregion
 
         private StateMachine<State, Trigger> _stateMachine;
-        private Timer _inCombatTimer;
-        private Timer _outOfCombatTimer;
-
+        private NTimer _inCombatTimer;
+        private NTimer _outOfCombatTimer;
+        private NTimer _outOfCombatTimerLong;
         public Gw2StateService() {
             _stateMachine = new StateMachine<State, Trigger>(GameModeStateSelector());
-            _inCombatTimer = new Timer(6500) { AutoReset = false };
+            _inCombatTimer = new NTimer(6500) { AutoReset = false };
             _inCombatTimer.Elapsed += InCombatTimerElapsed;
-            _outOfCombatTimer = new Timer(3250) { AutoReset = false };
+            _outOfCombatTimer = new NTimer(3250) { AutoReset = false };
             _outOfCombatTimer.Elapsed += OutOfCombatTimerElapsed;
-            this.Initialize();
+            _outOfCombatTimerLong = new NTimer(20250) { AutoReset = false };
+            _outOfCombatTimerLong.Elapsed += OutOfCombatTimerElapsed;
+            Initialize();
         }
 
         private void InCombatTimerElapsed(object sender, EventArgs e)
@@ -106,9 +108,11 @@ namespace Nekres.Music_Mixer.Core.Services
 
         public void Dispose() {
             _inCombatTimer.Elapsed -= InCombatTimerElapsed;
-            _inCombatTimer?.Close();
+            _inCombatTimer?.Dispose();
             _outOfCombatTimer.Elapsed -= OutOfCombatTimerElapsed;
-            _outOfCombatTimer?.Close();
+            _outOfCombatTimer?.Dispose();
+            _outOfCombatTimerLong.Elapsed -= OutOfCombatTimerElapsed;
+            _outOfCombatTimerLong?.Dispose();
             GameIntegration.Gw2Instance.Gw2Closed -= OnGw2Closed;
             ArcDps.RawCombatEvent -= CombatEventReceived;
             Gw2Mumble.PlayerCharacter.CurrentMountChanged -= OnMountChanged;
@@ -293,16 +297,29 @@ namespace Nekres.Music_Mixer.Core.Services
 
         #region Mumble Events
 
-        private void OnMountChanged(object o, ValueEventArgs<MountType> e) => _stateMachine.Fire(e.Value > 0 ? Trigger.Mounting : Trigger.UnMounting);
+        private void OnMountChanged(object o, ValueEventArgs<MountType> e)
+        {
+            if (_outOfCombatTimer.IsRunning || _outOfCombatTimerLong.IsRunning) return;
+            _stateMachine.Fire(e.Value > 0 ? Trigger.Mounting : Trigger.UnMounting);
+        }
+
         private void OnMapChanged(object o, ValueEventArgs<int> e) => _stateMachine.Fire(Trigger.MapChanged);
+
         private void OnIsInCombatChanged(object o, ValueEventArgs<bool> e) {
             if (e.Value)
             {
                 _inCombatTimer.Restart();
             }
-            else if (this.CurrentState == State.Battle)
+            else if (CurrentState == State.Battle)
             {
-                _outOfCombatTimer.Restart();
+                if (Gw2Mumble.CurrentMap.Type.IsInstance() || Gw2Mumble.CurrentMap.Type.IsWvW() || Gw2Mumble.CurrentMap.Type == MapType.PublicMini)
+                {
+                    _outOfCombatTimerLong.Restart();
+                }
+                else
+                {
+                    _outOfCombatTimer.Restart();
+                }
             }
             else
             {

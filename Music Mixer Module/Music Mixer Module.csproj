@@ -161,15 +161,11 @@
     <Compile Include="Core\UI\Controls\MusicContextDetails.cs" />
     <Compile Include="Core\UI\Presenters\LibraryPresenter.cs" />
     <Compile Include="_Converters\TimeSpanFromSecondsConverter.cs" />
-    <Compile Include="_Extensions\EnumExtensions.cs" />
     <Compile Include="_Extensions\MapTypeExtensions.cs" />
     <Compile Include="_Extensions\TimeSpanExtensions.cs" />
     <Compile Include="_Extensions\WaveStreamExtensions.cs" />
     <Compile Include="_Utils\FileUtil.cs" />
     <Compile Include="_Utils\TyrianTimeUtil.cs" />
-    <Compile Include="_Extensions\IEnumerableExtension.cs" />
-    <Compile Include="_Extensions\ProcessExtensions.cs" />
-    <Compile Include="_Extensions\TimerExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">

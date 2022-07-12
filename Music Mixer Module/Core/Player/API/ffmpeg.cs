@@ -104,7 +104,6 @@ namespace Nekres.Music_Mixer.Core.Player.API
 
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public enum AudioFormat
     {
         Best,
