@@ -303,7 +303,13 @@ namespace Nekres.Music_Mixer.Core.Services
             _stateMachine.Fire(e.Value > 0 ? Trigger.Mounting : Trigger.UnMounting);
         }
 
-        private void OnMapChanged(object o, ValueEventArgs<int> e) => _stateMachine.Fire(Trigger.MapChanged);
+        private void OnMapChanged(object o, ValueEventArgs<int> e)
+        {
+            _stateMachine.Fire(Trigger.MapChanged);
+            _outOfCombatTimer.Stop();
+            _outOfCombatTimerLong.Stop();
+            _inCombatTimer.Stop();
+        } 
 
         private void OnIsInCombatChanged(object o, ValueEventArgs<bool> e) {
             if (e.Value)
