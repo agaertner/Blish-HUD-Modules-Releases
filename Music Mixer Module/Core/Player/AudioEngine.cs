@@ -148,9 +148,15 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public async Task<bool> PlayFromSave()
         {
-            if (_prevMusicModel == null || _prevTime > _prevMusicModel.Duration || !await TryPlay(_prevSourceUri)) return false;
+            if (_soundtrack != null && _soundtrack.SourceUri.Equals(_prevSourceUri)) return true; // Song is already active
+
+            if (_prevMusicModel == null // No data model
+                || _prevTime > _prevMusicModel.Duration // Time out of bounds
+                || !await TryPlay(_prevSourceUri)) return false;
+
             await Notify(_prevMusicModel);
             _soundtrack.Seek(_prevTime);
+
             return true;
         }
 
