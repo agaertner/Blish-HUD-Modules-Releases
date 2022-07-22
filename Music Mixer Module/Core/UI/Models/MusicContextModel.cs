@@ -14,7 +14,7 @@ namespace Nekres.Music_Mixer.Core.UI.Models
         public event EventHandler<ValueEventArgs<Guid>> Deleted;
 
         private Guid _id;
-        public Guid Id { 
+        public Guid Id {
             get => _id;
             set
             {

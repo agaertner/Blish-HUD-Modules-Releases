@@ -14,7 +14,13 @@ namespace Nekres.Music_Mixer.Core.Player
 
         private Soundtrack _soundtrack;
 
-        private Soundtrack _prevSoundtrack;
+        private MusicContextModel _model;
+
+        private TimeSpan _prevTime;
+
+        private string _prevSourceUri;
+
+        private MusicContextModel _prevMusicModel;
 
         private float _volume;
         public float Volume
@@ -50,6 +56,7 @@ namespace Nekres.Music_Mixer.Core.Player
 
             if (!await TryPlay(model.AudioUrl)) return;
             await Notify(model);
+            _model = model;
         }
 
         private async Task AudioUrlReceived(string url, MusicContextModel model)
@@ -61,6 +68,7 @@ namespace Nekres.Music_Mixer.Core.Player
 
                 if (!await TryPlay(model.AudioUrl)) return;
                 await Notify(model);
+                _model = model;
             }
             catch (Exception e) when (e is NullReferenceException or ObjectDisposedException)
             {
@@ -73,6 +81,9 @@ namespace Nekres.Music_Mixer.Core.Player
             // Making sure WasApiOut is initialized in main synchronization context. Otherwise it will fail.
             // https://github.com/naudio/NAudio/issues/425
             return await Task.Factory.StartNew(() => {
+
+                    this.Stop();
+
                     if (!Soundtrack.TryGetStream(audioUri, this.Volume, out _soundtrack))
                     {
                         this.Loading = false;
@@ -119,22 +130,27 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public void Pause()
         {
-            _prevSoundtrack?.Dispose();
-            _prevSoundtrack = null;
             _soundtrack?.Pause();
-            _prevSoundtrack = _soundtrack;
         }
 
-        public bool Resume()
+        public void Resume()
         {
-            _soundtrack?.Dispose();
-            _soundtrack = null;
-            _soundtrack = _prevSoundtrack;
-            if (_soundtrack == null)
-            {
-                return false;
-            }
             _soundtrack?.FadeIn();
+        }
+
+        public void Save()
+        {
+            if (_soundtrack == null || _model == null) return;
+            _prevTime = _soundtrack.CurrentTime;
+            _prevSourceUri = _soundtrack.SourceUri;
+            _prevMusicModel = _model;
+        }
+
+        public async Task<bool> PlayFromSave()
+        {
+            if (_prevMusicModel == null || _prevTime > _prevMusicModel.Duration || !await TryPlay(_prevSourceUri)) return false;
+            await Notify(_prevMusicModel);
+            _soundtrack.Seek(_prevTime);
             return true;
         }
 
@@ -142,7 +158,6 @@ namespace Nekres.Music_Mixer.Core.Player
         {
             _mediaWidget?.Dispose();
             _soundtrack?.Dispose();
-            _prevSoundtrack?.Dispose();
         }
     }
 }

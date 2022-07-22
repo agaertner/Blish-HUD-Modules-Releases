@@ -37,6 +37,7 @@ namespace Nekres.Music_Mixer.Core.Player
             }
         }
 
+        public string SourceUri;
         public TimeSpan CurrentTime => _mediaProvider.CurrentTime;
         public TimeSpan TotalTime => _mediaProvider.TotalTime;
         public bool IsMuted => _volumeProvider.Volume == 0;
@@ -47,10 +48,13 @@ namespace Nekres.Music_Mixer.Core.Player
             _volume = volume;
             _outputDevice = new WasapiOut(GameService.GameIntegration.Audio.AudioDevice, AudioClientShareMode.Shared, false, 100);
             _mediaProvider = new MediaFoundationReader(url);
+            this.SourceUri = url;
         }
 
         public static bool TryGetStream(string url, float volume, out Soundtrack soundTrack)
         {
+            soundTrack = null;
+            if (string.IsNullOrEmpty(url)) return false;
             var timeout = DateTime.UtcNow.AddMilliseconds(500);
             while (DateTime.UtcNow < timeout)
             {
@@ -66,7 +70,6 @@ namespace Nekres.Music_Mixer.Core.Player
                     break;
                 }
             }
-            soundTrack = null;
             return false;
         }
 
@@ -104,6 +107,11 @@ namespace Nekres.Music_Mixer.Core.Player
         public void Seek(float seconds)
         {
             _mediaProvider?.SetPosition(seconds);
+        }
+
+        public void Seek(TimeSpan timespan)
+        {
+            _mediaProvider?.SetPosition(timespan);
         }
 
         public void Pause()

@@ -170,8 +170,11 @@ namespace Nekres.Music_Mixer
 
             ToggleDebugHelper.SettingChanged += OnToggleDebugHelperChanged;
             MasterVolumeSetting.SettingChanged += MasterVolumeSettingChanged;
+
             Gw2State.IsSubmergedChanged += OnIsSubmergedChanged;
             Gw2State.StateChanged += OnStateChanged;
+            OnStateChanged(Gw2State, new ValueChangedEventArgs<Gw2StateService.State>(Gw2StateService.State.StandBy, Gw2State.CurrentState));
+
             GameService.GameIntegration.Gw2Instance.Gw2LostFocus += OnGw2LostFocus;
             GameService.GameIntegration.Gw2Instance.Gw2AcquiredFocus += OnGw2AcquiredFocus;
             GameService.GameIntegration.Gw2Instance.Gw2Closed += OnGw2Closed;
@@ -208,19 +211,27 @@ namespace Nekres.Music_Mixer
         {
             if (_debugPanel != null) _debugPanel.CurrentState = e.NewValue;
 
-            if (e.NewValue == Gw2StateService.State.Mounted)
+            if (e.PreviousValue == Gw2StateService.State.Ambient)
             {
-                _audioEngine.Pause();
-            }
-            else
-            {
-                _audioEngine.Stop();
+                switch (e.NewValue)
+                {
+                    // Save the ambient music when we are in an intermediate state.
+                    case Gw2StateService.State.Mounted:
+                    case Gw2StateService.State.Battle:
+                    case Gw2StateService.State.Submerged:
+                    case Gw2StateService.State.Victory:
+                        _audioEngine.Save();
+                        break;
+                }
             }
 
+            // Resume ambient music.
             if (e.NewValue == Gw2StateService.State.Ambient)
             {
-                if (_audioEngine.Resume()) return;
+                if (await _audioEngine.PlayFromSave()) return;
             }
+
+            // Select new song if nothing is playing.
             await _audioEngine.Play((await this.DataService.GetRandom())?.ToModel());
         }
 
