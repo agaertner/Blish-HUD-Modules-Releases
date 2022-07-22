@@ -14,6 +14,8 @@ namespace Nekres.Music_Mixer.Core.Player
 
         private Soundtrack _soundtrack;
 
+        private Soundtrack _prevSoundtrack;
+
         private float _volume;
         public float Volume
         {
@@ -115,10 +117,32 @@ namespace Nekres.Music_Mixer.Core.Player
             await this.Play((await MusicMixer.Instance.DataService.GetRandom())?.ToModel());
         }
 
+        public void Pause()
+        {
+            _prevSoundtrack?.Dispose();
+            _prevSoundtrack = null;
+            _soundtrack?.Pause();
+            _prevSoundtrack = _soundtrack;
+        }
+
+        public bool Resume()
+        {
+            _soundtrack?.Dispose();
+            _soundtrack = null;
+            _soundtrack = _prevSoundtrack;
+            if (_soundtrack == null)
+            {
+                return false;
+            }
+            _soundtrack?.FadeIn();
+            return true;
+        }
+
         public void Dispose()
         {
             _mediaWidget?.Dispose();
             _soundtrack?.Dispose();
+            _prevSoundtrack?.Dispose();
         }
     }
 }

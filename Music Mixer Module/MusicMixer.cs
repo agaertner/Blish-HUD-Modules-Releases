@@ -207,7 +207,20 @@ namespace Nekres.Music_Mixer
         private async void OnStateChanged(object o, ValueChangedEventArgs<Gw2StateService.State> e)
         {
             if (_debugPanel != null) _debugPanel.CurrentState = e.NewValue;
-            _audioEngine.Stop();
+
+            if (e.NewValue == Gw2StateService.State.Mounted)
+            {
+                _audioEngine.Pause();
+            }
+            else
+            {
+                _audioEngine.Stop();
+            }
+
+            if (e.NewValue == Gw2StateService.State.Ambient)
+            {
+                if (_audioEngine.Resume()) return;
+            }
             await _audioEngine.Play((await this.DataService.GetRandom())?.ToModel());
         }
 

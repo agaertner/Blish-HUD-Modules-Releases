@@ -8,7 +8,7 @@ using static Blish_HUD.GameService;
 using static Nekres.Music_Mixer.MusicMixer;
 namespace Nekres.Music_Mixer.Core.Services
 {
-    public class Gw2StateService : IDisposable
+    internal class Gw2StateService : IDisposable
     {
         public event EventHandler<ValueEventArgs<TyrianTime>> TyrianTimeChanged;
         public event EventHandler<ValueChangedEventArgs<State>> StateChanged;
