@@ -1,6 +1,6 @@
 {
   "name": "Mumble Info",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "namespace": "Nekres.Mumble_Info",
   "package": "MumbleInfo.dll",
   "manifest_version": 1,
@@ -13,8 +13,8 @@
   "enabled_without_gw2": false,
   "contributors": [
     {
-      "name": "TypoTiger",
-      "username": "TypoTiger.8352"
+      "name": "Nekres",
+      "username": "Nekres.1943"
     }
   ]
 }

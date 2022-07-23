@@ -107,12 +107,12 @@ namespace Nekres.Mumble_Info
             }
             else if (_mouseOverAvatarPosition)
             {
-                ClipboardUtil.WindowsClipboardService.SetTextAsync(Gw2Mumble.PlayerCharacter.Position.ToString());
+                ClipboardUtil.WindowsClipboardService.SetTextAsync($"xpos=\"{Gw2Mumble.PlayerCharacter.Position.X}\" ypos=\"{Gw2Mumble.PlayerCharacter.Position.Z}\" zpos=\"{Gw2Mumble.PlayerCharacter.Position.Y}\"");
                 ScreenNotification.ShowNotification(_clipboardMessage);
             }
             else if (_mouseOverMapCoordinates)
             {
-                ClipboardUtil.WindowsClipboardService.SetTextAsync($"{{X:{Gw2Mumble.RawClient.PlayerLocationMap.X} Y:{Gw2Mumble.RawClient.PlayerLocationMap.Y}}}");
+                ClipboardUtil.WindowsClipboardService.SetTextAsync($"xpos=\"{Gw2Mumble.RawClient.PlayerLocationMap.X}\" ypos=\"{Gw2Mumble.RawClient.PlayerLocationMap.Y}\"");
                 ScreenNotification.ShowNotification(_clipboardMessage);
             }
             else if (_mouseOverCameraDirection)
@@ -122,7 +122,7 @@ namespace Nekres.Mumble_Info
             }
             else if (_mouseOverCameraPosition)
             {
-                ClipboardUtil.WindowsClipboardService.SetTextAsync(Gw2Mumble.PlayerCamera.Position.ToString());
+                ClipboardUtil.WindowsClipboardService.SetTextAsync($"xpos=\"{Gw2Mumble.PlayerCamera.Position.X}\" ypos=\"{Gw2Mumble.PlayerCamera.Position.Z}\" zpos=\"{Gw2Mumble.PlayerCamera.Position.Y}\"");
                 ScreenNotification.ShowNotification(_clipboardMessage);
             }
             base.OnLeftMouseButtonReleased(e);
