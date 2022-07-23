@@ -37,6 +37,7 @@ namespace Nekres.Music_Mixer.Core.Player
         public bool Loading { get; private set; }
 
         private TaskScheduler _scheduler;
+
         public AudioEngine()
         {
             _scheduler = TaskScheduler.FromCurrentSynchronizationContext();
@@ -140,9 +141,9 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public void Save()
         {
-            if (_soundtrack == null || _model == null) return;
+            if (_soundtrack == null || _model == null || _model.State.IsIntermediate()) return;
             _prevTime = _soundtrack.CurrentTime;
-            _prevSourceUri = _soundtrack.SourceUri;
+            _prevSourceUri = _model.AudioUrl;
             _prevMusicModel = _model;
         }
 
@@ -151,6 +152,7 @@ namespace Nekres.Music_Mixer.Core.Player
             if (_soundtrack != null && _soundtrack.SourceUri.Equals(_prevSourceUri)) return true; // Song is already active
 
             if (_prevMusicModel == null // No data model
+                || !MusicContextModel.CanPlay(_prevMusicModel)
                 || _prevTime > _prevMusicModel.Duration // Time out of bounds
                 || !await TryPlay(_prevSourceUri)) return false;
 

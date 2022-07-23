@@ -161,6 +161,7 @@
     <Compile Include="Core\UI\Controls\MusicContextDetails.cs" />
     <Compile Include="Core\UI\Presenters\LibraryPresenter.cs" />
     <Compile Include="_Converters\TimeSpanFromSecondsConverter.cs" />
+    <Compile Include="_Extensions\Gw2StateExtensions.cs" />
     <Compile Include="_Extensions\MapTypeExtensions.cs" />
     <Compile Include="_Extensions\TimeSpanExtensions.cs" />
     <Compile Include="_Extensions\WaveStreamExtensions.cs" />
