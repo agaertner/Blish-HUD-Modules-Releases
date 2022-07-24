@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Input;
@@ -107,12 +108,16 @@ namespace Nekres.Mumble_Info
             }
             else if (_mouseOverAvatarPosition)
             {
-                ClipboardUtil.WindowsClipboardService.SetTextAsync($"xpos=\"{Gw2Mumble.PlayerCharacter.Position.X}\" ypos=\"{Gw2Mumble.PlayerCharacter.Position.Z}\" zpos=\"{Gw2Mumble.PlayerCharacter.Position.Y}\"");
+                ClipboardUtil.WindowsClipboardService.SetTextAsync(
+                    $"xpos=\"{Gw2Mumble.PlayerCharacter.Position.X.ToString(CultureInfo.InvariantCulture)}\" ypos=\"{Gw2Mumble.PlayerCharacter.Position.Z.ToString(CultureInfo.InvariantCulture)}\" zpos=\"{Gw2Mumble.PlayerCharacter.Position.Y.ToString(CultureInfo.InvariantCulture)}\"");
+                
                 ScreenNotification.ShowNotification(_clipboardMessage);
             }
             else if (_mouseOverMapCoordinates)
             {
-                ClipboardUtil.WindowsClipboardService.SetTextAsync($"xpos=\"{Gw2Mumble.RawClient.PlayerLocationMap.X}\" ypos=\"{Gw2Mumble.RawClient.PlayerLocationMap.Y}\"");
+                ClipboardUtil.WindowsClipboardService.SetTextAsync(
+                    $"xpos=\"{Gw2Mumble.RawClient.PlayerLocationMap.X.ToString(CultureInfo.InvariantCulture)}\" ypos=\"{Gw2Mumble.RawClient.PlayerLocationMap.Y.ToString(CultureInfo.InvariantCulture)}\"");
+
                 ScreenNotification.ShowNotification(_clipboardMessage);
             }
             else if (_mouseOverCameraDirection)
@@ -122,7 +127,9 @@ namespace Nekres.Mumble_Info
             }
             else if (_mouseOverCameraPosition)
             {
-                ClipboardUtil.WindowsClipboardService.SetTextAsync($"xpos=\"{Gw2Mumble.PlayerCamera.Position.X}\" ypos=\"{Gw2Mumble.PlayerCamera.Position.Z}\" zpos=\"{Gw2Mumble.PlayerCamera.Position.Y}\"");
+                ClipboardUtil.WindowsClipboardService.SetTextAsync(
+                    $"xpos=\"{Gw2Mumble.PlayerCamera.Position.X.ToString(CultureInfo.InvariantCulture)}\" ypos=\"{Gw2Mumble.PlayerCamera.Position.Z.ToString(CultureInfo.InvariantCulture)}\" zpos=\"{Gw2Mumble.PlayerCamera.Position.Y.ToString(CultureInfo.InvariantCulture)}\"");
+
                 ScreenNotification.ShowNotification(_clipboardMessage);
             }
             base.OnLeftMouseButtonReleased(e);
