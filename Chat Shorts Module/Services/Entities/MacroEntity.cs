@@ -36,10 +36,10 @@ namespace Nekres.Chat_Shorts.UI.Models
         public bool SquadBroadcast { get; set; }
 
         [BsonField("mapId")]
-        public IList<int> MapIds { get; set; }
+        public List<int> MapIds { get; set; }
 
         [BsonField("excludedMapId")]
-        public IList<int> ExcludedMapIds { get; set; }
+        public List<int> ExcludedMapIds { get; set; }
 
         [BsonField("gameMode")]
         public GameMode GameMode { get; set; }

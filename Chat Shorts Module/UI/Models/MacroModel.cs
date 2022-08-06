@@ -2,7 +2,7 @@
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Nekres.Chat_Shorts.UI.Models
@@ -48,27 +48,27 @@ namespace Nekres.Chat_Shorts.UI.Models
             }
         }
 
-        private IList<int> _mapIds;
-        public IList<int> MapIds
+        private ObservableCollection<int> _mapIds;
+        public ObservableCollection<int> MapIds
         {
             get => _mapIds;
             set
             {
-                if (_mapIds != null && value != null && _mapIds.SequenceEqual(value)) return;
+                if (_mapIds != null && _mapIds.Equals(value)) return;
                 _mapIds = value;
-                Changed?.Invoke(this, EventArgs.Empty);
+                _mapIds.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        private IList<int> _excludedMapIds;
-        public IList<int> ExcludedMapIds
+        private ObservableCollection<int> _excludedMapIds;
+        public ObservableCollection<int> ExcludedMapIds
         {
             get => _excludedMapIds;
             set
             {
-                if (_excludedMapIds != null && value != null && _excludedMapIds.SequenceEqual(value)) return;
+                if (_excludedMapIds != null && _excludedMapIds.Equals(value)) return;
                 _excludedMapIds = value;
-                Changed?.Invoke(this, EventArgs.Empty);
+                _excludedMapIds.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -84,22 +84,27 @@ namespace Nekres.Chat_Shorts.UI.Models
             }
         }
 
-        public KeyBinding KeyBinding { get; }
+        private KeyBinding _keyBinding;
+
+        public KeyBinding KeyBinding
+        {
+            get => _keyBinding;
+            set
+            {
+                if (_keyBinding != null && _keyBinding.Equals(value)) return;
+                _keyBinding = value;
+            }
+        }
 
         public MacroModel(Guid id, KeyBinding binding)
         {
             this.Id = id;
-            this.MapIds = new List<int>();
-            this.ExcludedMapIds = new List<int>();
+            this.MapIds = new ObservableCollection<int>();
+            this.ExcludedMapIds = new ObservableCollection<int>();
             this.KeyBinding = binding;
             this.KeyBinding.Enabled = false;
             this.Title = "Empty Macro";
             this.Text = string.Empty;
-        }
-
-        internal void InvokeChanged()
-        {
-            Changed?.Invoke(this, EventArgs.Empty);
         }
 
         public MacroModel() : this(Guid.NewGuid(), new KeyBinding(Keys.None))
@@ -113,8 +118,8 @@ namespace Nekres.Chat_Shorts.UI.Models
                 Title = this.Title,
                 GameMode = this.Mode,
                 Text = this.Text,
-                MapIds = this.MapIds,
-                ExcludedMapIds = this.ExcludedMapIds,
+                MapIds = this.MapIds.ToList(),
+                ExcludedMapIds = this.ExcludedMapIds.ToList(),
                 SquadBroadcast = this.SquadBroadcast,
                 ModifierKey = this.KeyBinding.ModifierKeys,
                 PrimaryKey = this.KeyBinding.PrimaryKey,
@@ -129,9 +134,16 @@ namespace Nekres.Chat_Shorts.UI.Models
                 Mode = entity.GameMode,
                 SquadBroadcast = entity.SquadBroadcast,
                 Text = entity.Text,
-                MapIds = entity.MapIds,
-                ExcludedMapIds = entity.ExcludedMapIds
+                MapIds = new ObservableCollection<int>(entity.MapIds),
+                ExcludedMapIds = new ObservableCollection<int>(entity.ExcludedMapIds)
             };
-        } 
+        }
+
+        // Awful, hacky workaround for KeyBinding missing a KeysChanged event
+        // TODO: Remove someday
+        public void NewKeysAssigned()
+        {
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using LiteDB;
 
@@ -20,6 +21,7 @@ namespace Nekres.Chat_Shorts.Services
         public bool Loading { get; private set; }
 
         private string _cacheDir;
+
         public DataService(string cacheDir)
         {
             _cacheDir = cacheDir;
@@ -33,6 +35,7 @@ namespace Nekres.Chat_Shorts.Services
 
         public async Task UpsertMacro(MacroModel model)
         {
+            await _ctx.EnsureIndexAsync(x => x.Id);
             var e = await _ctx.FindOneAsync(x => x.Id.Equals(model.Id));
             if (e == null)
             {
@@ -44,15 +47,13 @@ namespace Nekres.Chat_Shorts.Services
                 e.Text = model.Text;
                 e.Title = model.Title;
                 e.GameMode = model.Mode;
-                e.MapIds = model.MapIds;
-                e.ExcludedMapIds = model.ExcludedMapIds;
+                e.MapIds = model.MapIds.ToList();
+                e.ExcludedMapIds = model.ExcludedMapIds.ToList();
                 e.SquadBroadcast = model.SquadBroadcast;
                 e.PrimaryKey = model.KeyBinding.PrimaryKey;
                 e.ModifierKey = model.KeyBinding.ModifierKeys;
                 await _ctx.UpdateAsync(e);
             }
-
-            await _ctx.EnsureIndexAsync(x => x.Id);
             await ChatShorts.Instance.BuildContextMenu();
         }
 

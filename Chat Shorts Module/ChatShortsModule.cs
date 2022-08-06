@@ -175,9 +175,12 @@ namespace Nekres.Chat_Shorts
             this.DataService?.Dispose();
             GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
             GameService.Gw2Mumble.PlayerCharacter.IsCommanderChanged -= OnIsCommanderChanged;
-            _cornerIcon.Click -= OnModuleIconClick;
             _moduleContextMenu?.Dispose();
-            _cornerIcon?.Dispose();
+            if (_cornerIcon != null)
+            {
+                _cornerIcon.Click -= OnModuleIconClick;
+                _cornerIcon.Dispose();
+            }
             _moduleWindow?.Dispose();
             _backgroundTexture?.Dispose();
             _cornerTexture?.Dispose();

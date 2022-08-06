@@ -197,7 +197,6 @@ namespace Nekres.Chat_Shorts.UI.Views
                         var map = t.Result;
                         _maps.Add(map);
                         this.Presenter.Model.MapIds.Add(map.Id);
-                        this.Presenter.Model.InvokeChanged();
                         CreateMapEntry(map.Id, _mapsPanel, OnMapClick);
                     });
         }
@@ -213,7 +212,6 @@ namespace Nekres.Chat_Shorts.UI.Views
                     var map = t.Result;
                     _maps.Add(map);
                     this.Presenter.Model.ExcludedMapIds.Add(map.Id);
-                    this.Presenter.Model.InvokeChanged();
                     CreateMapEntry(map.Id, _mapsExclusionPanel, OnExcludedMapClick);
                 });
         }
@@ -235,7 +233,6 @@ namespace Nekres.Chat_Shorts.UI.Views
             var ctrl = (MapEntry) o;
             this.Presenter.Model.MapIds.Remove(ctrl.MapId);
             ctrl.Dispose();
-            this.Presenter.Model.InvokeChanged();
         }
         private void OnExcludedMapClick(object o, MouseEventArgs e)
         {
@@ -243,12 +240,11 @@ namespace Nekres.Chat_Shorts.UI.Views
             var ctrl = (MapEntry)o;
             this.Presenter.Model.ExcludedMapIds.Remove(ctrl.MapId);
             ctrl.Dispose();
-            this.Presenter.Model.InvokeChanged();
         }
 
         private void KeyAssigner_BindingChanged(object o, EventArgs e)
         {
-            this.Presenter.Model.InvokeChanged();
+            this.Presenter.Model.NewKeysAssigned();
         }
 
         private async void DeleteButton_Click(object o, MouseEventArgs e)
