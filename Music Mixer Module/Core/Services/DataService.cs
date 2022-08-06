@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
 using LiteDB;
@@ -104,7 +105,7 @@ namespace Nekres.Music_Mixer.Core.Services
             else
             {
                 entity.DayTimes = model.DayTimes.ToList();
-                entity.MapIds = model.MapIds.ToList();
+                entity.RegionIds = model.RegionIds.ToList();
                 entity.ExcludedMapIds = model.ExcludedMapIds.ToList();
                 entity.MountTypes = model.MountTypes.ToList();
                 entity.State = model.State;
@@ -158,6 +159,18 @@ namespace Nekres.Music_Mixer.Core.Services
             return await _ctx.FindAsync(x => x.State == state);
         }
 
+        public async Task<IEnumerable<MusicContextEntity>> FindWhere(Expression<Func<MusicContextEntity, bool>> expr)
+        {
+            return await _ctx.FindAsync(expr);
+        }
+
+        /// <summary>
+        /// Closes the database connection.
+        /// </summary>
+        /// <remarks>
+        ///  Will do nothing if the connection type is shared since it's closed after each operation.<br/>
+        ///  See also: <seealso href="https://www.litedb.org/docs/connection-string/"/>
+        /// </remarks>
         public void Dispose()
         {
             _db?.Dispose();

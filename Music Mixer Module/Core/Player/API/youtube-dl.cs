@@ -69,7 +69,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
                     Arguments = $"--get-thumbnail {link}"
                 }
             };
-            p.OutputDataReceived += (_, e) => callback(thumbnail, id, e.Data);
+            p.OutputDataReceived += (_, e) => callback.Invoke(thumbnail, id, e.Data);
             p.Start();
             p.BeginOutputReadLine();
         }

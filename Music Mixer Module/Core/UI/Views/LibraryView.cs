@@ -1,0 +1,155 @@
+﻿using Blish_HUD.Controls;
+using Blish_HUD.Graphics.UI;
+using Microsoft.Xna.Framework;
+using Nekres.Music_Mixer.Core.UI.Models;
+using Nekres.Music_Mixer.Core.UI.Presenters;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Blish_HUD;
+using Blish_HUD.Input;
+using Nekres.Music_Mixer.Core.Services;
+using Nekres.Music_Mixer.Core.UI.Controls;
+
+namespace Nekres.Music_Mixer.Core.UI.Views
+{
+    internal class LibraryView : View<LibraryPresenter>
+    {
+        public LibraryView(MainModel model)
+        {
+            this.WithPresenter(new LibraryPresenter(this, model));
+        }
+
+        public FlowPanel MusicContextPanel;
+
+        public ViewContainer ConfigView;
+
+        private bool _loading;
+        public bool Loading
+        {
+            get => _loading;
+            set
+            {
+                if (_loading == value) return;
+                _loading = value;
+                _importBtn.Enabled = !value;
+                if (value)
+                    _addNewLoadingSpinner?.Show();
+                else
+                {
+                    _importBtn.BasicTooltipText = "Import Video Link from Clipboard";
+                    _addNewLoadingSpinner?.Hide();
+                }
+            }
+        }
+
+        private LoadingSpinner _addNewLoadingSpinner;
+        private ClipboardButton _importBtn;
+        private List<MusicContextModel> _initialModels;
+
+        protected override async Task<bool> Load(IProgress<string> progress)
+        {
+            return await Task.Run(async () =>
+            {
+                _initialModels = (await MusicMixer.Instance.DataService.FindWhere(x => 
+                    x.State == this.Presenter.Model.State 
+                    && x.RegionIds.Contains(this.Presenter.Model.RegionId)
+                    && x.DayTimes.Contains(this.Presenter.Model.DayCycle)
+                    && (!x.MountTypes.Any() || x.MountTypes.Contains(this.Presenter.Model.MountType))
+                    )).Select(x => x.ToModel()).ToList();
+
+                foreach (var model in _initialModels)
+                {
+                    await MusicMixer.Instance.DataService.GetThumbnail(model);
+                }
+                return true;
+            });
+        }
+
+        protected override void Build(Container buildPanel)
+        {
+            MusicContextPanel = new FlowPanel
+            {
+                Parent = buildPanel,
+                Width = buildPanel.ContentRegion.Width,
+                Height = buildPanel.ContentRegion.Height / 2,
+                Location = new Point(buildPanel.ContentRegion.X, 64),
+                FlowDirection = ControlFlowDirection.LeftToRight,
+                ControlPadding = new Vector2(5, 5),
+                CanCollapse = false,
+                CanScroll = true,
+                Collapsed = false,
+                ShowTint = true,
+                ShowBorder = true
+            };
+            this.MusicContextPanel.ChildRemoved += OnChildRemoved;
+            foreach (var model in _initialModels)
+            {
+                this.Presenter.Add(model);
+                model.Deleted += OnModelDeleted;
+            }
+
+            _importBtn = new ClipboardButton
+            {
+                Parent = buildPanel,
+                Size = new Point(42, 42),
+                Location = new Point(this.MusicContextPanel.Right - 84, this.MusicContextPanel.Height - 64),
+                BasicTooltipText = "Import Video Link from Clipboard"
+            };
+            _importBtn.Click += OnImportFromClipboardBtnClick;
+
+            _addNewLoadingSpinner = new LoadingSpinner
+            {
+                Parent = buildPanel,
+                Location = _importBtn.Location,
+                Size = _importBtn.Size,
+                Visible = false
+            };
+
+            ConfigView = new ViewContainer
+            {
+                Parent = buildPanel,
+                Size = new Point(buildPanel.ContentRegion.Width, buildPanel.ContentRegion.Height / 2),
+                Location = new Point(buildPanel.ContentRegion.X, MusicContextPanel.Bottom)
+            };
+
+            base.Build(buildPanel);
+        }
+        private async void OnImportFromClipboardBtnClick(object o, MouseEventArgs e)
+        {
+            if (this.Loading) return;
+            this.Loading = true;
+            _addNewLoadingSpinner.Show();
+            GameService.Content.PlaySoundEffectByName("button-click");
+            var progress = new Progress<string>();
+            progress.ProgressChanged += OnAddProgressChanged;
+            await this.Presenter.AddNew(progress);
+        }
+
+        private void OnAddProgressChanged(object o, string e)
+        {
+            _importBtn.BasicTooltipText = e;
+            _addNewLoadingSpinner.BasicTooltipText = e;
+        }
+
+        private void OnChildRemoved(object o, ChildChangedEventArgs e)
+        {
+            this.ConfigView.Hide();
+        }
+
+        private async void OnModelDeleted(object o, EventArgs e)
+        {
+            await MusicMixer.Instance.DataService.Delete((MusicContextModel)o);
+        }
+
+        protected override void Unload()
+        {
+            foreach (var model in _initialModels)
+            {
+                model.Deleted -= OnModelDeleted;
+            }
+            base.Unload();
+        }
+    }
+}

@@ -2,8 +2,11 @@
 using Gw2Sharp.Models;
 using Nekres.Music_Mixer.Core.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Blish_HUD.Content;
 
 namespace Nekres.Music_Mixer.Core.UI.Models
@@ -84,15 +87,15 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             }
         }
 
-        private ObservableCollection<int> _mapIds;
-        public ObservableCollection<int> MapIds
+        private ObservableCollection<int> _regionIds;
+        public ObservableCollection<int> RegionIds
         {
-            get => _mapIds;
+            get => _regionIds;
             set
             {
-                if (value == null) return;
-                _mapIds = value;
-                _mapIds.CollectionChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+                if (value == _regionIds) return;
+                _regionIds = value;
+                Changed?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -156,7 +159,11 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             }
         }
 
-        public MusicContextModel(Gw2StateService.State state, string title, string artist, string url, TimeSpan duration)
+        public MusicContextModel(Gw2StateService.State state, string title, string artist, string url, TimeSpan duration, 
+            IEnumerable<int> regionIds = null, 
+            IEnumerable<int> excludedMapIds = null, 
+            IEnumerable<TyrianTime> dayTimes = null,
+            IEnumerable<MountType> mountTypes = null)
         {
             this.Id = Guid.NewGuid();
             this.Title = title;
@@ -164,10 +171,10 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             this.Uri = url;
             this.Duration = duration;
             this.State = state;
-            this.MapIds = new ObservableCollection<int>();
-            this.ExcludedMapIds = new ObservableCollection<int>();
-            this.DayTimes = new ObservableCollection<TyrianTime>();
-            this.MountTypes = new ObservableCollection<MountType>();
+            this.RegionIds = new ObservableCollection<int>(regionIds ?? Enumerable.Empty<int>());
+            this.ExcludedMapIds = new ObservableCollection<int>(excludedMapIds ?? Enumerable.Empty<int>());
+            this.DayTimes = new ObservableCollection<TyrianTime>(dayTimes ?? Enumerable.Empty<TyrianTime>());
+            this.MountTypes = new ObservableCollection<MountType>(mountTypes ?? Enumerable.Empty<MountType>());
             this.Thumbnail = new AsyncTexture2D();
         }
 
@@ -179,7 +186,7 @@ namespace Nekres.Music_Mixer.Core.UI.Models
         public static bool CanPlay(MusicContextModel model)
         {
             return (!model.DayTimes.Any() || model.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
-                && (!model.MapIds.Any() || model.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
+                && (!model.RegionIds.Any() || model.RegionIds.Contains(MusicMixer.Instance.MapService.CurrentRegion))
                 && (!model.ExcludedMapIds.Any() || !model.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                 && (!model.MountTypes.Any() || model.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
                 && (model.State == MusicMixer.Instance.Gw2State.CurrentState);

@@ -15,6 +15,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
+using Nekres.Music_Mixer.Core.UI.Models;
 
 namespace Nekres.Music_Mixer
 {
@@ -59,6 +60,7 @@ namespace Nekres.Music_Mixer
         private DataPanel _debugPanel;
 
         private AudioEngine _audioEngine;
+        internal MapService MapService;
         internal DataService DataService;
         internal Gw2StateService Gw2State;
 
@@ -117,9 +119,9 @@ namespace Nekres.Music_Mixer
 
         protected override void Initialize() {
             ModuleDirectory = DirectoriesManager.GetFullDirectoryPath("music_mixer");
-            Gw2State = new Gw2StateService();
+            MapService = new MapService(this.ContentsManager);
             DataService = new DataService(this.ModuleDirectory);
-
+            Gw2State = new Gw2StateService();
             _audioEngine = new AudioEngine { Volume = this.MasterVolume };
 
             _cornerTexture = ContentsManager.GetTexture("corner_icon.png");
@@ -136,7 +138,9 @@ namespace Nekres.Music_Mixer
             this.Gw2State.Update();
         }
 
-        protected override async Task LoadAsync() {
+        protected override async Task LoadAsync()
+        {
+            await MapService.RequestRegions();
             await Task.Run(() => {
                 ExtractFile(_FFmpegPath);
                 ExtractFile(_youtubeDLPath);
@@ -156,12 +160,13 @@ namespace Nekres.Music_Mixer
                 SavesPosition = true,
                 Title = this.Name,
                 Id = $"{nameof(MusicMixer)}_d42b52ce-74f1-4e6d-ae6b-a8724029f0a3"
-            };   
-            _moduleWindow.Tabs.Add(new Tab(_mountTabIcon, () => new StateView(Gw2StateService.State.Mounted), "Mounted"));
-            _moduleWindow.Tabs.Add(new Tab(_ambientTabIcon, () => new StateView(Gw2StateService.State.Ambient), "Ambient"));
-            _moduleWindow.Tabs.Add(new Tab(_competitiveTabIcon, () => new StateView(Gw2StateService.State.Competitive), "Competitive"));
-            _moduleWindow.Tabs.Add(new Tab(_submergedTabIcon, () => new StateView(Gw2StateService.State.Submerged), "Submerged"));
-            _moduleWindow.Tabs.Add(new Tab(_battleTabIcon, () => new StateView(Gw2StateService.State.Battle), "Battle"));
+            };
+
+            _moduleWindow.Tabs.Add(new Tab(_mountTabIcon, () => new MainView(Gw2StateService.State.Mounted), "Mounted"));
+            _moduleWindow.Tabs.Add(new Tab(_ambientTabIcon, () => new MainView(Gw2StateService.State.Ambient), "Ambient"));
+            _moduleWindow.Tabs.Add(new Tab(_competitiveTabIcon, () => new MainView(Gw2StateService.State.Competitive), "Competitive"));
+            _moduleWindow.Tabs.Add(new Tab(_submergedTabIcon, () => new MainView(Gw2StateService.State.Submerged), "Submerged"));
+            _moduleWindow.Tabs.Add(new Tab(_battleTabIcon, () => new MainView(Gw2StateService.State.Battle), "Battle"));
             _cornerIcon = new CornerIcon
             {
                 Icon = _cornerTexture
@@ -173,7 +178,6 @@ namespace Nekres.Music_Mixer
 
             Gw2State.IsSubmergedChanged += OnIsSubmergedChanged;
             Gw2State.StateChanged += OnStateChanged;
-            OnStateChanged(Gw2State, new ValueChangedEventArgs<Gw2StateService.State>(Gw2StateService.State.StandBy, Gw2State.CurrentState));
 
             GameService.GameIntegration.Gw2Instance.Gw2LostFocus += OnGw2LostFocus;
             GameService.GameIntegration.Gw2Instance.Gw2AcquiredFocus += OnGw2AcquiredFocus;

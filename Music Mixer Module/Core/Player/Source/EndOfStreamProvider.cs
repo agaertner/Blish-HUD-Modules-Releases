@@ -11,6 +11,8 @@ namespace Nekres.Music_Mixer.Core.Player.Source
         
         public WaveFormat WaveFormat => _sourceProvider.WaveFormat;
 
+        private bool _ended;
+
         public EndOfStreamProvider(ISampleProvider source)
         {
             _sourceProvider = source;
@@ -19,8 +21,11 @@ namespace Nekres.Music_Mixer.Core.Player.Source
         public int Read(float[] buffer, int offset, int count)
         {
             int read = _sourceProvider.Read(buffer, offset, count);
-            if (read <= 0) 
+            if (read <= 0 && !_ended)
+            {
+                _ended = true;
                 Ended?.Invoke(this, EventArgs.Empty);
+            }
             return read;
         }
     }

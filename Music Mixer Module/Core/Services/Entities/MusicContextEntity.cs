@@ -11,9 +11,6 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
 {
     internal class MusicContextEntity
     {
-        [BsonId(true)]
-        public long _id { get; set; }
-
         [BsonField("id")]
         public Guid Id { get; set; }
 
@@ -35,8 +32,8 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         [BsonField("duration")]
         public TimeSpan Duration { get; set; }
 
-        [BsonField("mapIds")]
-        public List<int> MapIds { get; set; }
+        [BsonField("regionIds")]
+        public List<int> RegionIds { get; set; }
 
         [BsonField("excludedMapIds")]
         public List<int> ExcludedMapIds { get; set; }
@@ -53,7 +50,7 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
             {
                 Id = this.Id,
                 AudioUrl = this.AudioUrl,
-                MapIds = new ObservableCollection<int>(this.MapIds),
+                RegionIds = new ObservableCollection<int>(this.RegionIds),
                 ExcludedMapIds = new ObservableCollection<int>(this.ExcludedMapIds),
                 DayTimes = new ObservableCollection<TyrianTime>(this.DayTimes),
                 MountTypes = new ObservableCollection<MountType>(this.MountTypes)
@@ -63,7 +60,7 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         public static bool CanPlay(MusicContextEntity entity)
         {
             return (!entity.DayTimes.Any() || entity.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
-                   && (!entity.MapIds.Any() || entity.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
+                   && (!entity.RegionIds.Any() || entity.RegionIds.Contains(MusicMixer.Instance.MapService.CurrentRegion))
                    && (!entity.ExcludedMapIds.Any() || !entity.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                    && (!entity.MountTypes.Any() || entity.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
                    && entity.State == MusicMixer.Instance.Gw2State.CurrentState;
@@ -80,7 +77,7 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
                 AudioUrl = model.AudioUrl,
                 Duration = model.Duration,
                 State = model.State,
-                MapIds = model.MapIds.ToList(),
+                RegionIds = model.RegionIds.ToList(),
                 ExcludedMapIds = model.ExcludedMapIds.ToList(),
                 DayTimes = model.DayTimes.ToList(),
                 MountTypes = model.MountTypes.ToList()

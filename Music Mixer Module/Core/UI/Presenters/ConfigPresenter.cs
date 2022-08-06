@@ -5,9 +5,9 @@ using System;
 
 namespace Nekres.Music_Mixer.Core.UI.Presenters
 {
-    internal class MusicContextConfigPresenter : Presenter<MusicContextConfigView, MusicContextModel>
+    internal class MusicContextConfigPresenter : Presenter<ConfigView, MusicContextModel>
     {
-        public MusicContextConfigPresenter(MusicContextConfigView view, MusicContextModel model) : base(view, model)
+        public MusicContextConfigPresenter(ConfigView view, MusicContextModel model) : base(view, model)
         {
             model.Changed += View_OnModelChanged;
         }
