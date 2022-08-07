@@ -40,6 +40,7 @@ namespace Nekres.Mumble_Info
         private SettingEntry<KeyBinding> _toggleInfoBinding;
         private SettingEntry<bool>       _showCursorPosition;
         internal SettingEntry<bool> EnablePerformanceCounters;
+        internal SettingEntry<bool> SwapYZAxes;
 
         #endregion
 
@@ -67,6 +68,10 @@ namespace Nekres.Mumble_Info
             EnablePerformanceCounters = settings.DefineSetting("PerfCountersEnabled", false,
                 () => "Show performance counters",
                 () => "Whether performance counters such as RAM and CPU utilization of the Guild Wars 2 process should be displayed.");
+
+            SwapYZAxes = settings.DefineSetting("SwapYZAxes", true, 
+                () => "Swap YZ Axes",
+                () => "Swaps the values of the Y and Z axes if enabled.");
         }
 
         protected override void Initialize() {
