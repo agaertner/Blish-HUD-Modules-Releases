@@ -67,8 +67,8 @@ namespace Nekres.Music_Mixer.Core.Player
                 {
                     if (DateTime.UtcNow < timeout) continue;
                     MusicMixer.Logger.Error(e, e.Message);
-                    break;
                 }
+                break;
             }
             return false;
         }
@@ -93,15 +93,27 @@ namespace Nekres.Music_Mixer.Core.Player
             // Filter is toggled when submerged.
             _lowPassFilter = new BiQuadFilterSource(_fadeInOut)
             {
-                Filter = new LowPassFilter(_fadeInOut.WaveFormat.SampleRate, 400),
-                Enabled = MusicMixer.Instance.Gw2State.CurrentState != Gw2StateService.State.Submerged && MusicMixer.Instance.Gw2State.IsSubmerged
+                Filter = new LowPassFilter(_fadeInOut.WaveFormat.SampleRate, 400)
             };
             _equalizer = Equalizer.Create10BandEqualizer(_lowPassFilter);
-            
-            _outputDevice.Init(_equalizer);
-            _outputDevice.Play();
 
-            _fadeInOut.BeginFadeIn(fadeInDuration);
+            var timeout = DateTime.UtcNow.AddMilliseconds(500);
+            while (DateTime.UtcNow < timeout)
+            {
+                try
+                {
+                    _outputDevice.Init(_equalizer);
+                    _outputDevice.Play();
+                    _fadeInOut.BeginFadeIn(fadeInDuration);
+                    this.ToggleSubmergedFx(MusicMixer.Instance.Gw2State.IsSubmerged);
+                }
+                catch (Exception e) when (e is InvalidCastException or UnauthorizedAccessException or COMException)
+                {
+                    if (DateTime.UtcNow < timeout) continue;
+                    MusicMixer.Logger.Error(e, e.Message);
+                }
+                break;
+            }
         }
 
         public void Seek(float seconds)
@@ -135,7 +147,6 @@ namespace Nekres.Music_Mixer.Core.Player
         {
             _endOfStream.Ended -= OnEndOfStreamReached;
             this.Finished?.Invoke(this, EventArgs.Empty);
-            this.Dispose();
         }
 
         public void ToggleSubmergedFx(bool enable)

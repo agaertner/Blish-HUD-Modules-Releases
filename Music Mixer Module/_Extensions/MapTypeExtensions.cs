@@ -60,7 +60,7 @@ namespace Nekres.Music_Mixer
                 case MapType.Pvp:
                 case MapType.Gvg:
                     return true;
-                default: return false;
+                default: return IsTournament(type);
             }
         }
     }

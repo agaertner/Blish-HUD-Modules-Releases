@@ -1,45 +1,29 @@
-﻿using Blish_HUD.Controls;
+﻿using Blish_HUD;
+using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
+using Microsoft.Xna.Framework;
+using Nekres.Music_Mixer.Core.UI.Controls;
 using Nekres.Music_Mixer.Core.UI.Models;
 using Nekres.Music_Mixer.Core.UI.Presenters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Blish_HUD;
-using Blish_HUD.Input;
-using Gw2Sharp.WebApi.V2.Models;
-using Microsoft.Xna.Framework;
-using Nekres.Music_Mixer.Core.Services;
-using Nekres.Music_Mixer.Core.UI.Controls;
 using Color = Microsoft.Xna.Framework.Color;
-using MountType = Gw2Sharp.Models.MountType;
 
 namespace Nekres.Music_Mixer.Core.UI.Views
 {
     internal class ConfigView : View<MusicContextConfigPresenter>
     {
-        private const int MARGIN = 10;
-        private IList<Map> _maps;
+        public Container Parent { get; private set; }
 
-        private FlowPanel _mapsExclusionPanel;
+        private const int MARGIN = 10;
 
         public ConfigView(MusicContextModel model)
         {
-            _maps = new List<Map>();
             this.WithPresenter(new MusicContextConfigPresenter(this, model));
-        }
-
-        protected override async Task<bool> Load(IProgress<string> progress)
-        {
-            var mapIds = this.Presenter.Model.ExcludedMapIds.ToList();
-            if (!mapIds.Any()) return true;
-            _maps = (await MusicMixer.Instance.Gw2ApiManager.Gw2ApiClient.V2.Maps.ManyAsync(mapIds)).ToList();
-            return _maps.Any();
         }
 
         protected override void Build(Container buildPanel)
         {
+            this.Parent = buildPanel;
+
             var thumbnail = new LoadingImage(this.Presenter.Model.Thumbnail)
             {
                 Parent = buildPanel,
@@ -77,70 +61,33 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 Parent = buildPanel,
                 Text = this.Presenter.Model.Duration.ToShortForm(),
                 Size = new Point(buildPanel.ContentRegion.Width - thumbnail.Width - title.Width, thumbnail.Height),
-                Location = new Point(title.Right + 5, thumbnail.Location.Y),
+                Location = new Point(title.Right - 5, thumbnail.Location.Y),
                 Font = GameService.Content.DefaultFont16,
                 TextColor = Color.LightGray
             };
 
-            // MapIds Excluded selection
-            _mapsExclusionPanel = new FlowPanel
+            var volumeLabel = new Label
             {
                 Parent = buildPanel,
-                Size = new Point(buildPanel.ContentRegion.Width / 2, buildPanel.ContentRegion.Height - (thumbnail.Height + Panel.BOTTOM_PADDING + StandardButton.STANDARD_CONTROL_HEIGHT)),
-                Location = new Point(buildPanel.ContentRegion.X, thumbnail.Bottom + Panel.BOTTOM_PADDING),
-                FlowDirection = ControlFlowDirection.LeftToRight,
-                ControlPadding = new Vector2(5, 5),
-                OuterControlPadding = new Vector2(5, 5),
-                CanCollapse = false,
-                CanScroll = true,
-                Collapsed = false,
-                ShowTint = true,
-                ShowBorder = true
+                Text = "Volume",
+                Location = new Point(buildPanel.ContentRegion.X, thumbnail.Bottom + Panel.BOTTOM_PADDING * 2),
+                Width = buildPanel.ContentRegion.Width / 4 - Panel.RIGHT_PADDING,
+                Height = 32,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Font = GameService.Content.DefaultFont16
             };
-            foreach (var id in this.Presenter.Model.ExcludedMapIds) CreateMapEntry(id, _mapsExclusionPanel, OnExcludedMapClick);
 
-            var btnExcludeMap = new StandardButton
+            var volumeTrackBar = new TrackBar2
             {
                 Parent = buildPanel,
-                Size = new Point(150, StandardButton.STANDARD_CONTROL_HEIGHT),
-                Location = new Point(_mapsExclusionPanel.Location.X + (_mapsExclusionPanel.Width - 150) / 2, _mapsExclusionPanel.Location.Y + _mapsExclusionPanel.Height),
-                Text = "Exclude Map"
+                Location = new Point(volumeLabel.Right + Panel.RIGHT_PADDING, volumeLabel.Location.Y + (volumeLabel.Height - 16) / 2),
+                Width = buildPanel.ContentRegion.Width / 2 - volumeLabel.Width,
+                Height = 16,
+                MinValue = 0f,
+                MaxValue = 100f,
+                Value = MathHelper.Clamp(this.Presenter.Model.Volume * 1000f, 0f, 100f)
             };
-            btnExcludeMap.Click += BtnExcludeMap_Click;
-        }
-
-        private async void BtnExcludeMap_Click(object o, MouseEventArgs e)
-        {
-            GameService.Content.PlaySoundEffectByName("button-click");
-            if (this.Presenter.Model.ExcludedMapIds.Any(id => id.Equals(GameService.Gw2Mumble.CurrentMap.Id))) return;
-            await MusicMixer.Instance.Gw2ApiManager.Gw2ApiClient.V2.Maps
-                .GetAsync(GameService.Gw2Mumble.CurrentMap.Id).ContinueWith(t =>
-                {
-                    if (t.IsFaulted) return;
-                    var map = t.Result;
-                    _maps.Add(map);
-                    this.Presenter.Model.ExcludedMapIds.Add(map.Id);
-                    CreateMapEntry(map.Id, _mapsExclusionPanel, OnExcludedMapClick);
-                });
-        }
-
-        private void CreateMapEntry(int mapId, FlowPanel parent, EventHandler<MouseEventArgs> clickAction)
-        {
-            var map = _maps.First(x => x.Id == mapId);
-            var mapEntry = new MapEntry(map.Id, map.Name)
-            {
-                Parent = parent,
-                Size = new Point(parent.ContentRegion.Width - (int)parent.OuterControlPadding.X * 2, StandardButton.STANDARD_CONTROL_HEIGHT)
-            };
-            mapEntry.Click += clickAction;
-        }
-
-        private void OnExcludedMapClick(object o, MouseEventArgs e)
-        {
-            GameService.Content.PlaySoundEffectByName("button-click");
-            var ctrl = (MapEntry)o;
-            this.Presenter.Model.ExcludedMapIds.Remove(ctrl.MapId);
-            ctrl.Dispose();
+            volumeTrackBar.DraggingStopped += (_, e) => this.Presenter.Model.Volume = e.Value / 1000f;
         }
     }
 }

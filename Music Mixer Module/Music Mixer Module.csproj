@@ -129,6 +129,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\AsyncCache.cs" />
     <Compile Include="Core\Player\API\Models\MetaData.cs" />
     <Compile Include="Core\Player\AudioEngine.cs" />
     <Compile Include="Core\Player\Source\DSP\BiQuad.cs" />
@@ -142,8 +143,9 @@
     <Compile Include="Core\Services\MapService.cs" />
     <Compile Include="Core\UI\Controls\AudioVolumeWidget.cs" />
     <Compile Include="Core\UI\Controls\ClipboardButton.cs" />
-    <Compile Include="Core\UI\Controls\DayCycleButton.cs" />
+    <Compile Include="Core\UI\Controls\DayCycleSwitcher.cs" />
     <Compile Include="Core\UI\Controls\LoadingImage.cs" />
+    <Compile Include="Core\UI\Controls\MapThumb.cs" />
     <Compile Include="Core\UI\Controls\RegionEntry.cs" />
     <Compile Include="Core\UI\Controls\MapEntry.cs" />
     <Compile Include="Core\UI\Controls\DataPanel.cs" />
@@ -156,13 +158,14 @@
     <Compile Include="Core\UI\Models\MainModel.cs" />
     <Compile Include="Core\UI\Models\MusicContextModel.cs" />
     <Compile Include="Core\UI\Presenters\ConfigPresenter.cs" />
-    <Compile Include="Core\UI\Presenters\ContextPresenter.cs" />
     <Compile Include="Core\UI\Presenters\LibraryPresenter.cs" />
     <Compile Include="Core\UI\Presenters\MainPresenter.cs" />
     <Compile Include="Core\UI\Views\ContextView.cs" />
     <Compile Include="Core\UI\Views\LibraryView.cs" />
     <Compile Include="Core\UI\Views\MainView.cs" />
     <Compile Include="Core\UI\Views\ConfigView.cs" />
+    <Compile Include="Core\UI\Views\MapSelectionView.cs" />
+    <Compile Include="Core\UI\Views\MountView.cs" />
     <Compile Include="MusicMixer.cs" />
     <Compile Include="Core\Player\API\ffmpeg.cs" />
     <Compile Include="Core\Player\API\youtube-dl.cs" />
@@ -172,7 +175,10 @@
     <Compile Include="_Converters\TimeSpanFromSecondsConverter.cs" />
     <Compile Include="_Extensions\Gw2StateExtensions.cs" />
     <Compile Include="_Extensions\MapTypeExtensions.cs" />
+    <Compile Include="_Extensions\SpriteBatchExtensions.cs" />
+    <Compile Include="_Extensions\StringExtensions.cs" />
     <Compile Include="_Extensions\TimeSpanExtensions.cs" />
+    <Compile Include="_Extensions\TrackBarExtensions.cs" />
     <Compile Include="_Extensions\WaveStreamExtensions.cs" />
     <Compile Include="_Utils\FileUtil.cs" />
     <Compile Include="_Utils\MapUtil.cs" />

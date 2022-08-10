@@ -84,16 +84,10 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             _soundtrack?.Seek(e.Value);
         }
 
-        protected void HandleTrackBarChanged(object sender, ValueEventArgs<float> e)
-        {
-            MusicMixer.Instance.MasterVolumeSetting.Value = e.Value;
-        }
-
         protected override void DisposeControl()
         {
             _volumeWidget?.Dispose();
-            _seekTrackBar.ValueChanged -= HandleTrackBarChanged;
-            _seekTrackBar.Dispose();
+            _seekTrackBar?.Dispose();
             base.DisposeControl();
         }
 
@@ -109,7 +103,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 
             if (_mouseOverAudioBtn)
             {
-                this.BasicTooltipText = $"{Math.Ceiling(this.Soundtrack.Volume * 1000)}%";
+                this.BasicTooltipText = "Volume";
             }
             else if (_mouseOverTitle)
             {

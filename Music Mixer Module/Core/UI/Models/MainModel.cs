@@ -7,7 +7,9 @@ namespace Nekres.Music_Mixer.Core.UI.Models
     internal class MainModel
     {
         public event EventHandler<EventArgs> Changed;
-        
+
+        public readonly Gw2StateService.State State;
+
         private TyrianTime _dayCycle;
         public TyrianTime DayCycle
         { 
@@ -16,6 +18,18 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             {
                 if (_dayCycle == value) return;
                 _dayCycle = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private int _continentId;
+        public int ContinentId
+        {
+            get => _continentId;
+            set
+            {
+                if (_continentId == value) return;
+                _continentId = value;
                 Changed?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -32,14 +46,14 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             }
         }
 
-        private Gw2StateService.State _state;
-        public Gw2StateService.State State
+        private int _mapId;
+        public int MapId
         {
-            get => _state;
+            get => _mapId;
             set
             {
-                if (_state == value) return;
-                _state = value;
+                if (_mapId == value) return;
+                _mapId = value;
                 Changed?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -54,6 +68,16 @@ namespace Nekres.Music_Mixer.Core.UI.Models
                 _mountType = value;
                 Changed?.Invoke(this, EventArgs.Empty);
             }
+        }
+
+        public MainModel(Gw2StateService.State state)
+        {
+            this.State = state;
+            this.DayCycle = TyrianTime.Day;
+            this.ContinentId = 1;
+            this.RegionId = 4;
+            this.MapId = 15;
+            this.MountType = MountType.None;
         }
     }
 }

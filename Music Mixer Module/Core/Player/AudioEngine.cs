@@ -5,6 +5,7 @@ using Nekres.Music_Mixer.Core.UI.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 
 namespace Nekres.Music_Mixer.Core.Player
 {
@@ -18,21 +19,7 @@ namespace Nekres.Music_Mixer.Core.Player
 
         private TimeSpan _prevTime;
 
-        private string _prevSourceUri;
-
         private MusicContextModel _prevMusicModel;
-
-        private float _volume;
-        public float Volume
-        {
-            get => _volume;
-            set
-            {
-                _volume = value;
-                if (_soundtrack == null) return;
-                _soundtrack.Volume = value;
-            }
-        }
 
         public bool Loading { get; private set; }
 
@@ -41,6 +28,22 @@ namespace Nekres.Music_Mixer.Core.Player
         public AudioEngine()
         {
             _scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+        }
+
+        public static float GetNormalizedVolume(float volume)
+        {
+            if (volume >= MusicMixer.Instance.MasterVolume) return MusicMixer.Instance.MasterVolume;
+            return MathHelper.Clamp(MusicMixer.Instance.MasterVolume - Math.Abs(volume - MusicMixer.Instance.MasterVolume), 0f, 1f);
+        }
+
+        public void SetVolume(float volume)
+        {
+            _soundtrack.Volume = GetNormalizedVolume(volume);
+        }
+
+        public void RefreshVolume()
+        {
+            SetVolume(_model.Volume);
         }
 
         public async Task Play(MusicContextModel model)
@@ -55,9 +58,10 @@ namespace Nekres.Music_Mixer.Core.Player
                 return;
             }
 
-            if (!await TryPlay(model.AudioUrl)) return;
-            await Notify(model);
             _model = model;
+
+            if (!await TryPlay(model.AudioUrl, GetNormalizedVolume(_model.Volume))) return;
+            await Notify(model);
         }
 
         private async Task AudioUrlReceived(string url, MusicContextModel model)
@@ -65,11 +69,11 @@ namespace Nekres.Music_Mixer.Core.Player
             try
             {
                 model.AudioUrl = url;
-                await MusicMixer.Instance.DataService.Upsert(model);
-
-                if (!await TryPlay(model.AudioUrl)) return;
-                await Notify(model);
                 _model = model;
+                await MusicMixer.Instance.DataService.Upsert(model);
+                if (!await TryPlay(model.AudioUrl, GetNormalizedVolume(_model.Volume))) return;
+                await Notify(model);
+                
             }
             catch (Exception e) when (e is NullReferenceException or ObjectDisposedException)
             {
@@ -77,7 +81,7 @@ namespace Nekres.Music_Mixer.Core.Player
             }
         }
 
-        private async Task<bool> TryPlay(string audioUri)
+        private async Task<bool> TryPlay(string audioUri, float volume)
         {
             // Making sure WasApiOut is initialized in main synchronization context. Otherwise it will fail.
             // https://github.com/naudio/NAudio/issues/425
@@ -85,7 +89,7 @@ namespace Nekres.Music_Mixer.Core.Player
 
                     this.Stop();
 
-                    if (!Soundtrack.TryGetStream(audioUri, this.Volume, out _soundtrack))
+                    if (!Soundtrack.TryGetStream(audioUri, volume, out _soundtrack))
                     {
                         this.Loading = false;
                         return false;
@@ -115,6 +119,18 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public void ToggleSubmerged(bool enable) => _soundtrack?.ToggleSubmergedFx(enable);
 
+        public void Update()
+        {
+            if (_soundtrack == null || _model == null) return;
+            _soundtrack.Volume = MathHelper.Clamp(Map(GameService.Gw2Mumble.PlayerCamera.Position.Z, -130, 
+                    GetNormalizedVolume(0.1f), 0, GetNormalizedVolume(_model.Volume)),0f,0.1f);
+        }
+
+        private static float Map(float value, float fromLow, float fromHigh, float toLow, float toHigh)
+        {
+            return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+        }
+
         public void Stop()
         {
             _mediaWidget?.Hide();
@@ -143,18 +159,19 @@ namespace Nekres.Music_Mixer.Core.Player
         {
             if (_soundtrack == null || _model == null || _model.State.IsIntermediate()) return;
             _prevTime = _soundtrack.CurrentTime;
-            _prevSourceUri = _model.AudioUrl;
             _prevMusicModel = _model;
         }
 
         public async Task<bool> PlayFromSave()
         {
-            if (_soundtrack != null && _soundtrack.SourceUri.Equals(_prevSourceUri)) return true; // Song is already active
-
-            if (_prevMusicModel == null // No data model
+            if (_prevMusicModel == null
                 || !MusicContextModel.CanPlay(_prevMusicModel)
-                || _prevTime > _prevMusicModel.Duration // Time out of bounds
-                || !await TryPlay(_prevSourceUri)) return false;
+                || _prevTime > _prevMusicModel.Duration) // Time out of bounds
+                return false;
+
+            if (_soundtrack != null && _soundtrack.SourceUri.Equals(_prevMusicModel.AudioUrl)) return true; // Song is already active
+
+            if (!await TryPlay(_prevMusicModel.AudioUrl, GetNormalizedVolume(_prevMusicModel.Volume))) return false;
 
             await Notify(_prevMusicModel);
             _soundtrack.Seek(_prevTime);

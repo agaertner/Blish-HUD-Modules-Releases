@@ -13,9 +13,6 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
         public event EventHandler<MouseEventArgs> EditClick;
 
         private const int MARGIN = 10;
-        private const int BUTTON_WIDTH = 345;
-        private const int BUTTON_HEIGHT = 100;
-        private const int USER_WIDTH = 75;
         private const int BOTTOMSECTION_HEIGHT = 35;
 
         //private static Texture2D _dividerSprite = GameService.Content.GetTexture("157218");
@@ -90,7 +87,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             spriteBatch.DrawOnCtrl(this, _iconBoxSprite, thumbnailBounds, Color.White);
 
             // Draw edit button
-            _editButtonBounds = new Rectangle(BUTTON_WIDTH - 66, (bounds.Height - BOTTOMSECTION_HEIGHT - 64) / 2, 64, 64);
+            _editButtonBounds = new Rectangle(this.Width - 66, (bounds.Height - BOTTOMSECTION_HEIGHT - 64) / 2, 64, 64);
             var editIcon = this.Active ? _editMacroTexActive : _mouseOverEditButton ? _editMacroTexHover : this.Enabled ? _editMacroTex : _editMacroTexDisabled;
             spriteBatch.DrawOnCtrl(this, editIcon, _editButtonBounds, Color.White);
 

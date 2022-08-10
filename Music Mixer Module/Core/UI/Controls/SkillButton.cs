@@ -9,13 +9,6 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 {
     internal class SkillButton : Control
     {
-        private SpriteEffects _spriteEffects;
-        public SpriteEffects SpriteEffects
-        {
-            get => _spriteEffects;
-            set => SetProperty(ref _spriteEffects, value);
-        }
-
         private bool _active;
         public bool Active
         {
@@ -42,7 +35,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds)
         {
             if (this.Texture == null || !this.Texture.HasTexture) return;
-            spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(0,0,this.Width,this.Height), null, Color.White, 0, Vector2.Zero, _spriteEffects);
+            spriteBatch.DrawOnCtrl(this, this.Texture, new Rectangle(0,0,this.Width,this.Height));
         }
 
         protected override void OnMouseEntered(MouseEventArgs e)

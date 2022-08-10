@@ -15,7 +15,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
         private Texture2D _texAudioMuted = GameService.Content.GetTexture("common/154982");
         private Texture2D _texTooltip = GameService.Content.GetTexture("tooltip");
 
-        private TrackBar _volumeTrackBar;
+        private TrackBar2 _volumeTrackBar;
 
         private bool _mouseOverAudioBtn;
         private Rectangle _audioBtnBounds;
@@ -29,35 +29,36 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
         {
             _mediaWidget = widget;
             this.Size = new Point(250, 64);
-            _volumeTrackBar = new TrackBar
+            _volumeTrackBar = new TrackBar2
             {
                 Parent = this,
                 Location = new Point(64, (this.Height - 16) / 2),
                 Size = new Point(this.Width - _texAudioBtn.Width - 64 - MARGIN * 2, 16),
-                Visible = true
+                Visible = true,
+                MinValue = 0,
+                MaxValue = 100,
+                Value = MathHelper.Clamp(_mediaWidget.Model.Volume * 1000f, 0f, 100f)
             };
             _volumeTrackBar.ValueChanged += OnValueChanged;
-            this.RefreshValue(MusicMixer.Instance.MasterVolumeSetting.Value);
+            _volumeTrackBar.DraggingStopped += OnDraggingStopped;
             _activeBounds = _mediaWidget.AbsoluteBounds.Add(this.AbsoluteBounds);
             this.ZIndex = _mediaWidget.ZIndex + 1;
+            _mediaWidget.Model.Changed += OnModelChanged;
         }
 
         private void OnValueChanged(object o, ValueEventArgs<float> e)
         {
-            MusicMixer.Instance.MasterVolumeSetting.Value = e.Value;
+            MusicMixer.Instance.AudioEngine.SetVolume(Math.Abs(e.Value / 1000f));
         }
 
-        private void OnMasterVolumeSettingChanged(object o, ValueChangedEventArgs<float> e)
+        private void OnDraggingStopped(object o, ValueEventArgs<float> e)
         {
-            this.RefreshValue(e.NewValue);
+            _mediaWidget.Model.Volume = e.Value / 1000f;
         }
 
-        private void RefreshValue(float value)
+        private async void OnModelChanged(object o, EventArgs e)
         {
-            _volumeTrackBar.MinValue = Math.Min(_volumeTrackBar.MinValue, value);
-            _volumeTrackBar.MaxValue = Math.Max(_volumeTrackBar.MaxValue, value);
-
-            _volumeTrackBar.Value = value;
+            await MusicMixer.Instance.DataService.Upsert(_mediaWidget.Model);
         }
 
         protected override void OnMouseMoved(MouseEventArgs e)
@@ -86,8 +87,9 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 
         protected override void DisposeControl()
         {
+            _mediaWidget.Model.Changed -= OnModelChanged;
+            _volumeTrackBar.DraggingStopped -= OnDraggingStopped;
             _volumeTrackBar.ValueChanged -= OnValueChanged;
-            MusicMixer.Instance.MasterVolumeSetting.SettingChanged -= OnMasterVolumeSettingChanged;
             _volumeTrackBar.Dispose();
             base.DisposeControl();
         }
@@ -108,7 +110,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
                 spriteBatch.DrawOnCtrl(this, _texAudioMuted, _audioBtnBounds, _texAudioMuted.Bounds, Color.White * 0.5f);
 
             var volumeBounds = new Rectangle(_volumeTrackBar.Right, 0, 50, bounds.Height);
-            spriteBatch.DrawStringOnCtrl(this, $"{Math.Ceiling(this.Soundtrack.Volume * 1000)}", Content.DefaultFont18, volumeBounds, Color.White, false, false, 1, HorizontalAlignment.Center);
+            spriteBatch.DrawStringOnCtrl(this, $"{Math.Ceiling(_volumeTrackBar.Value)}", Content.DefaultFont18, volumeBounds, Color.White, false, false, 1, HorizontalAlignment.Center);
             
             // Draw border
             spriteBatch.DrawOnCtrl(this, ContentService.Textures.Pixel, new Rectangle(0,0,bounds.Width, 1), Color.Black);

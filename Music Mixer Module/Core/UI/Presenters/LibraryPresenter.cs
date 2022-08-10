@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
@@ -11,6 +8,8 @@ using Nekres.Music_Mixer.Core.Player.API.Models;
 using Nekres.Music_Mixer.Core.UI.Controls;
 using Nekres.Music_Mixer.Core.UI.Models;
 using Nekres.Music_Mixer.Core.UI.Views;
+using System;
+using System.Threading.Tasks;
 
 namespace Nekres.Music_Mixer.Core.UI.Presenters
 {
@@ -18,13 +17,20 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
     {
         public LibraryPresenter(LibraryView view, MainModel model) : base(view, model)
         {
+            model.Changed += OnModelChanged;
         }
+
+        private void OnModelChanged(object o, EventArgs e)
+        {
+            ((ViewContainer)this.View?.MusicContextPanel?.Parent)?.Show(new LibraryView(this.Model));
+        }
+
         public void Add(MusicContextModel model)
         {
             var contextEntry = new MusicContextDetails(model)
             {
                 Parent = this.View.MusicContextPanel,
-                Size = new Point(345, 100)
+                Size = new Point(this.View.MusicContextPanel.ContentRegion.Width, 100)
             };
             contextEntry.EditClick += OnMusicContextConfigClicked;
         }
@@ -32,10 +38,21 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
         private void OnMusicContextConfigClicked(object o, MouseEventArgs e)
         {
             var ctrl = (MusicContextDetails)o;
-            var view = new ConfigView(ctrl.Model);
             ctrl.Active = true;
-            this.View.ConfigView.Show(view);
-            view.Unloaded += delegate { ctrl.Active = false; };
+            var bgTex = GameService.Content.GetTexture("controls/window/502049");
+            var windowRegion = new Rectangle(40, 26, 895 + 38, 780 - 56);
+            var contentRegion = new Rectangle(70, 41, 895 - 43, 780 - 142);
+            var editWindow = new StandardWindow(bgTex, windowRegion, contentRegion)
+            {
+                Parent = GameService.Graphics.SpriteScreen,
+                Location = new Point((GameService.Graphics.SpriteScreen.Width - windowRegion.Width) / 2, (GameService.Graphics.SpriteScreen.Height - windowRegion.Height) / 2),
+                Title = $"Edit Song Context - {ctrl.Title.Substring(0, Math.Min(ctrl.Title.Length - 1, 25))}",
+                Id = $"{nameof(MusicMixer)}_{nameof(ConfigView)}_1450662d-40f1-48e3-b398-b373d5cd9314",
+                SavesPosition = true
+            };
+            editWindow.Show(new ConfigView(ctrl.Model));
+            editWindow.Hidden += (_, _) => editWindow.Dispose();
+            editWindow.Disposed += (_, _) => ctrl.Active = false;
         }
 
         public async Task AddNew(IProgress<string> e)
@@ -56,15 +73,23 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
         private async Task MetaDataReceived(MetaData data)
         {
             var model = new MusicContextModel(this.Model.State, data.Title, data.Artist, data.Url, data.Duration, 
-                new[]{this.Model.RegionId}, 
-                null, 
-                new []{this.Model.DayCycle}, 
-                new []{this.Model.MountType});
+                this.Model.ContinentId,
+                this.Model.RegionId,
+                new[] { this.Model.MapId }, 
+                null,
+                new []{ this.Model.DayCycle }, 
+                new []{ this.Model.MountType });
             Add(model);
             await MusicMixer.Instance.DataService.Upsert(model);
             MusicMixer.Instance.DataService.DownloadThumbnail(model);
             GameService.Content.PlaySoundEffectByName("color-change");
             this.View.Loading = false;
+        }
+
+        protected override void Unload()
+        {
+            this.Model.Changed -= OnModelChanged;
+            base.Unload();
         }
     }
 }

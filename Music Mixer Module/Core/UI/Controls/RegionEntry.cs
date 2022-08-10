@@ -18,11 +18,22 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             set => SetProperty(ref _regionName, value);
         }
 
+        private bool _showId;
+        public bool ShowId
+        {
+            get => _showId;
+            set
+            {
+                if (!SetProperty(ref _showId, value)) return;
+                this.Text = this.RegionName + (value ? $" ({this.RegionId})" : string.Empty);
+            }
+        }
+
         public RegionEntry(int regionId, string regionName)
         {
             this.RegionId = regionId;
             this.RegionName = regionName;
-            this.Text = $"{this.RegionName} ({this.RegionId})";
+            this.Text = this.RegionName + (this.ShowId ? $" ({this.RegionId})" : string.Empty);
         }
     }
 }

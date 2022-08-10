@@ -12,10 +12,13 @@ using Nekres.Music_Mixer.Core.Services;
 using Nekres.Music_Mixer.Core.UI.Controls;
 using Nekres.Music_Mixer.Core.UI.Views.StateViews;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
+using Gw2Sharp.Models;
 using Nekres.Music_Mixer.Core.UI.Models;
+using Nekres.Music_Mixer.Core.UI.Views;
 
 namespace Nekres.Music_Mixer
 {
@@ -40,7 +43,6 @@ namespace Nekres.Music_Mixer
         #region Settings
 
         internal SettingEntry<float> MasterVolumeSetting;
-        internal SettingEntry<bool> ToggleSubmergedPlaylistSetting;
         internal SettingEntry<bool> ToggleMountedPlaylistSetting;
         internal SettingEntry<bool> ToggleFourDayCycleSetting;
         internal SettingEntry<bool> ToggleKeepAudioFilesSetting;
@@ -50,7 +52,7 @@ namespace Nekres.Music_Mixer
         private SettingEntry<bool> MuteWhenInBackgroundSetting;
         #endregion
 
-        public float MasterVolume => MathHelper.Clamp(MasterVolumeSetting.Value / 1000f, 0, 1);
+        public float MasterVolume => MathHelper.Clamp(MasterVolumeSetting.Value / 1000f, 0f, 1f);
 
         public string ModuleDirectory { get; private set; }
 
@@ -59,13 +61,15 @@ namespace Nekres.Music_Mixer
 
         private DataPanel _debugPanel;
 
-        private AudioEngine _audioEngine;
+        internal AudioEngine AudioEngine;
         internal MapService MapService;
         internal DataService DataService;
         internal Gw2StateService Gw2State;
 
         private TabbedWindow2 _moduleWindow;
         private CornerIcon _cornerIcon;
+
+        private Dictionary<Gw2StateService.State, MainModel> _tabModels;
 
         // Textures
         private Texture2D _cornerTexture;
@@ -74,12 +78,10 @@ namespace Nekres.Music_Mixer
         private Texture2D _mountTabIcon;
         private Texture2D _ambientTabIcon;
         private Texture2D _competitiveTabIcon;
-        private Texture2D _submergedTabIcon;
         private Texture2D _battleTabIcon;
 
         [ImportingConstructor]
         public MusicMixer([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { Instance = this; }
-
 
         protected override void DefineSettings(SettingCollection settings) {
             MasterVolumeSetting = settings.DefineSetting("MasterVolume", 50f, 
@@ -89,10 +91,6 @@ namespace Nekres.Music_Mixer
             MuteWhenInBackgroundSetting = settings.DefineSetting("MuteWhenInBackground", false,
                 () => "Mute when GW2 is in the background");
 
-            ToggleSubmergedPlaylistSetting = settings.DefineSetting("EnableSubmergedPlaylist", false, 
-                () => "Use submerged playlist", 
-                () => "Whether songs of the underwater playlist should be played while submerged.");
-            
             ToggleMountedPlaylistSetting = settings.DefineSetting("EnableMountedPlaylist", true, 
                 () => "Use mounted playlist", 
                 () => "Whether songs of the mounted playlist should be played while mounted.");
@@ -117,12 +115,13 @@ namespace Nekres.Music_Mixer
             MediaWidgetLocation = selfManaged.DefineSetting("mediaWidgetLocation", new Point((int)(0.82 * GameService.Graphics.SpriteScreen.Size.X), 30));
         }
 
-        protected override void Initialize() {
+        protected override void Initialize()
+        {
             ModuleDirectory = DirectoriesManager.GetFullDirectoryPath("music_mixer");
             MapService = new MapService(this.ContentsManager);
             DataService = new DataService(this.ModuleDirectory);
             Gw2State = new Gw2StateService();
-            _audioEngine = new AudioEngine { Volume = this.MasterVolume };
+            AudioEngine = new AudioEngine();
 
             _cornerTexture = ContentsManager.GetTexture("corner_icon.png");
             _backgroundTexture = GameService.Content.GetTexture("controls/window/502049");
@@ -130,17 +129,26 @@ namespace Nekres.Music_Mixer
             _mountTabIcon = ContentsManager.GetTexture("tabs/raptor.png");
             _ambientTabIcon = ContentsManager.GetTexture("tabs/campfire.png");
             _competitiveTabIcon = ContentsManager.GetTexture("tabs/arena.png");
-            _submergedTabIcon = ContentsManager.GetTexture("tabs/waterdrop.png");
             _battleTabIcon = ContentsManager.GetTexture("tabs/enemy.png");
+
+            _tabModels = new Dictionary<Gw2StateService.State, MainModel>
+            {
+                {Gw2StateService.State.Mounted, new MainModel(Gw2StateService.State.Mounted){MountType = MountType.Raptor}},
+                {Gw2StateService.State.Ambient, new MainModel(Gw2StateService.State.Ambient)},
+                {Gw2StateService.State.Competitive, new MainModel(Gw2StateService.State.Competitive){ContinentId = 2, RegionId = 6, MapId = 350}},
+                //{Gw2StateService.State.Submerged, new MainModel(Gw2StateService.State.Submerged)},
+                {Gw2StateService.State.Battle, new MainModel(Gw2StateService.State.Battle)},
+            };
         }
 
         protected override void Update(GameTime gameTime) {
             this.Gw2State.Update();
+            this.AudioEngine.Update();
         }
 
         protected override async Task LoadAsync()
         {
-            await MapService.RequestRegions();
+            await MapService.Initialize();
             await Task.Run(() => {
                 ExtractFile(_FFmpegPath);
                 ExtractFile(_youtubeDLPath);
@@ -162,11 +170,11 @@ namespace Nekres.Music_Mixer
                 Id = $"{nameof(MusicMixer)}_d42b52ce-74f1-4e6d-ae6b-a8724029f0a3"
             };
 
-            _moduleWindow.Tabs.Add(new Tab(_mountTabIcon, () => new MainView(Gw2StateService.State.Mounted), "Mounted"));
-            _moduleWindow.Tabs.Add(new Tab(_ambientTabIcon, () => new MainView(Gw2StateService.State.Ambient), "Ambient"));
-            _moduleWindow.Tabs.Add(new Tab(_competitiveTabIcon, () => new MainView(Gw2StateService.State.Competitive), "Competitive"));
-            _moduleWindow.Tabs.Add(new Tab(_submergedTabIcon, () => new MainView(Gw2StateService.State.Submerged), "Submerged"));
-            _moduleWindow.Tabs.Add(new Tab(_battleTabIcon, () => new MainView(Gw2StateService.State.Battle), "Battle"));
+            _moduleWindow.Tabs.Add(new Tab(_mountTabIcon, () => new MountView(_tabModels[Gw2StateService.State.Mounted]), "Mounted"));
+            _moduleWindow.Tabs.Add(new Tab(_ambientTabIcon, () => new MainView(_tabModels[Gw2StateService.State.Ambient]), "Ambient"));
+            _moduleWindow.Tabs.Add(new Tab(_competitiveTabIcon, () => new MainView(_tabModels[Gw2StateService.State.Competitive]), "Competitive"));
+            //_moduleWindow.Tabs.Add(new Tab(_submergedTabIcon, () => new MainView(_tabModels[Gw2StateService.State.Submerged]), "Submerged"));
+            _moduleWindow.Tabs.Add(new Tab(_battleTabIcon, () => new MainView(_tabModels[Gw2StateService.State.Battle]), "Battle"));
             _cornerIcon = new CornerIcon
             {
                 Icon = _cornerTexture
@@ -192,18 +200,17 @@ namespace Nekres.Music_Mixer
 
         private void OnGw2LostFocus(object o, EventArgs e)
         {
-            if (_audioEngine == null || !MuteWhenInBackgroundSetting.Value) return;
-            _audioEngine.Volume = 0;
+            if (!MuteWhenInBackgroundSetting.Value) return;
+            AudioEngine?.Pause();
         }
 
         private void OnGw2AcquiredFocus(object o, EventArgs e)
         {
-            if (_audioEngine == null) return;
-            _audioEngine.Volume = this.MasterVolume;
+            AudioEngine?.Resume();
         }
         private void OnGw2Closed(object o, EventArgs e)
         {
-            _audioEngine?.Stop();
+            AudioEngine?.Stop();
         }
 
         public void OnModuleIconClick(object o, MouseEventArgs e)
@@ -224,7 +231,7 @@ namespace Nekres.Music_Mixer
                     case Gw2StateService.State.Battle:
                     case Gw2StateService.State.Submerged:
                     case Gw2StateService.State.Victory:
-                        _audioEngine.Save();
+                        AudioEngine.Save();
                         break;
                 }
             }
@@ -232,21 +239,21 @@ namespace Nekres.Music_Mixer
             // Resume ambient music.
             if (e.NewValue == Gw2StateService.State.Ambient)
             {
-                if (await _audioEngine.PlayFromSave()) return;
+                if (await AudioEngine.PlayFromSave()) return;
             }
 
             // Select new song if nothing is playing.
-            await _audioEngine.Play((await this.DataService.GetRandom())?.ToModel());
+            await AudioEngine.Play((await this.DataService.GetRandom())?.ToModel());
         }
 
         private void MasterVolumeSettingChanged(object o, ValueChangedEventArgs<float> e)
         {
-            _audioEngine.Volume = MathHelper.Clamp(e.NewValue / 1000f, 0, 1);
+            AudioEngine.RefreshVolume();
         }
 
         private void OnIsSubmergedChanged(object o, ValueEventArgs<bool> e)
         {
-            _audioEngine.ToggleSubmerged(e.Value);
+            AudioEngine.ToggleSubmerged(e.Value);
         }
 
         private void OnToggleDebugHelperChanged(object o, ValueChangedEventArgs<bool> e) {
@@ -281,10 +288,17 @@ namespace Nekres.Music_Mixer
             ToggleDebugHelper.SettingChanged -= OnToggleDebugHelperChanged;
             _moduleWindow?.Dispose();
             _cornerIcon?.Dispose();
-            _audioEngine?.Dispose();
+            AudioEngine?.Dispose();
             _debugPanel?.Dispose();
             this.Gw2State?.Dispose();
             this.DataService?.Dispose();
+            _mountTabIcon?.Dispose();
+            _battleTabIcon?.Dispose();
+            _ambientTabIcon?.Dispose();
+            _competitiveTabIcon?.Dispose();
+            _backgroundTexture?.Dispose();
+            _cornerTexture?.Dispose();
+
             // All static members must be manually unset
             Instance = null;
         }

@@ -29,7 +29,6 @@ namespace Nekres.Music_Mixer.Core.Player.API.Models
         [JsonProperty("uploader")]
         public string Uploader { get; set; }
 
-
         private string _artist;
         /// <summary>
         /// Artist(s) of the track. Returns <see cref="Uploader"/> if none exist.

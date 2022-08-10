@@ -11,6 +11,9 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
 {
     internal class MusicContextEntity
     {
+        [BsonId(true)]
+        public long _id { get; set; }
+
         [BsonField("id")]
         public Guid Id { get; set; }
 
@@ -32,8 +35,14 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         [BsonField("duration")]
         public TimeSpan Duration { get; set; }
 
-        [BsonField("regionIds")]
-        public List<int> RegionIds { get; set; }
+        [BsonField("continentId")]
+        public int ContinentId { get; set; }
+
+        [BsonField("regionId")]
+        public int RegionId { get; set; }
+
+        [BsonField("mapIds")]
+        public List<int> MapIds { get; set; }
 
         [BsonField("excludedMapIds")]
         public List<int> ExcludedMapIds { get; set; }
@@ -44,26 +53,34 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         [BsonField("mountTypes")]
         public List<MountType> MountTypes { get; set; }
 
+        [BsonField("volume")]
+        public float Volume { get; set; }
+
         public MusicContextModel ToModel()
         {
             return new MusicContextModel(this.State, this.Title, this.Artist, this.Uri, this.Duration)
             {
                 Id = this.Id,
                 AudioUrl = this.AudioUrl,
-                RegionIds = new ObservableCollection<int>(this.RegionIds),
+                ContinentId = this.ContinentId,
+                RegionId = this.RegionId,
+                MapIds = new ObservableCollection<int>(this.MapIds),
                 ExcludedMapIds = new ObservableCollection<int>(this.ExcludedMapIds),
                 DayTimes = new ObservableCollection<TyrianTime>(this.DayTimes),
-                MountTypes = new ObservableCollection<MountType>(this.MountTypes)
+                MountTypes = new ObservableCollection<MountType>(this.MountTypes),
+                Volume = this.Volume
             };
         }
 
         public static bool CanPlay(MusicContextEntity entity)
         {
-            return (!entity.DayTimes.Any() || entity.DayTimes.Contains(TyrianTimeUtil.GetCurrentDayCycle()))
-                   && (!entity.RegionIds.Any() || entity.RegionIds.Contains(MusicMixer.Instance.MapService.CurrentRegion))
+            return entity.State == MusicMixer.Instance.Gw2State.CurrentState 
+                   && entity.DayTimes.Contains(MusicMixer.Instance.ToggleFourDayCycleSetting.Value ? TyrianTimeUtil.GetCurrentDayCycle() : TyrianTimeUtil.GetCurrentDayCycle().Resolve())
+                   && entity.ContinentId == MusicMixer.Instance.MapService.CurrentContinent
+                   && entity.RegionId == MusicMixer.Instance.MapService.CurrentRegion
+                   && entity.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id)
                    && (!entity.ExcludedMapIds.Any() || !entity.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
-                   && (!entity.MountTypes.Any() || entity.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount))
-                   && entity.State == MusicMixer.Instance.Gw2State.CurrentState;
+                   && (!entity.MountTypes.Any() || entity.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount));
         }
 
         public static MusicContextEntity FromModel(MusicContextModel model)
@@ -77,10 +94,13 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
                 AudioUrl = model.AudioUrl,
                 Duration = model.Duration,
                 State = model.State,
-                RegionIds = model.RegionIds.ToList(),
+                ContinentId = model.ContinentId,
+                RegionId = model.RegionId,
+                MapIds = model.MapIds.ToList(),
                 ExcludedMapIds = model.ExcludedMapIds.ToList(),
                 DayTimes = model.DayTimes.ToList(),
-                MountTypes = model.MountTypes.ToList()
+                MountTypes = model.MountTypes.ToList(),
+                Volume = model.Volume
             };
         }
     }

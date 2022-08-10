@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Blish_HUD;
 using Gw2Sharp.WebApi.Exceptions;
+using System.Threading.Tasks;
+using Gw2Sharp.WebApi.V2.Models;
 
 namespace Nekres.Music_Mixer
 {
@@ -19,6 +22,28 @@ namespace Nekres.Music_Mixer
                 MusicMixer.Logger.Error(e, e.Message);
                 return -1;
             }
+        }
+
+        public static async Task<string> GetSHA1(int mapId)
+        {
+            if (mapId <= 0) return string.Empty;
+            try
+            {
+                return await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Maps.GetAsync(mapId)
+                    .ContinueWith(t => GetSHA1(t.Result.ContinentId, t.Result.ContinentRect));
+            }
+            catch (RequestException e)
+            {
+                MusicMixer.Logger.Error(e, e.Message);
+                return string.Empty;
+            }
+        }
+
+        public static string GetSHA1(int continentId, Rectangle continentRect)
+        {
+            var rpcHash = $"{continentId}{continentRect.TopLeft.X}{continentRect.TopLeft.Y}{continentRect.BottomRight.X}{continentRect.BottomRight.Y}";
+            return rpcHash.ToSHA1Hash().Substring(0, 8);
+
         }
     }
 }

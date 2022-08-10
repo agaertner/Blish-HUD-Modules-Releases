@@ -4,8 +4,6 @@ using Gw2Sharp.Models;
 using Nekres.Music_Mixer.Core.Player;
 using Stateless;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using static Blish_HUD.GameService;
 namespace Nekres.Music_Mixer.Core.Services
 {
@@ -49,22 +47,19 @@ namespace Nekres.Music_Mixer.Core.Services
         public TyrianTime TyrianTime { 
             get => _prevTyrianTime;
             private set {
-                if (_prevTyrianTime == value) return; 
-
+                if (_prevTyrianTime == value) return;
                 _prevTyrianTime = value;
-
                 TyrianTimeChanged?.Invoke(this, new ValueEventArgs<TyrianTime>(value));
             }
         }
 
-        private bool _prevIsSubmerged = Gw2Mumble.PlayerCharacter.Position.Z < -1.25f;
+        private bool _prevIsSubmerged = Gw2Mumble.PlayerCamera.Position.Z <= 0; // for character pos: < -1.25f;
         public bool IsSubmerged {
             get => _prevIsSubmerged; 
             private set {
                 if (_prevIsSubmerged == value) return;
                 _prevIsSubmerged = value;
                 IsSubmergedChanged?.Invoke(this, new ValueEventArgs<bool>(value));
-                _stateMachine?.Fire(value ? Trigger.Submerging : Trigger.Emerging);
             }
         }
 
@@ -118,7 +113,6 @@ namespace Nekres.Music_Mixer.Core.Services
             ArcDps.RawCombatEvent -= CombatEventReceived;
             Gw2Mumble.PlayerCharacter.CurrentMountChanged -= OnMountChanged;
             Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
-            MusicMixer.Instance.MapService.RegionChanged -= OnRegionChanged;
             Gw2Mumble.PlayerCharacter.IsInCombatChanged -= OnIsInCombatChanged;
         }
 
@@ -130,7 +124,7 @@ namespace Nekres.Music_Mixer.Core.Services
                         if (!MusicMixer.Instance.ToggleMountedPlaylistSetting.Value) return; break;
                     case Trigger.Submerging: 
                     case Trigger.Emerging:
-                        if (!MusicMixer.Instance.ToggleSubmergedPlaylistSetting.Value) return; break;
+                        return;
                     default: break;
                 }
                 MusicMixer.Logger.Info($"Trigger '{t}' was fired from state '{s}', but has no valid leaving transitions.");
@@ -140,7 +134,6 @@ namespace Nekres.Music_Mixer.Core.Services
                         .OnEntry(t => StateChanged?.Invoke(this, new ValueChangedEventArgs<State>(t.Source, t.Destination)))
                         .PermitDynamic(Trigger.MapChanged, GameModeStateSelector)
                         .PermitDynamic(Trigger.OutOfCombat, GameModeStateSelector)
-                        .PermitIf(Trigger.Submerging, State.Submerged, () => MusicMixer.Instance.ToggleSubmergedPlaylistSetting.Value)
                         .PermitIf(Trigger.Mounting, State.Mounted, () => MusicMixer.Instance.ToggleMountedPlaylistSetting.Value)
                         .Permit(Trigger.Victory, State.Victory)
                         .Permit(Trigger.InCombat, State.Battle)
@@ -152,7 +145,6 @@ namespace Nekres.Music_Mixer.Core.Services
                         .OnEntry(t => StateChanged?.Invoke(this, new ValueChangedEventArgs<State>(t.Source, t.Destination)))
                         .PermitDynamic(Trigger.MapChanged, GameModeStateSelector)
                         .PermitDynamic(Trigger.StandBy, GameModeStateSelector)
-                        .PermitIf(Trigger.Submerging, State.Submerged, () => MusicMixer.Instance.ToggleSubmergedPlaylistSetting.Value)
                         .PermitIf(Trigger.Mounting, State.Mounted, () => MusicMixer.Instance.ToggleMountedPlaylistSetting.Value)
                         .Permit(Trigger.Victory, State.Victory)
                         .Permit(Trigger.InCombat, State.Battle)
@@ -199,21 +191,8 @@ namespace Nekres.Music_Mixer.Core.Services
                         .Permit(Trigger.Victory, State.Victory)
                         .Permit(Trigger.Death, State.Defeated)
                         .PermitDynamic(Trigger.MapChanged, GameModeStateSelector)
-                        .PermitIf(Trigger.Submerging, State.Submerged, () => MusicMixer.Instance.ToggleSubmergedPlaylistSetting.Value)
                         .Permit(Trigger.InCombat, State.Battle)
                         .Ignore(Trigger.Emerging)
-                        .Ignore(Trigger.OutOfCombat);
-
-            _stateMachine.Configure(State.Submerged)
-                        .Ignore(Trigger.Submerging)
-                        .OnEntry(t => StateChanged?.Invoke(this, new ValueChangedEventArgs<State>(t.Source, t.Destination)))
-                        .PermitDynamic(Trigger.Emerging, GameModeStateSelector)
-                        .PermitDynamic(Trigger.StandBy, GameModeStateSelector)
-                        .Permit(Trigger.Victory, State.Victory)
-                        .Permit(Trigger.Death, State.Defeated)
-                        .PermitDynamic(Trigger.MapChanged, GameModeStateSelector)
-                        .PermitIf(Trigger.Mounting, State.Mounted, () => MusicMixer.Instance.ToggleMountedPlaylistSetting.Value)
-                        .Permit(Trigger.InCombat, State.Battle)
                         .Ignore(Trigger.OutOfCombat);
 
             _stateMachine.Configure(State.Victory)
@@ -236,7 +215,6 @@ namespace Nekres.Music_Mixer.Core.Services
             ArcDps.RawCombatEvent += CombatEventReceived;
             Gw2Mumble.PlayerCharacter.CurrentMountChanged += OnMountChanged;
             Gw2Mumble.CurrentMap.MapChanged += OnMapChanged;
-            MusicMixer.Instance.MapService.RegionChanged += OnRegionChanged;
             Gw2Mumble.PlayerCharacter.IsInCombatChanged += OnIsInCombatChanged;
             GameIntegration.Gw2Instance.Gw2Closed += OnGw2Closed;
         }
@@ -247,16 +225,10 @@ namespace Nekres.Music_Mixer.Core.Services
             if (MusicMixer.Instance.ToggleMountedPlaylistSetting.Value && Gw2Mumble.PlayerCharacter.CurrentMount > 0)
                 return State.Mounted;
 
-            if (MusicMixer.Instance.ToggleSubmergedPlaylistSetting.Value && _prevIsSubmerged)
-                return State.Submerged;
-
             if (Gw2Mumble.CurrentMap.IsCompetitiveMode && !Gw2Mumble.CurrentMap.Type.IsWvW() && Gw2Mumble.CurrentMap.Id != 350)
                 return State.Competitive;
 
-            if (Gw2Mumble.CurrentMap.Type.IsInstance())
-                return State.StoryInstance;
-
-            if (Gw2Mumble.CurrentMap.Type.IsPublic())
+            if (Gw2Mumble.CurrentMap.Type.IsPublic() || Gw2Mumble.CurrentMap.Type.IsInstance())
                 return State.Ambient;
 
             return State.StandBy;
@@ -267,7 +239,7 @@ namespace Nekres.Music_Mixer.Core.Services
             CheckWaterLevel();
         }
 
-        private void CheckWaterLevel() => IsSubmerged = Gw2Mumble.PlayerCharacter.Position.Z < -1.25f;
+        private void CheckWaterLevel() => IsSubmerged = Gw2Mumble.PlayerCamera.Position.Z <= 0;
         private void CheckTyrianTime() => TyrianTime = TyrianTimeUtil.GetCurrentDayCycle();
         private void OnGw2Closed(object sender, EventArgs e) => _stateMachine.Fire(Trigger.StandBy);
 
@@ -308,14 +280,10 @@ namespace Nekres.Music_Mixer.Core.Services
 
         private void OnMapChanged(object o, ValueEventArgs<int> e)
         {
+            _stateMachine.Fire(Trigger.MapChanged);
             _outOfCombatTimer.Stop();
             _outOfCombatTimerLong.Stop();
             _inCombatTimer.Stop();
-        }
-
-        private void OnRegionChanged(object o, ValueEventArgs<int> e)
-        {
-            _stateMachine.Fire(Trigger.MapChanged);
         }
 
         private void OnIsInCombatChanged(object o, ValueEventArgs<bool> e) {

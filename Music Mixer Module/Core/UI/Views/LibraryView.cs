@@ -50,11 +50,14 @@ namespace Nekres.Music_Mixer.Core.UI.Views
 
         protected override async Task<bool> Load(IProgress<string> progress)
         {
+            progress.Report("Loading playlist...");
             return await Task.Run(async () =>
             {
                 _initialModels = (await MusicMixer.Instance.DataService.FindWhere(x => 
                     x.State == this.Presenter.Model.State 
-                    && x.RegionIds.Contains(this.Presenter.Model.RegionId)
+                    && x.ContinentId == this.Presenter.Model.ContinentId
+                    && x.RegionId == this.Presenter.Model.RegionId
+                    && x.MapIds.Contains(this.Presenter.Model.MapId)
                     && x.DayTimes.Contains(this.Presenter.Model.DayCycle)
                     && (!x.MountTypes.Any() || x.MountTypes.Contains(this.Presenter.Model.MountType))
                     )).Select(x => x.ToModel()).ToList();
@@ -63,25 +66,26 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 {
                     await MusicMixer.Instance.DataService.GetThumbnail(model);
                 }
+                progress.Report(null);
                 return true;
             });
         }
 
         protected override void Build(Container buildPanel)
         {
-            MusicContextPanel = new FlowPanel
+            this.MusicContextPanel = new FlowPanel
             {
                 Parent = buildPanel,
                 Width = buildPanel.ContentRegion.Width,
-                Height = buildPanel.ContentRegion.Height / 2,
-                Location = new Point(buildPanel.ContentRegion.X, 64),
+                Height = buildPanel.ContentRegion.Height,
+                Location = new Point(buildPanel.ContentRegion.X, 0),
                 FlowDirection = ControlFlowDirection.LeftToRight,
                 ControlPadding = new Vector2(5, 5),
                 CanCollapse = false,
                 CanScroll = true,
                 Collapsed = false,
-                ShowTint = true,
-                ShowBorder = true
+                ShowBorder = true,
+                ShowTint = true
             };
             this.MusicContextPanel.ChildRemoved += OnChildRemoved;
             foreach (var model in _initialModels)
@@ -105,13 +109,6 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 Location = _importBtn.Location,
                 Size = _importBtn.Size,
                 Visible = false
-            };
-
-            ConfigView = new ViewContainer
-            {
-                Parent = buildPanel,
-                Size = new Point(buildPanel.ContentRegion.Width, buildPanel.ContentRegion.Height / 2),
-                Location = new Point(buildPanel.ContentRegion.X, MusicContextPanel.Bottom)
             };
 
             base.Build(buildPanel);
@@ -141,15 +138,6 @@ namespace Nekres.Music_Mixer.Core.UI.Views
         private async void OnModelDeleted(object o, EventArgs e)
         {
             await MusicMixer.Instance.DataService.Delete((MusicContextModel)o);
-        }
-
-        protected override void Unload()
-        {
-            foreach (var model in _initialModels)
-            {
-                model.Deleted -= OnModelDeleted;
-            }
-            base.Unload();
         }
     }
 }
