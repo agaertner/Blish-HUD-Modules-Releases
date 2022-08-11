@@ -1,23 +1,18 @@
-﻿using Blish_HUD.Controls;
+﻿using Blish_HUD;
+using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
-using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using Nekres.Music_Mixer.Core.UI.Controls;
 using Nekres.Music_Mixer.Core.UI.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Blish_HUD;
-using Blish_HUD.Input;
-using Nekres.Music_Mixer.Core.Services;
-using Nekres.Music_Mixer.Core.UI.Controls;
 
 namespace Nekres.Music_Mixer.Core.UI.Views
 {
     internal class MapSelectionView : View
     {
-        private Dictionary<ContinentFloorRegionMap, Texture2D> _maps;
+        private IEnumerable<int> _maps;
 
         private MainModel _model;
 
@@ -31,12 +26,9 @@ namespace Nekres.Music_Mixer.Core.UI.Views
         protected override async Task<bool> Load(IProgress<string> progress)
         {
             progress.Report("Loading maps...");
-            return await MusicMixer.Instance.MapService.GetMapsForRegion(_model.ContinentId, _model.RegionId).ContinueWith(t =>
-            {
-                _maps = t.Result;
-                progress.Report(null);
-                return true;
-            });
+            _maps = MusicMixer.Instance.MapService.GetMapsForRegion(_model.RegionId);
+            progress.Report(null);
+            return true;
         }
 
         protected override void Build(Container buildPanel)
@@ -66,9 +58,9 @@ namespace Nekres.Music_Mixer.Core.UI.Views
             };
 
             if (_maps == null) return;
-            foreach (var map in _maps)
+            foreach (var mapId in _maps)
             {
-                var bttn = new MapThumb(map.Key.Id, map.Key.Name, map.Value)
+                var bttn = new MapThumb(mapId, MusicMixer.Instance.MapService.GetMapName(mapId), MusicMixer.Instance.MapService.GetMapThumb(mapId))
                 {
                     Parent = _mapsPanel,
                     Width = 267,

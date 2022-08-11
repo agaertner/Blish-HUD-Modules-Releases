@@ -1,16 +1,13 @@
-﻿using Blish_HUD.Controls;
+﻿using Blish_HUD;
+using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
+using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Nekres.Music_Mixer.Core.UI.Controls;
-using System;
-using System.Threading.Tasks;
-using System.Web.UI.Design.WebControls;
-using Blish_HUD;
-using Blish_HUD.Input;
-using Gw2Sharp.Models;
-using Nekres.Music_Mixer.Core.Services;
 using Nekres.Music_Mixer.Core.UI.Models;
 using Nekres.Music_Mixer.Core.UI.Presenters;
+using System;
+using Nekres.Music_Mixer.Core.Services;
 
 namespace Nekres.Music_Mixer.Core.UI.Views.StateViews
 {
@@ -53,13 +50,14 @@ namespace Nekres.Music_Mixer.Core.UI.Views.StateViews
                 ShowBorder = true
             };
 
-            var regions = this.Presenter.Model.State == Gw2StateService.State.Competitive
-                ? MusicMixer.Instance.MapService.PvPRegions
-                : MusicMixer.Instance.MapService.PvERegions;
+            // PvP, WvW regions hardcoded...
+            var regions = this.Presenter.Model.State == Gw2StateService.State.Competitive ? 
+                new[] { 6, 7 } : MusicMixer.Instance.MapService.GetRegionsForContinent(this.Presenter.Model.ContinentId);
 
-            foreach (var region in regions)
+            foreach (var regionId in regions)
             {
-                var regionBtn = new RegionEntry(region.Key, region.Value)
+                if (!MusicMixer.Instance.MapService.RegionHasMaps(regionId)) continue;
+                var regionBtn = new RegionEntry(regionId, MusicMixer.Instance.MapService.GetRegionName(regionId))
                 {
                     Parent = _regionsPanel,
                     Width = _regionsPanel.ContentRegion.Width,

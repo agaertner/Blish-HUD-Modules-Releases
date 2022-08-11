@@ -35,12 +35,6 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         [BsonField("duration")]
         public TimeSpan Duration { get; set; }
 
-        [BsonField("continentId")]
-        public int ContinentId { get; set; }
-
-        [BsonField("regionId")]
-        public int RegionId { get; set; }
-
         [BsonField("mapIds")]
         public List<int> MapIds { get; set; }
 
@@ -62,8 +56,6 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
             {
                 Id = this.Id,
                 AudioUrl = this.AudioUrl,
-                ContinentId = this.ContinentId,
-                RegionId = this.RegionId,
                 MapIds = new ObservableCollection<int>(this.MapIds),
                 ExcludedMapIds = new ObservableCollection<int>(this.ExcludedMapIds),
                 DayTimes = new ObservableCollection<TyrianTime>(this.DayTimes),
@@ -76,8 +68,6 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
         {
             return entity.State == MusicMixer.Instance.Gw2State.CurrentState 
                    && entity.DayTimes.Contains(MusicMixer.Instance.ToggleFourDayCycleSetting.Value ? TyrianTimeUtil.GetCurrentDayCycle() : TyrianTimeUtil.GetCurrentDayCycle().Resolve())
-                   && entity.ContinentId == MusicMixer.Instance.MapService.CurrentContinent
-                   && entity.RegionId == MusicMixer.Instance.MapService.CurrentRegion
                    && entity.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id)
                    && (!entity.ExcludedMapIds.Any() || !entity.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                    && (!entity.MountTypes.Any() || entity.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount));
@@ -94,8 +84,6 @@ namespace Nekres.Music_Mixer.Core.Services.Entities
                 AudioUrl = model.AudioUrl,
                 Duration = model.Duration,
                 State = model.State,
-                ContinentId = model.ContinentId,
-                RegionId = model.RegionId,
                 MapIds = model.MapIds.ToList(),
                 ExcludedMapIds = model.ExcludedMapIds.ToList(),
                 DayTimes = model.DayTimes.ToList(),

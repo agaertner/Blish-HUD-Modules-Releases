@@ -1,16 +1,15 @@
-﻿using Blish_HUD.Controls;
+﻿using Blish_HUD;
+using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
+using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
+using Nekres.Music_Mixer.Core.UI.Controls;
 using Nekres.Music_Mixer.Core.UI.Models;
 using Nekres.Music_Mixer.Core.UI.Presenters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Blish_HUD;
-using Blish_HUD.Input;
-using Nekres.Music_Mixer.Core.Services;
-using Nekres.Music_Mixer.Core.UI.Controls;
 
 namespace Nekres.Music_Mixer.Core.UI.Views
 {
@@ -51,34 +50,46 @@ namespace Nekres.Music_Mixer.Core.UI.Views
         protected override async Task<bool> Load(IProgress<string> progress)
         {
             progress.Report("Loading playlist...");
-            return await Task.Run(async () =>
+            var models = await MusicMixer.Instance.DataService.FindWhere(x =>
+                x.State == this.Presenter.Model.State
+                && x.MapIds.Contains(this.Presenter.Model.MapId)
+                && x.DayTimes.Contains(this.Presenter.Model.DayCycle)
+                && (!x.MountTypes.Any() || x.MountTypes.Contains(this.Presenter.Model.MountType)));
+            _initialModels = models.Select(x => x.ToModel()).ToList();
+            foreach (var model in _initialModels)
             {
-                _initialModels = (await MusicMixer.Instance.DataService.FindWhere(x => 
-                    x.State == this.Presenter.Model.State 
-                    && x.ContinentId == this.Presenter.Model.ContinentId
-                    && x.RegionId == this.Presenter.Model.RegionId
-                    && x.MapIds.Contains(this.Presenter.Model.MapId)
-                    && x.DayTimes.Contains(this.Presenter.Model.DayCycle)
-                    && (!x.MountTypes.Any() || x.MountTypes.Contains(this.Presenter.Model.MountType))
-                    )).Select(x => x.ToModel()).ToList();
-
-                foreach (var model in _initialModels)
-                {
-                    await MusicMixer.Instance.DataService.GetThumbnail(model);
-                }
-                progress.Report(null);
-                return true;
-            });
+                await MusicMixer.Instance.DataService.GetThumbnail(model);
+            }
+            progress.Report(null);
+            return true;
         }
 
         protected override void Build(Container buildPanel)
         {
+            Label mapLabel = null;
+            var mapName = MusicMixer.Instance.MapService.GetMapName(this.Presenter.Model.MapId);
+            if (!string.IsNullOrEmpty(mapName)) {
+                mapLabel = new Label
+                {
+                    Parent = buildPanel,
+                    Width = buildPanel.ContentRegion.Width - Panel.RIGHT_PADDING,
+                    Height = 32,
+                    Location = new Point(buildPanel.ContentRegion.X, 0),
+                    Text = mapName,
+                    Font = GameService.Content.DefaultFont32,
+                    StrokeText = true,
+                    TextColor = new Color(238, 221, 171),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Middle
+                };
+            }
+
             this.MusicContextPanel = new FlowPanel
             {
                 Parent = buildPanel,
                 Width = buildPanel.ContentRegion.Width,
                 Height = buildPanel.ContentRegion.Height,
-                Location = new Point(buildPanel.ContentRegion.X, 0),
+                Location = new Point(buildPanel.ContentRegion.X, mapLabel?.Bottom ?? 0),
                 FlowDirection = ControlFlowDirection.LeftToRight,
                 ControlPadding = new Vector2(5, 5),
                 CanCollapse = false,
@@ -88,6 +99,7 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 ShowTint = true
             };
             this.MusicContextPanel.ChildRemoved += OnChildRemoved;
+
             foreach (var model in _initialModels)
             {
                 this.Presenter.Add(model);

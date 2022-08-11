@@ -87,30 +87,6 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             }
         }
 
-        private int _continentId;
-        public int ContinentId
-        {
-            get => _continentId;
-            set
-            {
-                if (value == _continentId) return;
-                _continentId = value;
-                Changed?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        private int _regionId;
-        public int RegionId
-        {
-            get => _regionId;
-            set
-            {
-                if (value == _regionId) return;
-                _regionId = value;
-                Changed?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
         private ObservableCollection<int> _mapIds;
         public ObservableCollection<int> MapIds
         {
@@ -195,9 +171,7 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             }
         }
 
-        public MusicContextModel(Gw2StateService.State state, string title, string artist, string url, TimeSpan duration, 
-            int continentId = 1,
-            int regionId = 1,
+        public MusicContextModel(Gw2StateService.State state, string title, string artist, string url, TimeSpan duration,
             IEnumerable<int> mapIds = null,
             IEnumerable<int> excludedMapIds = null, 
             IEnumerable<TyrianTime> dayTimes = null,
@@ -209,8 +183,6 @@ namespace Nekres.Music_Mixer.Core.UI.Models
             this.Uri = url;
             this.Duration = duration;
             this.State = state;
-            this.ContinentId = continentId;
-            this.RegionId = regionId;
             this.MapIds = new ObservableCollection<int>(mapIds ?? Enumerable.Empty<int>());
             this.ExcludedMapIds = new ObservableCollection<int>(excludedMapIds ?? Enumerable.Empty<int>());
             this.DayTimes = new ObservableCollection<TyrianTime>(dayTimes ?? Enumerable.Empty<TyrianTime>());
@@ -228,8 +200,6 @@ namespace Nekres.Music_Mixer.Core.UI.Models
         {
             return model.State == MusicMixer.Instance.Gw2State.CurrentState 
                    && model.DayTimes.Contains(MusicMixer.Instance.ToggleFourDayCycleSetting.Value ? TyrianTimeUtil.GetCurrentDayCycle() : TyrianTimeUtil.GetCurrentDayCycle().Resolve())
-                   && model.ContinentId == MusicMixer.Instance.MapService.CurrentContinent
-                   && model.RegionId == MusicMixer.Instance.MapService.CurrentRegion
                    && model.MapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id)
                    && (!model.ExcludedMapIds.Any() || !model.ExcludedMapIds.Contains(GameService.Gw2Mumble.CurrentMap.Id))
                    && (!model.MountTypes.Any() || model.MountTypes.Contains(GameService.Gw2Mumble.PlayerCharacter.CurrentMount));

@@ -56,16 +56,14 @@ namespace Nekres.Music_Mixer.Core.Services
 
                     var stream = e.Result;
                     using var image = await Image.LoadAsync(stream);
-                    using (var ms = new MemoryStream())
-                    {
-                        await image.SaveAsync(ms, JpegFormat.Instance);
-                        ms.Position = 0;
-                        await _thumbnails.UploadAsync(id, url, ms);
-                        stream.Close();
-                        ((WebClient)o).Dispose();
-                        var thumb = Texture2D.FromStream(GameService.Graphics.GraphicsDevice, ms);
-                        tex.SwapTexture(thumb);
-                    }
+                    using var ms = new MemoryStream();
+                    await image.SaveAsync(ms, JpegFormat.Instance);
+                    ms.Position = 0;
+                    await _thumbnails.UploadAsync(id, url, ms);
+                    stream.Close();
+                    ((WebClient)o).Dispose();
+                    var thumb = Texture2D.FromStream(GameService.Graphics.GraphicsDevice, ms);
+                    tex.SwapTexture(thumb);
                 }
                 catch (Exception ex) when (ex is WebException or ImageFormatException or ArgumentException or InvalidOperationException)
                 {
@@ -92,6 +90,7 @@ namespace Nekres.Music_Mixer.Core.Services
 
         public async Task Upsert(MusicContextModel model)
         {
+            await _ctx.EnsureIndexAsync(x => x.Id);
             var entity = await _ctx.FindOneAsync(x => x.Id.Equals(model.Id));
             if (entity == null)
             {
@@ -101,8 +100,6 @@ namespace Nekres.Music_Mixer.Core.Services
             else
             {
                 entity.DayTimes = model.DayTimes.ToList();
-                entity.ContinentId = model.ContinentId;
-                entity.RegionId = model.RegionId;
                 entity.MapIds = model.MapIds.ToList();
                 entity.ExcludedMapIds = model.ExcludedMapIds.ToList();
                 entity.MountTypes = model.MountTypes.ToList();
@@ -110,7 +107,6 @@ namespace Nekres.Music_Mixer.Core.Services
                 entity.Volume = model.Volume;
                 await _ctx.UpdateAsync(entity);
             }
-            await _ctx.EnsureIndexAsync(x => x.Id);
         }
 
         public async Task Delete(MusicContextModel model)
@@ -126,17 +122,14 @@ namespace Nekres.Music_Mixer.Core.Services
         public async Task<MusicContextEntity> GetRandom()
         {
             var state = MusicMixer.Instance.Gw2State.CurrentState;
-            var continent = MusicMixer.Instance.MapService.CurrentContinent;
-            var region = MusicMixer.Instance.MapService.CurrentRegion;
             var mapId = GameService.Gw2Mumble.CurrentMap.Id;
             var dayCycle = MusicMixer.Instance.Gw2State.TyrianTime;
             var mount = GameService.Gw2Mumble.PlayerCharacter.CurrentMount;
 
             // Get all tracks for state.
-            var tracks = (await FindWhere(x => x.State == state 
-                                               && x.ContinentId == continent
-                                               && x.RegionId == region
-                                               && x.MapIds.Contains(mapId)
+            var tracks = (await FindWhere(x => (x.State == state
+                                               && state != Gw2StateService.State.Mounted && x.MapIds.Contains(mapId)
+                                               || state == Gw2StateService.State.Mounted && x.State == Gw2StateService.State.Mounted)
                                                && x.DayTimes.Contains(MusicMixer.Instance.ToggleFourDayCycleSetting.Value ? TyrianTimeUtil.GetCurrentDayCycle() : TyrianTimeUtil.GetCurrentDayCycle().Resolve())
                                                && (!x.MountTypes.Any() || x.MountTypes.Contains(mount)))).ToList();
 
@@ -145,7 +138,7 @@ namespace Nekres.Music_Mixer.Core.Services
                 return null;
             }
 
-            var context = $"{state}{region}{mapId}{dayCycle}{mount}";
+            var context = $"{state}{mapId}{dayCycle}{mount}";
             if (!_playlists.ContainsKey(context))
             {
                 _playlists.Add(context, new HashSet<Guid>());

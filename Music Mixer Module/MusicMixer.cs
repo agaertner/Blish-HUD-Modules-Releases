@@ -118,7 +118,7 @@ namespace Nekres.Music_Mixer
         protected override void Initialize()
         {
             ModuleDirectory = DirectoriesManager.GetFullDirectoryPath("music_mixer");
-            MapService = new MapService(this.ContentsManager);
+            MapService = new MapService(this.ContentsManager, GetModuleProgressHandler());
             DataService = new DataService(this.ModuleDirectory);
             Gw2State = new Gw2StateService();
             AudioEngine = new AudioEngine();
@@ -133,10 +133,9 @@ namespace Nekres.Music_Mixer
 
             _tabModels = new Dictionary<Gw2StateService.State, MainModel>
             {
-                {Gw2StateService.State.Mounted, new MainModel(Gw2StateService.State.Mounted){MountType = MountType.Raptor}},
+                {Gw2StateService.State.Mounted, new MainModel(Gw2StateService.State.Mounted){MountType = MountType.Raptor, MapId = 0}},
                 {Gw2StateService.State.Ambient, new MainModel(Gw2StateService.State.Ambient)},
                 {Gw2StateService.State.Competitive, new MainModel(Gw2StateService.State.Competitive){ContinentId = 2, RegionId = 6, MapId = 350}},
-                //{Gw2StateService.State.Submerged, new MainModel(Gw2StateService.State.Submerged)},
                 {Gw2StateService.State.Battle, new MainModel(Gw2StateService.State.Battle)},
             };
         }
@@ -148,11 +147,22 @@ namespace Nekres.Music_Mixer
 
         protected override async Task LoadAsync()
         {
-            await MapService.Initialize();
+            this.MapService.DownloadRegions();
             await Task.Run(() => {
                 ExtractFile(_FFmpegPath);
                 ExtractFile(_youtubeDLPath);
             }).ContinueWith(_ => youtube_dl.Load());
+        }
+
+        private void UpdateModuleLoading(string loadingMessage)
+        {
+            if (_cornerIcon == null) return;
+            _cornerIcon.LoadingMessage = loadingMessage;
+        }
+
+        public IProgress<string> GetModuleProgressHandler()
+        {
+            return new Progress<string>(UpdateModuleLoading);
         }
 
         protected override void OnModuleLoaded(EventArgs e) {
@@ -215,6 +225,7 @@ namespace Nekres.Music_Mixer
 
         public void OnModuleIconClick(object o, MouseEventArgs e)
         {
+            if (this.MapService.IsLoading) return;
             _moduleWindow?.ToggleWindow();
         }
 

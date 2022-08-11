@@ -72,9 +72,7 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
 
         private async Task MetaDataReceived(MetaData data)
         {
-            var model = new MusicContextModel(this.Model.State, data.Title, data.Artist, data.Url, data.Duration, 
-                this.Model.ContinentId,
-                this.Model.RegionId,
+            var model = new MusicContextModel(this.Model.State, data.Title, data.Artist, data.Url, data.Duration,
                 new[] { this.Model.MapId }, 
                 null,
                 new []{ this.Model.DayCycle }, 

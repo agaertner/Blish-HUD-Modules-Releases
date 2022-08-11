@@ -8,11 +8,16 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 {
     internal class DayCycleSwitcher : Control
     {
-        private static Color _sandColor = new Color(238, 221, 171);
-
         private int _borderSize = 10;
 
         private Dictionary<TyrianTime, Texture2D> _cycleTextures;
+
+        private Color _textColor = new Color(238, 221, 171);
+        public Color TextColor
+        {
+            get => _textColor;
+            set => SetProperty(ref _textColor, value);
+        }
 
         private int _dayCycle;
         public TyrianTime DayCycle
@@ -54,7 +59,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             var imageBounds = new Rectangle(centerX, _borderSize, tex.Width - _borderSize * 2, this.Height - _borderSize * 2);
             spriteBatch.DrawOnCtrl(this, tex, imageBounds, new Rectangle(0, 0, tex.Width - _borderSize * 2, tex.Height - _borderSize * 2));
             spriteBatch.DrawBorderOnCtrl(this, imageBounds, _borderSize);
-            spriteBatch.DrawStringOnCtrl(this, ((TyrianTime)_dayCycle).ToString(), Content.DefaultFont32, new Rectangle(0, 0, this.Width, this.Height), _sandColor, false, true, 1, HorizontalAlignment.Center);
+            spriteBatch.DrawStringOnCtrl(this, ((TyrianTime)_dayCycle).ToString(), Content.DefaultFont32, new Rectangle(0, 0, this.Width, this.Height), _textColor, false, true, 1, HorizontalAlignment.Center);
         }
 
         protected override void DisposeControl()

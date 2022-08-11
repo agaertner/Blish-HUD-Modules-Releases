@@ -1,72 +1,60 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Modules.Managers;
 using Gw2Sharp.WebApi.Exceptions;
-using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Nekres.Music_Mixer.Core.Services
 {
     internal class MapService : IDisposable
     {
-        public event EventHandler<ValueEventArgs<int>> RegionChanged;
-        public event EventHandler<ValueEventArgs<int>> ContinentChanged;
+        private Dictionary<int, IEnumerable<int>> _continentRegions;
 
-        public IReadOnlyDictionary<int, string> PvERegions { get; private set; }
+        private Dictionary<int, IEnumerable<int>> _regionMaps;
 
-        public IReadOnlyDictionary<int, string> PvPRegions { get; private set; }
+        private Dictionary<int, string> _mapNames;
 
+        private Dictionary<int, string> _regionNames;
 
-        private int _currentRegion;
-        public int CurrentRegion
-        {
-            get => _currentRegion;
-            set
-            {
-                if (value == _currentRegion) return;
-                _currentRegion = value;
-                RegionChanged?.Invoke(this, new ValueEventArgs<int>(_currentRegion));
-            }
-        }
+        private readonly IProgress<string> _loadingIndicator;
 
-        private int _currentContinent;
-        public int CurrentContinent
-        {
-            get => _currentContinent;
-            set
-            {
-                if (value == _currentContinent) return;
-                _currentContinent = value;
-                ContinentChanged?.Invoke(this, new ValueEventArgs<int>(_currentContinent));
-            }
-        }
-
-        private Dictionary<string, int> _mapsLookUp;
+        public bool IsLoading { get; private set; }
 
         private ContentsManager _ctnMgr;
 
-        private AsyncCache<(int, int), List<ContinentFloorRegionMap>> _mapsRepository;
-
-        private AsyncCache<int, int> _regionsRepository;
-
-        public MapService(ContentsManager ctnMgr)
+        public MapService(ContentsManager ctnMgr, IProgress<string> loadingIndicator)
         {
             _ctnMgr = ctnMgr;
-            _mapsRepository = new AsyncCache<(int, int), List<ContinentFloorRegionMap>>(x => RequestMapsForRegion(x.Item1,x.Item2));
-            _regionsRepository = new AsyncCache<int, int>(MapUtil.GetRegion);
-
-            GameService.Gw2Mumble.CurrentMap.MapChanged += OnMapChanged;
+            _loadingIndicator = loadingIndicator;
+            _continentRegions = new Dictionary<int, IEnumerable<int>>();
+            _regionMaps = new Dictionary<int, IEnumerable<int>>();
+            _mapNames = new Dictionary<int, string>();
         }
 
-        public async Task Initialize()
+        public IEnumerable<int> GetRegionsForContinent(int continentId)
         {
-            await RequestRegions();
-            await LoadMapLookUp();
+            return _continentRegions.TryGetValue(continentId, out var regions) ? regions.ToList() : Enumerable.Empty<int>();
+        }
+
+        public bool RegionHasMaps(int regionId)
+        {
+            return _regionMaps.TryGetValue(regionId, out var maps) && maps.Any();
+        }
+
+        public IEnumerable<int> GetMapsForRegion(int regionId)
+        {
+            return _regionMaps.TryGetValue(regionId, out var maps) ? maps.ToList() : Enumerable.Empty<int>();
+        }
+
+        public string GetRegionName(int regionId)
+        {
+            return _regionNames.TryGetValue(regionId, out var name) ? name : string.Empty;
         }
 
         public Texture2D GetMapThumb(int mapId)
@@ -74,74 +62,96 @@ namespace Nekres.Music_Mixer.Core.Services
             return _ctnMgr.GetTexture($"regions/maps/map_{mapId}.jpg");
         }
 
-        public bool GetMapIdFromHash(string mapSHA1, out int mapId)
+        public string GetMapName(int mapId)
         {
-            mapId = 0;
-            if (!_mapsLookUp.ContainsKey(mapSHA1)) return false;
-            mapId = _mapsLookUp[mapSHA1];
-            return true;
+            return _mapNames.ContainsKey(mapId) ? _mapNames[mapId] : string.Empty;
         }
 
-        public async Task<Dictionary<ContinentFloorRegionMap, Texture2D>> GetMapsForRegion(int contentId, int regionId)
+        public void DownloadRegions()
         {
-            var maps = await _mapsRepository.GetItem((contentId, regionId));
-            return maps?.ToDictionary(map => map, map => GetMapThumb(map.Id));
+            var thread = new Thread(LoadRegionsInBackground)
+            {
+                IsBackground = true
+            };
+            thread.Start();
         }
 
-        private async Task<List<ContinentFloorRegionMap>> RequestMapsForRegion(int contentId, int regionId)
+        private void LoadRegionsInBackground()
         {
-            try
-            {
-                var floorIds = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents[contentId].Floors.IdsAsync();
-                var resolved = new List<string>();
-                var thumbs = new List<ContinentFloorRegionMap>();
-                foreach (var floorId in floorIds)
-                {
-                    try
-                    {
-                        var regions = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents[contentId].Floors[floorId].Regions.GetAsync(regionId); 
-                        foreach (var map in regions.Maps)
-                        {
-                            var hash = MapUtil.GetSHA1(contentId, map.Value.ContinentRect);
-                            if (resolved.Contains(hash)) continue;
-                            resolved.Add(hash);
-
-                            // Resolve any mission instance map id to the actual public map id.
-                            if (!GetMapIdFromHash(hash, out var mapId)) continue;
-
-                            var publicMap = regions.Maps.Values.FirstOrDefault(x => x.Id == mapId);
-                            if (publicMap == null) continue;
-
-                            thumbs.Add(publicMap);
-                        }
-                    }
-                    catch (NotFoundException)
-                    {
-                        // Ignore. Floor id does not exist in region or continent.
-                    }
-                }
-                return thumbs;
-            }
-            catch (RequestException e)
-            {
-                MusicMixer.Logger.Error(e, e.Message);
-            }
-            return null;
+            this.IsLoading = true;
+            this.RequestRegions().Wait();
+            this.IsLoading = false;
+            _loadingIndicator.Report(null);
         }
 
         private async Task RequestRegions()
         {
+            var mapsLookUp = await LoadMapLookUp();
             try
             {
-                PvERegions = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents[1].Floors[1].Regions.AllAsync()
-                    .ContinueWith(t =>
-                        t.Result.Select(x => new KeyValuePair<int, string>(x.Id, x.Name))
-                            .ToDictionary(x => x.Key, x => x.Value));
+                var continentIds = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents.IdsAsync();
+                var allRegionNames = new Dictionary<int, string>();
+                var allRegionMaps = new Dictionary<int, IEnumerable<int>>();
+                var allMapNames = new Dictionary<int, string>();
+                foreach (var continentId in continentIds)
+                {
+                    var floorIds = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents[continentId].Floors.IdsAsync();
+                    var regions = new List<int>();
+                    // Crawl each floor to get all maps...
+                    foreach (var floorId in floorIds)
+                    {
+                        try
+                        {
+                            var floorRegions = await GameService.Gw2WebApi.AnonymousConnection.Client.V2
+                                .Continents[continentId].Floors[floorId].Regions.AllAsync();
 
-                PvPRegions = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents[2].Floors[1].Regions.AllAsync()
-                    .ContinueWith(t =>
-                        t.Result.Select(x => new KeyValuePair<int, string>(x.Id, x.Name))
-                            .ToDictionary(x => x.Key, x => x.Value));
+                            var mapsByRegion = floorRegions.ToDictionary(x => x.Id, x => x.Maps.Select(y => y.Value));
+
+                            foreach (var region in mapsByRegion)
+                            {
+                                if (regions.All(x => x != region.Key))
+                                {
+                                    regions.Add(region.Key);
+                                }
+
+                                var regionName = floorRegions.First(x => x.Id == region.Key).Name;
+                                _loadingIndicator.Report($"Searching floor {floorId} of {regionName}..");
+
+                                foreach (var map in region.Value.Where(x => mapsLookUp.Values.Any(id => x.Id == id)))
+                                {
+                                    if (allMapNames.ContainsKey(map.Id)) continue;
+                                    allMapNames.Add(map.Id, map.Name);
+                                    _loadingIndicator.Report($"Adding {map.Name}..");
+                                }
+
+                                var publicMapIds = region.Value.Select(x => MapUtil.GetSHA1(continentId, x.ContinentRect))
+                                                                .Where(x => mapsLookUp.ContainsKey(x)).Select(x => mapsLookUp[x]).Distinct();
+
+                                if (allRegionMaps.ContainsKey(region.Key))
+                                {
+                                    // Maps from different floors have to be merged in.
+                                    _loadingIndicator.Report($"Expanding floor {floorId} of {regionName}..");
+                                    allRegionMaps[region.Key] = allRegionMaps[region.Key].Union(publicMapIds);
+                                }
+                                else
+                                {
+                                    // Add region if it wasn't yet.
+                                    allRegionMaps.Add(region.Key, publicMapIds);
+                                    allRegionNames.Add(region.Key, regionName);
+                                    _loadingIndicator.Report($"Adding floor {floorId} of {regionName}..");
+                                }
+                            }
+                        }
+                        catch (NotFoundException)
+                        {
+                            continue; // Ignore. Floor id does not exist somehow...
+                        }
+                    }
+                    _continentRegions.Add(continentId, regions);
+                }
+                _regionMaps = allRegionMaps;
+                _regionNames = allRegionNames;
+                _mapNames = allMapNames;
             }
             catch (RequestException e)
             {
@@ -149,25 +159,17 @@ namespace Nekres.Music_Mixer.Core.Services
             }
         }
 
-        private async Task LoadMapLookUp()
+        private async Task<Dictionary<string, int>> LoadMapLookUp()
         {
             using var stream = _ctnMgr.GetFileStream("regions/maps/maps.jsonc");
             stream.Position = 0;
             var buffer = new byte[stream.Length];
             await stream.ReadAsync(buffer, 0, buffer.Length);
-            _mapsLookUp = JsonConvert.DeserializeObject<Dictionary<string, int>>(Encoding.UTF8.GetString(buffer));
-        }
-
-        private async void OnMapChanged(object o, ValueEventArgs<int> e)
-        {
-            this.CurrentContinent = GameService.Gw2Mumble.CurrentMap.Type.IsPvP() 
-                                    || GameService.Gw2Mumble.CurrentMap.Type.IsWvW() ? 2 : 1;
-            this.CurrentRegion = await _regionsRepository.GetItem(e.Value);
+            return JsonConvert.DeserializeObject<Dictionary<string, int>>(Encoding.UTF8.GetString(buffer));
         }
 
         public void Dispose()
         {
-            GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
         }
     }
 }
