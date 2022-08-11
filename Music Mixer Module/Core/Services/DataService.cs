@@ -1,6 +1,6 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Content;
-using LiteDB.Async;
+using LiteDB;
 using Microsoft.Xna.Framework.Graphics;
 using Nekres.Music_Mixer.Core.Player.API;
 using Nekres.Music_Mixer.Core.Services.Entities;
@@ -13,22 +13,20 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
-using System.Threading.Tasks;
-using LiteDB;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Nekres.Music_Mixer.Core.Services
 {
     internal class DataService : IDisposable
     {
-        private LiteDatabaseAsync _db;
-        private ILiteCollectionAsync<MusicContextEntity> _ctx;
-        private ILiteStorageAsync<string> _thumbnails;
+        private LiteDatabase _db;
+        private ILiteCollection<MusicContextEntity> _ctx;
+        private ILiteStorage<string> _thumbnails;
         private Dictionary<string, HashSet<Guid>> _playlists;
         public DataService(string cacheDir)
         {
             _playlists = new Dictionary<string, HashSet<Guid>>();
-            _db = new LiteDatabaseAsync(new ConnectionString
+            _db = new LiteDatabase(new ConnectionString
             {
                 Filename = Path.Combine(cacheDir, "data.db"),
                 Connection = ConnectionType.Shared
@@ -59,7 +57,7 @@ namespace Nekres.Music_Mixer.Core.Services
                     using var ms = new MemoryStream();
                     await image.SaveAsync(ms, JpegFormat.Instance);
                     ms.Position = 0;
-                    await _thumbnails.UploadAsync(id, url, ms);
+                    _thumbnails.Upload(id, url, ms);
                     stream.Close();
                     ((WebClient)o).Dispose();
                     var thumb = Texture2D.FromStream(GameService.Graphics.GraphicsDevice, ms);
@@ -72,9 +70,9 @@ namespace Nekres.Music_Mixer.Core.Services
             };
         }
 
-        public async Task GetThumbnail(MusicContextModel model)
+        public void GetThumbnail(MusicContextModel model)
         {
-            var texture = await _thumbnails.OpenReadAsync(model.Uri);
+            var texture = _thumbnails.OpenRead(model.Uri);
             if (texture == null) return;
             try
             {
@@ -88,14 +86,14 @@ namespace Nekres.Music_Mixer.Core.Services
             }
         }
 
-        public async Task Upsert(MusicContextModel model)
+        public void Upsert(MusicContextModel model)
         {
-            await _ctx.EnsureIndexAsync(x => x.Id);
-            var entity = await _ctx.FindOneAsync(x => x.Id.Equals(model.Id));
+            _ctx.EnsureIndex(x => x.Id);
+            var entity = _ctx.FindOne(x => x.Id.Equals(model.Id));
             if (entity == null)
             {
                 entity = MusicContextEntity.FromModel(model);
-                await _ctx.InsertAsync(entity);
+                _ctx.Insert(entity);
             }
             else
             {
@@ -105,21 +103,21 @@ namespace Nekres.Music_Mixer.Core.Services
                 entity.MountTypes = model.MountTypes.ToList();
                 entity.State = model.State;
                 entity.Volume = model.Volume;
-                await _ctx.UpdateAsync(entity);
+                _ctx.Update(entity);
             }
         }
 
-        public async Task Delete(MusicContextModel model)
+        public void Delete(MusicContextModel model)
         {
-            await _ctx.DeleteManyAsync(x => x.Id.Equals(model.Id));
+            _ctx.DeleteMany(x => x.Id.Equals(model.Id));
         }
 
-        public async Task<MusicContextEntity> FindById(Guid id)
+        public MusicContextEntity FindById(Guid id)
         {
-            return await _ctx.FindOneAsync(x => x.Id.Equals(id));
+            return _ctx.FindOne(x => x.Id.Equals(id));
         }
 
-        public async Task<MusicContextEntity> GetRandom()
+        public MusicContextEntity GetRandom()
         {
             var state = MusicMixer.Instance.Gw2State.CurrentState;
             var mapId = GameService.Gw2Mumble.CurrentMap.Id;
@@ -127,11 +125,11 @@ namespace Nekres.Music_Mixer.Core.Services
             var mount = GameService.Gw2Mumble.PlayerCharacter.CurrentMount;
 
             // Get all tracks for state.
-            var tracks = (await FindWhere(x => (x.State == state
+            var tracks = FindWhere(x => (x.State == state
                                                && state != Gw2StateService.State.Mounted && x.MapIds.Contains(mapId)
                                                || state == Gw2StateService.State.Mounted && x.State == Gw2StateService.State.Mounted)
                                                && x.DayTimes.Contains(MusicMixer.Instance.ToggleFourDayCycleSetting.Value ? TyrianTimeUtil.GetCurrentDayCycle() : TyrianTimeUtil.GetCurrentDayCycle().Resolve())
-                                               && (!x.MountTypes.Any() || x.MountTypes.Contains(mount)))).ToList();
+                                               && (!x.MountTypes.Any() || x.MountTypes.Contains(mount))).ToList();
 
             if (!tracks.Any())
             {
@@ -162,9 +160,9 @@ namespace Nekres.Music_Mixer.Core.Services
             return random;
         }
 
-        public async Task<IEnumerable<MusicContextEntity>> FindWhere(Expression<Func<MusicContextEntity, bool>> expr)
+        public IEnumerable<MusicContextEntity> FindWhere(Expression<Func<MusicContextEntity, bool>> expr)
         {
-            return await _ctx.FindAsync(expr);
+            return _ctx.Find(expr);
         }
 
         /// <summary>

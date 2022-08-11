@@ -22,8 +22,6 @@ namespace Nekres.Music_Mixer.Core.UI.Views
 
         public FlowPanel MusicContextPanel;
 
-        public ViewContainer ConfigView;
-
         private bool _loading;
         public bool Loading
         {
@@ -50,7 +48,7 @@ namespace Nekres.Music_Mixer.Core.UI.Views
         protected override async Task<bool> Load(IProgress<string> progress)
         {
             progress.Report("Loading playlist...");
-            var models = await MusicMixer.Instance.DataService.FindWhere(x =>
+            var models = MusicMixer.Instance.DataService.FindWhere(x =>
                 x.State == this.Presenter.Model.State
                 && x.MapIds.Contains(this.Presenter.Model.MapId)
                 && x.DayTimes.Contains(this.Presenter.Model.DayCycle)
@@ -58,7 +56,7 @@ namespace Nekres.Music_Mixer.Core.UI.Views
             _initialModels = models.Select(x => x.ToModel()).ToList();
             foreach (var model in _initialModels)
             {
-                await MusicMixer.Instance.DataService.GetThumbnail(model);
+                MusicMixer.Instance.DataService.GetThumbnail(model);
             }
             progress.Report(null);
             return true;
@@ -98,7 +96,6 @@ namespace Nekres.Music_Mixer.Core.UI.Views
                 ShowBorder = true,
                 ShowTint = true
             };
-            this.MusicContextPanel.ChildRemoved += OnChildRemoved;
 
             foreach (var model in _initialModels)
             {
@@ -142,14 +139,9 @@ namespace Nekres.Music_Mixer.Core.UI.Views
             _addNewLoadingSpinner.BasicTooltipText = e;
         }
 
-        private void OnChildRemoved(object o, ChildChangedEventArgs e)
+        private void OnModelDeleted(object o, EventArgs e)
         {
-            this.ConfigView.Hide();
-        }
-
-        private async void OnModelDeleted(object o, EventArgs e)
-        {
-            await MusicMixer.Instance.DataService.Delete((MusicContextModel)o);
+            MusicMixer.Instance.DataService.Delete((MusicContextModel)o);
         }
     }
 }

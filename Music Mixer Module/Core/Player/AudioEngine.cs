@@ -61,7 +61,7 @@ namespace Nekres.Music_Mixer.Core.Player
             _model = model;
 
             if (!await TryPlay(model.AudioUrl, GetNormalizedVolume(_model.Volume))) return;
-            await Notify(model);
+            Notify(model);
         }
 
         private async Task AudioUrlReceived(string url, MusicContextModel model)
@@ -70,9 +70,9 @@ namespace Nekres.Music_Mixer.Core.Player
             {
                 model.AudioUrl = url;
                 _model = model;
-                await MusicMixer.Instance.DataService.Upsert(model);
+                MusicMixer.Instance.DataService.Upsert(model);
                 if (!await TryPlay(model.AudioUrl, GetNormalizedVolume(_model.Volume))) return;
-                await Notify(model);
+                Notify(model);
                 
             }
             catch (Exception e) when (e is NullReferenceException or ObjectDisposedException)
@@ -103,7 +103,7 @@ namespace Nekres.Music_Mixer.Core.Player
             }, CancellationToken.None, TaskCreationOptions.None, _scheduler);
         }
 
-        private async Task Notify(MusicContextModel model)
+        private void Notify(MusicContextModel model)
         {
             _mediaWidget ??= new MediaWidget
             {
@@ -114,7 +114,7 @@ namespace Nekres.Music_Mixer.Core.Player
             _mediaWidget.Model = model;
             _mediaWidget.Soundtrack = _soundtrack;
             _mediaWidget.Show();
-            await MusicMixer.Instance.DataService.GetThumbnail(model);
+            MusicMixer.Instance.DataService.GetThumbnail(model);
         }
 
         public void ToggleSubmerged(bool enable) => _soundtrack?.ToggleSubmergedFx(enable);
@@ -142,7 +142,7 @@ namespace Nekres.Music_Mixer.Core.Player
             _soundtrack.Finished -= OnSoundtrackFinished;
             _mediaWidget?.Hide();
             if (this.Loading) return;
-            await this.Play((await MusicMixer.Instance.DataService.GetRandom())?.ToModel());
+            await this.Play(MusicMixer.Instance.DataService.GetRandom()?.ToModel());
         }
 
         public void Pause()
@@ -173,7 +173,7 @@ namespace Nekres.Music_Mixer.Core.Player
 
             if (!await TryPlay(_prevMusicModel.AudioUrl, GetNormalizedVolume(_prevMusicModel.Volume))) return false;
 
-            await Notify(_prevMusicModel);
+            Notify(_prevMusicModel);
             _soundtrack.Seek(_prevTime);
 
             return true;

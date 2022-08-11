@@ -254,7 +254,7 @@ namespace Nekres.Music_Mixer
             }
 
             // Select new song if nothing is playing.
-            await AudioEngine.Play((await this.DataService.GetRandom())?.ToModel());
+            await AudioEngine.Play(this.DataService.GetRandom()?.ToModel());
         }
 
         private void MasterVolumeSettingChanged(object o, ValueChangedEventArgs<float> e)

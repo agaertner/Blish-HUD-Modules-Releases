@@ -56,9 +56,9 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             _mediaWidget.Model.Volume = e.Value / 1000f;
         }
 
-        private async void OnModelChanged(object o, EventArgs e)
+        private void OnModelChanged(object o, EventArgs e)
         {
-            await MusicMixer.Instance.DataService.Upsert(_mediaWidget.Model);
+            MusicMixer.Instance.DataService.Upsert(_mediaWidget.Model);
         }
 
         protected override void OnMouseMoved(MouseEventArgs e)

@@ -13,9 +13,9 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
             model.MusicContextModel.Deleted += View_OnModelDeleted;
         }
 
-        private async void View_OnModelChanged(object o, EventArgs e)
+        private void View_OnModelChanged(object o, EventArgs e)
         {
-            await MusicMixer.Instance.DataService.Upsert(this.Model.MusicContextModel);
+            MusicMixer.Instance.DataService.Upsert(this.Model.MusicContextModel);
         }
 
         private void View_OnModelDeleted(object o, EventArgs e)

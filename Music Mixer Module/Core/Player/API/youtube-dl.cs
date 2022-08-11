@@ -112,7 +112,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
             p.BeginOutputReadLine();
         }
 
-        public static void GetMetaData(string link, Func<MetaData, Task> callback)
+        public static void GetMetaData(string link, Action<MetaData> callback)
         {
             using var p = new Process
             {
@@ -128,7 +128,7 @@ namespace Nekres.Music_Mixer.Core.Player.API
             p.OutputDataReceived += async (_, e) =>
             {
                 if (string.IsNullOrEmpty(e.Data)) return;
-                await callback.Invoke(JsonConvert.DeserializeObject<MetaData>(e.Data));
+                callback.Invoke(JsonConvert.DeserializeObject<MetaData>(e.Data));
             };
             p.Start();
             p.BeginOutputReadLine();

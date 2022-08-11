@@ -31,7 +31,7 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
             var contextEntry = new MusicContextDetails(model)
             {
                 Parent = this.View.MusicContextPanel,
-                Size = new Point(this.View.MusicContextPanel.ContentRegion.Width, 100),
+                Size = new Point(this.View.MusicContextPanel.ContentRegion.Width - 12, 100),
                 Editable = this.Model.State != Gw2StateService.State.Mounted
             };
             contextEntry.EditClick += OnMusicContextConfigClicked;
@@ -80,7 +80,7 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
             youtube_dl.GetMetaData(url, MetaDataReceived);
         }
 
-        private async Task MetaDataReceived(MetaData data)
+        private void MetaDataReceived(MetaData data)
         {
             var model = new MusicContextModel(this.Model.State, data.Title, data.Artist, data.Url, data.Duration,
                 new[] { this.Model.MapId }, 
@@ -88,7 +88,7 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
                 new []{ this.Model.DayCycle }, 
                 new []{ this.Model.MountType });
             Add(model);
-            await MusicMixer.Instance.DataService.Upsert(model);
+            MusicMixer.Instance.DataService.Upsert(model);
             MusicMixer.Instance.DataService.DownloadThumbnail(model);
             GameService.Content.PlaySoundEffectByName("color-change");
             this.View.Loading = false;
