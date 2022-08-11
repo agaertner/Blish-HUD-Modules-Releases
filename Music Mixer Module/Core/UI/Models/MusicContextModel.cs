@@ -1,13 +1,11 @@
 ﻿using Blish_HUD;
+using Blish_HUD.Content;
 using Gw2Sharp.Models;
 using Nekres.Music_Mixer.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Blish_HUD.Content;
 
 namespace Nekres.Music_Mixer.Core.UI.Models
 {

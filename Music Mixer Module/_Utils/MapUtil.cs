@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Gw2Sharp.WebApi.Exceptions;
-using System.Threading.Tasks;
 using Gw2Sharp.WebApi.V2.Models;
+using System.Threading.Tasks;
 
 namespace Nekres.Music_Mixer
 {

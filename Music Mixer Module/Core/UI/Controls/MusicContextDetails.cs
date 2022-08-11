@@ -1,10 +1,11 @@
-﻿using System;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nekres.Music_Mixer.Core.UI.Models;
+using System;
+using SpriteBatch = Microsoft.Xna.Framework.Graphics.SpriteBatch;
 
 namespace Nekres.Music_Mixer.Core.UI.Controls
 {
@@ -32,6 +33,20 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             set => SetProperty(ref _active, value);
         }
 
+        private bool _editable;
+        public bool Editable
+        {
+            get => _editable;
+            set => SetProperty(ref _editable, value);
+        }
+
+        private bool _deletable;
+        public bool Deletable
+        {
+            get => _deletable;
+            set => SetProperty(ref _deletable, value);
+        }
+
         private Rectangle _editButtonBounds;
         private bool _mouseOverEditButton;
 
@@ -40,30 +55,40 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 
         public MusicContextModel Model { get; }
 
-        public MusicContextDetails(MusicContextModel model)
+        public MusicContextDetails(MusicContextModel model, bool editable = true, bool deletable = true)
         {
+            _editable = editable;
+            _deletable = deletable;
             this.Title = model.Title;
             this.Model = model;
         }
 
         protected override void OnMouseMoved(MouseEventArgs e)
         {
-            var relPos = RelativeMousePosition;
-            _mouseOverEditButton = _editButtonBounds.Contains(relPos);
-            _mouseOverDelButton = _delButtonBounds.Contains(relPos);
             base.OnMouseMoved(e);
+            var relPos = RelativeMousePosition;
+            if (this.Editable)
+            {
+                _mouseOverEditButton = _editButtonBounds.Contains(relPos);
+            }
+            if (this.Deletable)
+            {
+                _mouseOverDelButton = _delButtonBounds.Contains(relPos);
+            }
         }
 
         protected override void OnClick(MouseEventArgs e)
         {
-            GameService.Content.PlaySoundEffectByName("button-click");
-            if (_mouseOverEditButton && !this.Active) EditClick?.Invoke(this, e);
-            if (_mouseOverDelButton)
+            base.OnClick(e);
+            if (this.Editable) {
+                GameService.Content.PlaySoundEffectByName("button-click");
+                if (_mouseOverEditButton && !this.Active) EditClick?.Invoke(this, e);
+            };
+            if (this.Deletable && _mouseOverDelButton)
             {
                 this.Model.Delete();
                 this.Dispose();
             }
-            base.OnClick(e);
         }
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
@@ -88,8 +113,11 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 
             // Draw edit button
             _editButtonBounds = new Rectangle(this.Width - 66, (bounds.Height - BOTTOMSECTION_HEIGHT - 64) / 2, 64, 64);
-            var editIcon = this.Active ? _editMacroTexActive : _mouseOverEditButton ? _editMacroTexHover : this.Enabled ? _editMacroTex : _editMacroTexDisabled;
-            spriteBatch.DrawOnCtrl(this, editIcon, _editButtonBounds, Color.White);
+            if (this.Editable)
+            {
+                var editIcon = this.Active ? _editMacroTexActive : _mouseOverEditButton ? _editMacroTexHover : this.Enabled ? _editMacroTex : _editMacroTexDisabled;
+                spriteBatch.DrawOnCtrl(this, editIcon, _editButtonBounds, Color.White);
+            }
 
             // Wrap text
             var titleBounds = new Rectangle(thumbnailBounds.Right + MARGIN, 0, bounds.Width - thumbnailBounds.Width - _editButtonBounds.Width - MARGIN * 2, this.Height - BOTTOMSECTION_HEIGHT);
@@ -105,10 +133,13 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 
             // Draw delete button
             _delButtonBounds = new Rectangle(bounds.Width - 28, bounds.Height - BOTTOMSECTION_HEIGHT + 3, 28, 28);
-            if (_mouseOverDelButton)
-                spriteBatch.DrawOnCtrl(this, _trashCanOpen, _delButtonBounds, Color.White);
-            else
-                spriteBatch.DrawOnCtrl(this, _trashCanClosed, _delButtonBounds, Color.White);
+            if (this.Deletable)
+            {
+                if (_mouseOverDelButton)
+                    spriteBatch.DrawOnCtrl(this, _trashCanOpen, _delButtonBounds, Color.White);
+                else
+                    spriteBatch.DrawOnCtrl(this, _trashCanClosed, _delButtonBounds, Color.White);
+            }
 
             // Draw duration
             if (TimeSpan.Zero.Equals(this.Model.Duration)) return;

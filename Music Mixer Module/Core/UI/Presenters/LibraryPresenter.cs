@@ -5,6 +5,7 @@ using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Nekres.Music_Mixer.Core.Player.API;
 using Nekres.Music_Mixer.Core.Player.API.Models;
+using Nekres.Music_Mixer.Core.Services;
 using Nekres.Music_Mixer.Core.UI.Controls;
 using Nekres.Music_Mixer.Core.UI.Models;
 using Nekres.Music_Mixer.Core.UI.Views;
@@ -30,7 +31,8 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
             var contextEntry = new MusicContextDetails(model)
             {
                 Parent = this.View.MusicContextPanel,
-                Size = new Point(this.View.MusicContextPanel.ContentRegion.Width, 100)
+                Size = new Point(this.View.MusicContextPanel.ContentRegion.Width, 100),
+                Editable = this.Model.State != Gw2StateService.State.Mounted
             };
             contextEntry.EditClick += OnMusicContextConfigClicked;
         }
@@ -50,7 +52,15 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
                 Id = $"{nameof(MusicMixer)}_{nameof(ConfigView)}_1450662d-40f1-48e3-b398-b373d5cd9314",
                 SavesPosition = true
             };
-            editWindow.Show(new ConfigView(ctrl.Model));
+            editWindow.Show(new ConfigView(
+                new ConfigModel(ctrl.Model)
+                {
+                    ContinentId = this.Model.ContinentId,
+                    RegionId = this.Model.RegionId,
+                    MapId = this.Model.MapId,
+                    DayCycle = this.Model.DayCycle,
+                    MountType = this.Model.MountType
+                }));
             editWindow.Hidden += (_, _) => editWindow.Dispose();
             editWindow.Disposed += (_, _) => ctrl.Active = false;
         }

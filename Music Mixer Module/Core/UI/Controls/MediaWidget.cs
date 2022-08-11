@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nekres.Music_Mixer.Core.Player;
 using Nekres.Music_Mixer.Core.UI.Models;
-using System;
 using System.Linq;
 
 namespace Nekres.Music_Mixer.Core.UI.Controls

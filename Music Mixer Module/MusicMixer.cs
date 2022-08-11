@@ -4,21 +4,21 @@ using Blish_HUD.Input;
 using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
+using Gw2Sharp.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nekres.Music_Mixer.Core.Player;
 using Nekres.Music_Mixer.Core.Player.API;
 using Nekres.Music_Mixer.Core.Services;
 using Nekres.Music_Mixer.Core.UI.Controls;
+using Nekres.Music_Mixer.Core.UI.Models;
+using Nekres.Music_Mixer.Core.UI.Views;
 using Nekres.Music_Mixer.Core.UI.Views.StateViews;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks;
-using Gw2Sharp.Models;
-using Nekres.Music_Mixer.Core.UI.Models;
-using Nekres.Music_Mixer.Core.UI.Views;
 
 namespace Nekres.Music_Mixer
 {
@@ -149,7 +149,7 @@ namespace Nekres.Music_Mixer
         {
             this.MapService.DownloadRegions();
             await Task.Run(() => {
-                ExtractFile(_FFmpegPath);
+                //ExtractFile(_FFmpegPath);
                 ExtractFile(_youtubeDLPath);
             }).ContinueWith(_ => youtube_dl.Load());
         }

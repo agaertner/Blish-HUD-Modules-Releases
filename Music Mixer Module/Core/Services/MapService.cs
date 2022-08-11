@@ -34,6 +34,7 @@ namespace Nekres.Music_Mixer.Core.Services
             _loadingIndicator = loadingIndicator;
             _continentRegions = new Dictionary<int, IEnumerable<int>>();
             _regionMaps = new Dictionary<int, IEnumerable<int>>();
+            _regionNames = new Dictionary<int, string>();
             _mapNames = new Dictionary<int, string>();
         }
 
@@ -67,6 +68,11 @@ namespace Nekres.Music_Mixer.Core.Services
             return _mapNames.ContainsKey(mapId) ? _mapNames[mapId] : string.Empty;
         }
 
+        public Dictionary<int, string> GetAllMaps()
+        {
+            return new Dictionary<int, string>(_mapNames);
+        }
+
         public void DownloadRegions()
         {
             var thread = new Thread(LoadRegionsInBackground)
@@ -89,6 +95,11 @@ namespace Nekres.Music_Mixer.Core.Services
             var mapsLookUp = await LoadMapLookUp();
             try
             {
+
+#if DEBUG
+                var notFound = new List<string>();
+#endif
+
                 var continentIds = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents.IdsAsync();
                 var allRegionNames = new Dictionary<int, string>();
                 var allRegionMaps = new Dictionary<int, IEnumerable<int>>();
@@ -124,8 +135,14 @@ namespace Nekres.Music_Mixer.Core.Services
                                     _loadingIndicator.Report($"Adding {map.Name}..");
                                 }
 
-                                var publicMapIds = region.Value.Select(x => MapUtil.GetSHA1(continentId, x.ContinentRect))
-                                                                .Where(x => mapsLookUp.ContainsKey(x)).Select(x => mapsLookUp[x]).Distinct();
+#if DEBUG
+                                // Helping out Discord RPC (https://github.com/OpNop/GW2-RPC-Resources) to gather unresolved maps..
+                                notFound.AddRange(region.Value
+                                                    .Where(x => !mapsLookUp.ContainsKey(MapUtil.GetSHA1(continentId, x.ContinentRect)))
+                                                    .Select(x => $"{MapUtil.GetSHA1(continentId, x.ContinentRect)} | '{x.Name} ({x.Id})' | Floor: {floorId} | Region: '{regionName} ({region.Key})' | {continentId}"));
+#endif
+
+                                var publicMapIds = region.Value.Select(x => MapUtil.GetSHA1(continentId, x.ContinentRect)).Where(x => mapsLookUp.ContainsKey(x)).Select(x => mapsLookUp[x]).Distinct();
 
                                 if (allRegionMaps.ContainsKey(region.Key))
                                 {
@@ -152,6 +169,9 @@ namespace Nekres.Music_Mixer.Core.Services
                 _regionMaps = allRegionMaps;
                 _regionNames = allRegionNames;
                 _mapNames = allMapNames;
+#if DEBUG
+                System.IO.File.WriteAllLines(System.IO.Path.Combine(MusicMixer.Instance.ModuleDirectory, "unresolved_maps.txt"), notFound);
+#endif
             }
             catch (RequestException e)
             {

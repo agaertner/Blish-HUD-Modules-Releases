@@ -8,7 +8,6 @@ using Nekres.Music_Mixer.Core.Player.Source.Equalizer;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Nekres.Music_Mixer.Core.Services;
 
 namespace Nekres.Music_Mixer.Core.Player
 {

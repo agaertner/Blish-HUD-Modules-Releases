@@ -5,17 +5,17 @@ using System;
 
 namespace Nekres.Music_Mixer.Core.UI.Presenters
 {
-    internal class MusicContextConfigPresenter : Presenter<ConfigView, MusicContextModel>
+    internal class ConfigPresenter : Presenter<ConfigView, ConfigModel>
     {
-        public MusicContextConfigPresenter(ConfigView view, MusicContextModel model) : base(view, model)
+        public ConfigPresenter(ConfigView view, ConfigModel model) : base(view, model)
         {
-            model.Changed += View_OnModelChanged;
-            model.Deleted += View_OnModelDeleted;
+            model.MusicContextModel.Changed += View_OnModelChanged;
+            model.MusicContextModel.Deleted += View_OnModelDeleted;
         }
 
         private async void View_OnModelChanged(object o, EventArgs e)
         {
-            await MusicMixer.Instance.DataService.Upsert(this.Model);
+            await MusicMixer.Instance.DataService.Upsert(this.Model.MusicContextModel);
         }
 
         private void View_OnModelDeleted(object o, EventArgs e)
@@ -25,8 +25,8 @@ namespace Nekres.Music_Mixer.Core.UI.Presenters
 
         protected override void Unload()
         {
-            this.Model.Changed -= View_OnModelChanged;
-            this.Model.Deleted -= View_OnModelDeleted;
+            this.Model.MusicContextModel.Changed -= View_OnModelChanged;
+            this.Model.MusicContextModel.Deleted -= View_OnModelDeleted;
             base.Unload();
         }
     }
