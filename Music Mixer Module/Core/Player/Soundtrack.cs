@@ -40,7 +40,6 @@ namespace Nekres.Music_Mixer.Core.Player
         public TimeSpan CurrentTime => _mediaProvider.CurrentTime;
         public TimeSpan TotalTime => _mediaProvider.TotalTime;
         public bool IsMuted => _volumeProvider.Volume == 0;
-        public bool IsPaused => _outputDevice.PlaybackState == PlaybackState.Paused;
 
         private Soundtrack(string url, float volume)
         {
@@ -74,7 +73,7 @@ namespace Nekres.Music_Mixer.Core.Player
 
         private void Play(int fadeInDuration = 500)
         {
-            if (this.IsPaused) {
+            if (_outputDevice.PlaybackState == PlaybackState.Paused) {
                 _outputDevice.Play();
                 return;
             }
@@ -127,7 +126,8 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public void Pause()
         {
-            _outputDevice?.Pause();
+            if (_outputDevice == null || _outputDevice.PlaybackState == PlaybackState.Paused) return;
+            _outputDevice.Pause();
         }
 
         public void ToggleMuted()
