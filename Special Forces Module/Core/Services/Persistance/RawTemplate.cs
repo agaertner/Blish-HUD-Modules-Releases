@@ -1,12 +1,12 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Blish_HUD;
 using Gw2Sharp.ChatLinks;
 using Gw2Sharp.WebApi.V2.Models;
 using Newtonsoft.Json;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
-namespace Nekres.Special_Forces.Persistance
+namespace Nekres.Special_Forces.Core.Services.Persistance
 {
     internal class RawTemplate
     {

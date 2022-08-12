@@ -14,8 +14,8 @@ using System.ComponentModel.Composition;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Nekres.Special_Forces.Core.Services;
+using Nekres.Special_Forces.Core.Services.Persistance;
 using Nekres.Special_Forces.Core.UI.Views.HomeTab;
-using Nekres.Special_Forces.Persistance;
 using Nekres.Special_Forces.Player;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 

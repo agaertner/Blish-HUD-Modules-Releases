@@ -10,7 +10,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Nekres.Special_Forces.Persistance;
+using Nekres.Special_Forces.Core.Services.Persistance;
+
 namespace Nekres.Special_Forces.Player
 {
     internal class TemplatePlayer

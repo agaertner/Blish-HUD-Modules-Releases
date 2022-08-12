@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.Content;
 using Gw2Sharp.Models;
 using Gw2Sharp.WebApi.Exceptions;
 using Gw2Sharp.WebApi.V2.Models;
-using Microsoft.Xna.Framework.Graphics;
-using Nekres.Special_Forces.Persistance;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Nekres.Special_Forces.Core.Services
 {
@@ -25,6 +21,7 @@ namespace Nekres.Special_Forces.Core.Services
 
         public RenderService(IProgress<string> loadingIndicator)
         {
+            _loadingIndicator = loadingIndicator;
             _eliteRenderRepository = new Dictionary<int, AsyncTexture2D>();
             _professionRenderRepository = new Dictionary<int, AsyncTexture2D>();
         }
@@ -46,36 +43,25 @@ namespace Nekres.Special_Forces.Core.Services
             _loadingIndicator.Report(null);
         }
 
-        public AsyncTexture2D GetProfessionRender(RawTemplate template)
+        public AsyncTexture2D GetProfessionRender(ProfessionType professionType)
         {
-            if (_professionRenderRepository.All(x => x.Key != (int)template.BuildChatLink.Profession))
-            {
-                var render = new AsyncTexture2D();
-                _professionRenderRepository.Add((int)template.BuildChatLink.Profession, render);
-                return render;
-            }
-            return _professionRenderRepository[(int)template.BuildChatLink.Profession];
+            return _professionRenderRepository[(int)professionType];
         }
 
-        public AsyncTexture2D GetEliteRender(RawTemplate template)
+        public AsyncTexture2D GetEliteRender(Specialization spec)
         {
-            if (template.Specialization != null && template.Specialization.Elite)
-                return GetProfessionRender(template);
-            if (_eliteRenderRepository.All(x => x.Key != template.BuildChatLink.Specialization3Id))
+            if (!spec.Elite)
             {
-                var render = new AsyncTexture2D();
-                _eliteRenderRepository.Add(template.BuildChatLink.Specialization3Id, render);
-                return render;
+                return GetProfessionRender(Enum.TryParse<ProfessionType>(spec.Profession, true, out var prof) ? prof : ProfessionType.Guardian);
             }
-            return _eliteRenderRepository[template.BuildChatLink.Specialization3Id];
+            return _eliteRenderRepository[spec.Id];
         }
 
         private async Task RequestIcons()
         {
             try
             {
-                var professionRenderRepository = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Professions.AllAsync();
-                LoadProfessionIcons(professionRenderRepository).Wait();
+                LoadProfessionIcons().Wait();
                 LoadEliteIcons().Wait();
             }
             catch (RequestException e)
@@ -84,72 +70,24 @@ namespace Nekres.Special_Forces.Core.Services
             }
         }
 
-        private async Task LoadProfessionIcons(IEnumerable<Profession> professions)
+        private async Task LoadProfessionIcons()
         {
+            var professions = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Professions.AllAsync();
             foreach (var profession in professions)
             {
                 var renderUri = (string)profession.IconBig;
-                var id = (int)Enum.GetValues(typeof(ProfessionType)).Cast<ProfessionType>().ToList()
-                    .Find(x => x.ToString().Equals(profession.Id, StringComparison.InvariantCultureIgnoreCase));
-                if (_professionRenderRepository.Any(x => x.Key == id))
-                {
-                    try
-                    {
-                        var textureDataResponse = await GameService.Gw2WebApi.AnonymousConnection.Client.Render
-                            .DownloadToByteArrayAsync(renderUri);
-
-                        using (var textureStream = new MemoryStream(textureDataResponse))
-                        {
-                            var loadedTexture =
-                                Texture2D.FromStream(GameService.Graphics.GraphicsDevice, textureStream);
-
-                            _professionRenderRepository[id].SwapTexture(loadedTexture);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        SpecialForcesModule.Logger.Warn(ex, $"Request to render service for {renderUri} failed.", renderUri);
-                    }
-                }
-                else
-                {
-                    _professionRenderRepository.Add(id, GameService.Content.GetRenderServiceTexture(renderUri));
-                }
+                var id = (int)(Enum.TryParse<ProfessionType>(profession.Id, true, out var prof) ? prof : ProfessionType.Guardian);
+                _professionRenderRepository.Add(id, GameService.Content.GetRenderServiceTexture(renderUri));
             }
         }
 
         private async Task LoadEliteIcons()
         {
-            var ids = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Specializations.IdsAsync();
-            var specializations = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Specializations.ManyAsync(ids);
+            var specializations = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Specializations.AllAsync();
             foreach (var specialization in specializations)
             {
                 if (!specialization.Elite) continue;
-                if (_eliteRenderRepository.Any(x => x.Key == specialization.Id))
-                {
-                    var renderUri = (string)specialization.ProfessionIconBig;
-                    try
-                    {
-                        var textureDataResponse = await GameService.Gw2WebApi.AnonymousConnection
-                            .Client
-                            .Render.DownloadToByteArrayAsync(renderUri);
-
-                        using (var textureStream = new MemoryStream(textureDataResponse))
-                        {
-                            var loadedTexture = Texture2D.FromStream(GameService.Graphics.GraphicsDevice, textureStream);
-
-                            _eliteRenderRepository[specialization.Id].SwapTexture(loadedTexture);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        SpecialForcesModule.Logger.Warn(ex, $"Request to render service for {renderUri} failed.", renderUri);
-                    }
-                }
-                else
-                {
-                    _eliteRenderRepository.Add(specialization.Id, GameService.Content.GetRenderServiceTexture(specialization.ProfessionIconBig));
-                }
+                _eliteRenderRepository.Add(specialization.Id, GameService.Content.GetRenderServiceTexture(specialization.ProfessionIconBig));
             }
         }
     }

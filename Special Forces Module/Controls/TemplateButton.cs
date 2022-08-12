@@ -4,7 +4,7 @@ using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nekres.Special_Forces.Persistance;
+using Nekres.Special_Forces.Core.Services.Persistance;
 
 namespace Nekres.Special_Forces.Controls
 {

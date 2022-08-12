@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Blish_HUD;
-using Blish_HUD.Controls;
+﻿using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Microsoft.Xna.Framework;
 using Nekres.Special_Forces.Controls;
-using Nekres.Special_Forces.Persistance;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Nekres.Special_Forces.Core.Services.Persistance;
 
 namespace Nekres.Special_Forces.Core.UI.Views.HomeTab
 {
@@ -23,6 +23,14 @@ namespace Nekres.Special_Forces.Core.UI.Views.HomeTab
             DD_TITLE = "Title";
             DD_PROFESSION = "Profession";
             this.WithPresenter(new HomePresenter(this, model));
+        }
+
+        protected override async Task<bool> Load(IProgress<string> progress)
+        {
+            var t = SpecialForcesModule.Instance.TemplateReader.LoadDirectory(SpecialForcesModule.Instance.DirectoriesManager.GetFullDirectoryPath("special_forces"));
+            t.Wait();
+            _templates = t.Result;
+            return true;
         }
 
         protected override void Build(Container buildPanel)
@@ -81,7 +89,7 @@ namespace Nekres.Special_Forces.Core.UI.Views.HomeTab
             var button = new TemplateButton(template)
             {
                 Parent = parent,
-                Icon = SpecialForcesModule.Instance.RenderService.GetEliteRender(template),
+                Icon = SpecialForcesModule.Instance.RenderService.GetEliteRender(template.Specialization),
                 IconSize = DetailsIconSize.Small,
                 Text = template.Title,
                 BottomText = template.GetClassFriendlyName()
