@@ -12,9 +12,12 @@ namespace Nekres.Special_Forces.Core.Services.Persistance
 {
     internal class TemplateReader
     {
-        private readonly List<RawTemplate> _cached = new List<RawTemplate>();
-        private readonly IsoDateTimeConverter _dateFormat = new IsoDateTimeConverter {DateTimeFormat = "dd/MM/yyyy"};
-        private string[] _loaded;
+        private readonly IsoDateTimeConverter _dateFormat;
+
+        public TemplateReader()
+        {
+            _dateFormat = new IsoDateTimeConverter {DateTimeFormat = "dd/MM/yyyy"};
+        }
 
         private bool IsLocalPath(string p)
         {
@@ -68,24 +71,15 @@ namespace Nekres.Special_Forces.Core.Services.Persistance
             }
         }
 
-        internal async Task<List<RawTemplate>> LoadDirectory(string path)
+        internal List<RawTemplate> LoadDirectory(string path)
         {
-            _cached.Clear();
-            _loaded = Directory.GetFiles(path, "*.json", SearchOption.TopDirectoryOnly);
-            foreach (var file in _loaded) _cached.Add(LoadSingle(file));
-
-            var eliteIds = _cached.Where(template => template.BuildChatLink.Specialization3Id > 0)
-                                          .Select(template => (int)template.BuildChatLink.Specialization3Id).ToList();
-
-            var elites = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Specializations.ManyAsync(eliteIds);
-
-            foreach (RawTemplate template in _cached)
+            var loaded = Directory.GetFiles(path, "*.json", SearchOption.TopDirectoryOnly);
+            var files = new List<RawTemplate>();
+            foreach (var file in loaded)
             {
-                if (template.BuildChatLink.Specialization3Id <= 0) continue;
-                template.Specialization = elites.First(x => x.Id == template.BuildChatLink.Specialization3Id);
+                files.Add(LoadSingle(file));
             }
-
-            return _cached;
+            return files;
         }
     }
 }

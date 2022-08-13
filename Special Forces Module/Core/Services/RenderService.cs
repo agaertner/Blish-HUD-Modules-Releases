@@ -1,29 +1,46 @@
 ﻿using Blish_HUD;
-using Blish_HUD.Content;
 using Gw2Sharp.Models;
 using Gw2Sharp.WebApi.Exceptions;
-using Gw2Sharp.WebApi.V2.Models;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Nekres.Special_Forces.Core.Services
 {
-    internal class RenderService
+    internal class RenderService : IDisposable
     {
-        private Dictionary<int, AsyncTexture2D> _eliteRenderRepository;
-        private Dictionary<int, AsyncTexture2D> _professionRenderRepository;
+        public event EventHandler<ValueEventArgs<bool>> LoadingChanged;
 
-        public bool IsLoading { get; private set; }
+        private Dictionary<int, Texture2D> _eliteRenderRepository;
+        private Dictionary<ProfessionType, Texture2D> _professionRenderRepository;
+        private Dictionary<int, string> _eliteSpecNames;
+        private Dictionary<ProfessionType, string> _profNames;
+
+        private bool _isLoading;
+
+        public bool IsLoading
+        {
+            get => _isLoading;
+            private set
+            {
+                if (value == _isLoading) return;
+                _isLoading = value;
+                LoadingChanged?.Invoke(this, new ValueEventArgs<bool>(value));
+            }
+        }
 
         private readonly IProgress<string> _loadingIndicator;
 
         public RenderService(IProgress<string> loadingIndicator)
         {
             _loadingIndicator = loadingIndicator;
-            _eliteRenderRepository = new Dictionary<int, AsyncTexture2D>();
-            _professionRenderRepository = new Dictionary<int, AsyncTexture2D>();
+            _eliteRenderRepository = new Dictionary<int, Texture2D>();
+            _professionRenderRepository = new Dictionary<ProfessionType, Texture2D>();
+            _eliteSpecNames = new Dictionary<int, string>();
+            _profNames = new Dictionary<ProfessionType, string>();
         }
 
         public void DownloadIcons()
@@ -38,26 +55,41 @@ namespace Nekres.Special_Forces.Core.Services
         private void LoadIconsInBackground()
         {
             this.IsLoading = true;
-            this.RequestIcons().Wait();
+            this.RequestIcons();
             this.IsLoading = false;
             _loadingIndicator.Report(null);
         }
 
-        public AsyncTexture2D GetProfessionRender(ProfessionType professionType)
+        public Texture2D GetProfessionRender(ProfessionType professionType)
         {
-            return _professionRenderRepository[(int)professionType];
+            return _professionRenderRepository.TryGetValue(professionType, out var tex) ? tex : ContentService.Textures.Pixel;
         }
 
-        public AsyncTexture2D GetEliteRender(Specialization spec)
+        public Texture2D GetEliteRender(int specId)
         {
-            if (!spec.Elite)
+            if (_eliteRenderRepository.TryGetValue(specId, out var tex))
             {
-                return GetProfessionRender(Enum.TryParse<ProfessionType>(spec.Profession, true, out var prof) ? prof : ProfessionType.Guardian);
+                return tex;
             }
-            return _eliteRenderRepository[spec.Id];
+            return ContentService.Textures.TransparentPixel;
         }
 
-        private async Task RequestIcons()
+        public bool IsEliteSpec(int specId)
+        {
+            return _eliteSpecNames.ContainsKey(specId);
+        }
+
+        public string GetEliteSpecName(int specId)
+        {
+            return _eliteSpecNames.TryGetValue(specId, out var name) ? name : string.Empty;
+        }
+
+        public string GetProfessionName(ProfessionType profType)
+        {
+            return _profNames.TryGetValue(profType, out var name) ? name : string.Empty;
+        }
+
+        private void RequestIcons()
         {
             try
             {
@@ -72,22 +104,40 @@ namespace Nekres.Special_Forces.Core.Services
 
         private async Task LoadProfessionIcons()
         {
-            var professions = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Professions.AllAsync();
-            foreach (var profession in professions)
+            _loadingIndicator.Report("Loading professions..");
+            await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Professions.AllAsync().ContinueWith(t =>
             {
-                var renderUri = (string)profession.IconBig;
-                var id = (int)(Enum.TryParse<ProfessionType>(profession.Id, true, out var prof) ? prof : ProfessionType.Guardian);
-                _professionRenderRepository.Add(id, GameService.Content.GetRenderServiceTexture(renderUri));
-            }
+                if (t.IsFaulted) return;
+                foreach (var profession in t.Result)
+                {
+                    var renderUri = (string)profession.IconBig;
+                    var id = Enum.TryParse<ProfessionType>(profession.Id, true, out var prof) ? prof : ProfessionType.Guardian;
+                    _professionRenderRepository.Add(id, GameService.Content.GetRenderServiceTexture(renderUri));
+                    _profNames.Add(id, profession.Name);
+                }
+            });
         }
 
         private async Task LoadEliteIcons()
         {
-            var specializations = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Specializations.AllAsync();
-            foreach (var specialization in specializations)
+            _loadingIndicator.Report("Loading elite specializations..");
+            await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Specializations.AllAsync().ContinueWith(t =>
             {
-                if (!specialization.Elite) continue;
-                _eliteRenderRepository.Add(specialization.Id, GameService.Content.GetRenderServiceTexture(specialization.ProfessionIconBig));
+                if (t.IsFaulted) return;
+                foreach (var specialization in t.Result)
+                {
+                    if (!specialization.Elite) continue;
+                    _eliteRenderRepository.Add(specialization.Id, GameService.Content.GetRenderServiceTexture(specialization.ProfessionIconBig));
+                    _eliteSpecNames.Add(specialization.Id, specialization.Name);
+                }
+            });
+        }
+
+        public void Dispose()
+        {
+            foreach (var tex in _eliteRenderRepository.Values.Union(_professionRenderRepository.Values))
+            {
+                tex?.Dispose();
             }
         }
     }

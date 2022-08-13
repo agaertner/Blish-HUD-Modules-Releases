@@ -27,10 +27,8 @@ namespace Nekres.Special_Forces.Core.UI.Views.HomeTab
 
         protected override async Task<bool> Load(IProgress<string> progress)
         {
-            var t = SpecialForcesModule.Instance.TemplateReader.LoadDirectory(SpecialForcesModule.Instance.DirectoriesManager.GetFullDirectoryPath("special_forces"));
-            t.Wait();
-            _templates = t.Result;
-            return true;
+            _templates = SpecialForcesModule.Instance.TemplateReader.LoadDirectory(SpecialForcesModule.Instance.DirectoriesManager.GetFullDirectoryPath("special_forces"));
+            return !SpecialForcesModule.Instance.RenderService.IsLoading;
         }
 
         protected override void Build(Container buildPanel)
@@ -38,9 +36,13 @@ namespace Nekres.Special_Forces.Core.UI.Views.HomeTab
             _templatePanel = new FlowPanel
             {
                 Parent = buildPanel,
-                Location = new Point(0, 0),
+                Location = new Point(buildPanel.ContentRegion.X, 0),
                 Width = buildPanel.ContentRegion.Width,
-                Height = buildPanel.ContentRegion.Height
+                Height = buildPanel.ContentRegion.Height - 100,
+                ShowTint = true,
+                ShowBorder = true,
+                CanScroll = true,
+                ControlPadding = new Vector2(5,5)
             };
             foreach (var template in _templates)
             {
@@ -50,7 +52,7 @@ namespace Nekres.Special_Forces.Core.UI.Views.HomeTab
             var ddSortMethod = new Dropdown
             {
                 Parent = buildPanel,
-                Location = new Point(buildPanel.Right - 150 - 10, 5),
+                Location = new Point(buildPanel.ContentRegion.Right - 150 - 10, 5),
                 Width = 150
             };
             ddSortMethod.Items.Add(DD_TITLE);
@@ -74,7 +76,7 @@ namespace Nekres.Special_Forces.Core.UI.Views.HomeTab
             var import_button = new StandardButton
             {
                 Parent = buildPanel,
-                Location = new Point(buildPanel.Right - 150, buildPanel.Bottom + Panel.BOTTOM_PADDING),
+                Location = new Point(buildPanel.ContentRegion.Right - 150, _templatePanel.Bottom + Panel.BOTTOM_PADDING),
                 Text = "Import Json Url",
                 Size = new Point(150, 30)
             };
@@ -86,13 +88,26 @@ namespace Nekres.Special_Forces.Core.UI.Views.HomeTab
 
         private void AddTemplate(RawTemplate template, Panel parent)
         {
+            var build = template.GetBuildChatLink();
+
+            var prof = build.Profession;
+            var elite = build.Specialization3Id;
+
+            var isElite = SpecialForcesModule.Instance.RenderService.IsEliteSpec(elite);
+            var tex = isElite
+                ? SpecialForcesModule.Instance.RenderService.GetEliteRender(elite)
+                : SpecialForcesModule.Instance.RenderService.GetProfessionRender(prof);
+            var name = isElite 
+                ? SpecialForcesModule.Instance.RenderService.GetEliteSpecName(elite) 
+                : SpecialForcesModule.Instance.RenderService.GetProfessionName(prof);
+
             var button = new TemplateButton(template)
             {
                 Parent = parent,
-                Icon = SpecialForcesModule.Instance.RenderService.GetEliteRender(template.Specialization),
+                Icon = tex,
                 IconSize = DetailsIconSize.Small,
                 Text = template.Title,
-                BottomText = template.GetClassFriendlyName()
+                BottomText = name
             };
             button.PlayClick += delegate
             {

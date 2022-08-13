@@ -28,14 +28,19 @@ namespace Nekres.Special_Forces.Controls
         private static Texture2D UtilitySprite = SpecialForcesModule.Instance.ContentsManager.GetTexture("skill_frame.png");
 
         private bool _mouseOverPlay;
+        private Rectangle _playBounds;
 
         private bool _mouseOverTemplate;
+        private Rectangle _templateBounds;
 
         private bool _mouseOverUtility1;
+        private Rectangle _utility1Bounds;
 
         private bool _mouseOverUtility2;
+        private Rectangle _utility2Bounds;
 
         private bool _mouseOverUtility3;
+        private Rectangle _utility3Bounds;
 
         private RawTemplate _template;
 
@@ -65,45 +70,29 @@ namespace Nekres.Special_Forces.Controls
         protected override void OnClick(MouseEventArgs e)
         {
             if (_mouseOverTemplate)
+            {
                 ScreenNotification.ShowNotification("Not yet implemented!");
+            }
             else if (_mouseOverPlay)
             {
+                this.PlayClick?.Invoke(this, EventArgs.Empty);
                 SpecialForcesModule.Instance.Window.Hide();
-                PlayClick?.Invoke(this, EventArgs.Empty);
+            } 
+            else if (_mouseOverUtility1 || _mouseOverUtility2 || _mouseOverUtility3)
+            {
+                this.UpdateUtilityKeys();
             }
             base.OnClick(e);
         }
 
-        protected override void OnMouseLeft(MouseEventArgs e)
-        {
-            _mouseOverPlay = false;
-            _mouseOverTemplate = false;
-            _mouseOverUtility1 = false;
-            _mouseOverUtility2 = false;
-            _mouseOverUtility3 = false;
-            base.OnMouseLeft(e);
-        }
-
         protected override void OnMouseMoved(MouseEventArgs e)
         {
-            var relPos = e.MouseState.Position - AbsoluteBounds.Location;
-
-            if (MouseOver && relPos.Y > Height - BOTTOMSECTION_HEIGHT)
-            {
-                _mouseOverPlay = relPos.X < SHEETBUTTON_WIDTH - 36 + 32 && relPos.X > SHEETBUTTON_WIDTH - 36;
-                _mouseOverTemplate = relPos.X < SHEETBUTTON_WIDTH - 73 + 32 && relPos.X > SHEETBUTTON_WIDTH - 73;
-                _mouseOverUtility3 = relPos.X < SHEETBUTTON_WIDTH - 109 + 32 && relPos.X > SHEETBUTTON_WIDTH - 109;
-                _mouseOverUtility2 = relPos.X < SHEETBUTTON_WIDTH - 145 + 32 && relPos.X > SHEETBUTTON_WIDTH - 145;
-                _mouseOverUtility1 = relPos.X < SHEETBUTTON_WIDTH - 181 + 32 && relPos.X > SHEETBUTTON_WIDTH - 181;
-            }
-            else
-            {
-                _mouseOverPlay = false;
-                _mouseOverTemplate = false;
-                _mouseOverUtility1 = false;
-                _mouseOverUtility2 = false;
-                _mouseOverUtility3 = false;
-            }
+            var relPos = RelativeMousePosition;
+            _mouseOverPlay = _playBounds.Contains(relPos);
+            _mouseOverTemplate = _templateBounds.Contains(relPos);
+            _mouseOverUtility3 = _utility3Bounds.Contains(relPos);
+            _mouseOverUtility2 = _utility2Bounds.Contains(relPos);
+            _mouseOverUtility1 = _utility1Bounds.Contains(relPos);
 
             if (_mouseOverPlay)
                 BasicTooltipText = "Practice!";
@@ -154,64 +143,29 @@ namespace Nekres.Special_Forces.Controls
                     BOTTOMSECTION_HEIGHT), Color.Black * 0.1f);
 
             // Draw icons
-
             #region Icons
+            _playBounds = new Rectangle(SHEETBUTTON_WIDTH - 36, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32);
+            spriteBatch.DrawOnCtrl(this, _mouseOverPlay ? GlowPlaySprite : PlaySprite, _playBounds, Color.White);
 
-            if (_mouseOverPlay)
-                spriteBatch.DrawOnCtrl(this, GlowPlaySprite,
-                    new Rectangle(SHEETBUTTON_WIDTH - 36, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32),
-                    Color.White);
-            else
-                spriteBatch.DrawOnCtrl(this, PlaySprite,
-                    new Rectangle(SHEETBUTTON_WIDTH - 36, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32),
-                    Color.White);
+            _templateBounds = new Rectangle(SHEETBUTTON_WIDTH - 73, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32);
+            spriteBatch.DrawOnCtrl(this, _mouseOverTemplate ? GlowClipboardSprite : ClipboardSprite, _templateBounds, Color.White);
 
-            if (_mouseOverTemplate)
-                spriteBatch.DrawOnCtrl(this, GlowClipboardSprite,
-                    new Rectangle(SHEETBUTTON_WIDTH - 73, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32),
-                    Color.White);
-            else
-                spriteBatch.DrawOnCtrl(this, ClipboardSprite,
-                    new Rectangle(SHEETBUTTON_WIDTH - 73, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32),
-                    Color.White);
+            _utility3Bounds = new Rectangle(SHEETBUTTON_WIDTH - 109, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32);
+            spriteBatch.DrawOnCtrl(this, _mouseOverUtility3 ? GlowUtilitySprite : UtilitySprite, _utility3Bounds, Color.White);
 
-            if (_mouseOverUtility3)
-                spriteBatch.DrawOnCtrl(this, GlowUtilitySprite,
-                    new Rectangle(SHEETBUTTON_WIDTH - 109, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32),
-                    Color.White);
-            else
-                spriteBatch.DrawOnCtrl(this, UtilitySprite,
-                    new Rectangle(SHEETBUTTON_WIDTH - 109, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32),
-                    Color.White);
+            spriteBatch.DrawStringOnCtrl(this, Template.Utilitykeys[2] + "", Content.DefaultFont14, _utility3Bounds, Color.White, 
+                false, true, 2, HorizontalAlignment.Center, VerticalAlignment.Bottom);
 
-            spriteBatch.DrawStringOnCtrl(this, Template.Utilitykeys[2] + "", Content.DefaultFont14,
-                new Rectangle(SHEETBUTTON_WIDTH - 109, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32), Color.White,
+            _utility2Bounds = new Rectangle(SHEETBUTTON_WIDTH - 145, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32);
+            spriteBatch.DrawOnCtrl(this, _mouseOverUtility2 ? GlowUtilitySprite : UtilitySprite, _utility2Bounds, Color.White);
+
+            spriteBatch.DrawStringOnCtrl(this, Template.Utilitykeys[1] + "", Content.DefaultFont14, _utility2Bounds, Color.White,
                 false, true, 2, Blish_HUD.Controls.HorizontalAlignment.Center, VerticalAlignment.Bottom);
 
-            if (_mouseOverUtility2)
-                spriteBatch.DrawOnCtrl(this, GlowUtilitySprite,
-                    new Rectangle(SHEETBUTTON_WIDTH - 145, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32),
-                    Color.White);
-            else
-                spriteBatch.DrawOnCtrl(this, UtilitySprite,
-                    new Rectangle(SHEETBUTTON_WIDTH - 145, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32),
-                    Color.White);
+            _utility1Bounds = new Rectangle(SHEETBUTTON_WIDTH - 181, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32);
+            spriteBatch.DrawOnCtrl(this, _mouseOverUtility1 ? GlowUtilitySprite : UtilitySprite, _utility1Bounds, Color.White);
 
-            spriteBatch.DrawStringOnCtrl(this, Template.Utilitykeys[1] + "", Content.DefaultFont14,
-                new Rectangle(SHEETBUTTON_WIDTH - 145, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32), Color.White,
-                false, true, 2, Blish_HUD.Controls.HorizontalAlignment.Center, VerticalAlignment.Bottom);
-
-            if (_mouseOverUtility1)
-                spriteBatch.DrawOnCtrl(this, GlowUtilitySprite,
-                    new Rectangle(SHEETBUTTON_WIDTH - 181, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32),
-                    Color.White);
-            else
-                spriteBatch.DrawOnCtrl(this, UtilitySprite,
-                    new Rectangle(SHEETBUTTON_WIDTH - 181, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32),
-                    Color.White);
-
-            spriteBatch.DrawStringOnCtrl(this, Template.Utilitykeys[0] + "", Content.DefaultFont14,
-                new Rectangle(SHEETBUTTON_WIDTH - 181, bounds.Height - BOTTOMSECTION_HEIGHT + 1, 32, 32), Color.White,
+            spriteBatch.DrawStringOnCtrl(this, Template.Utilitykeys[0] + "", Content.DefaultFont14, _utility1Bounds, Color.White,
                 false, true, 2, Blish_HUD.Controls.HorizontalAlignment.Center, VerticalAlignment.Bottom);
 
             #endregion

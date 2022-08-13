@@ -137,9 +137,9 @@ namespace Nekres.Special_Forces.Player
             };
             _currentTemplate = template;
 
-            var profession = template.BuildChatLink.Profession.ToString();
+            var profession = template.GetBuildChatLink().Profession;
 
-            if (!profession.Equals(GameService.Gw2Mumble.PlayerCharacter.Profession.ToString(), StringComparison.InvariantCultureIgnoreCase))
+            if (profession != GameService.Gw2Mumble.PlayerCharacter.Profession)
             {
                 ScreenNotification.ShowNotification($"Your profession is {GameService.Gw2Mumble.PlayerCharacter.Profession}.\nRequired: {profession}", ScreenNotification.NotificationType.Error);
                 return;
@@ -185,7 +185,7 @@ namespace Nekres.Special_Forces.Player
                 {
                     Parent = GameService.Graphics.SpriteScreen,
                     Size = new Point(textWidth, textHeight),
-                    Visible = GameService.GameIntegration.IsInGame,
+                    Visible = GameService.GameIntegration.Gw2Instance.IsInGame,
                     VerticalAlignment = VerticalAlignment.Middle,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     StrokeText = true,
@@ -207,16 +207,15 @@ namespace Nekres.Special_Forces.Player
                 {
                     Parent = GameService.Graphics.SpriteScreen,
                     Size = new Point(textWidth, textHeight),
-                    Visible = GameService.GameIntegration.IsInGame,
                     VerticalAlignment = VerticalAlignment.Middle,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     StrokeText = true,
                     ShowShadow = true,
                     Text = text,
                     Font = _labelFont,
-                    TextColor = Color.Red
+                    TextColor = Color.Red,
+                    Location = new Point((GameService.Graphics.SpriteScreen.Width - textWidth) / 2, GameService.Graphics.SpriteScreen.Height - textHeight - 160)
                 };
-                hint.Location = new Point((GameService.Graphics.SpriteScreen.Width / 2 - hint.Width / 2), (GameService.Graphics.SpriteScreen.Height - hint.Height) - 160);
 
             } else {
 
@@ -234,10 +233,9 @@ namespace Nekres.Special_Forces.Player
                     Parent = GameService.Graphics.SpriteScreen,
                     Size = new Point(scale, scale),
                     Texture = SpecialForcesModule.Instance.ContentsManager.GetTexture("skill_frame.png"),
-                    Visible = GameService.GameIntegration.IsInGame,
-                    Tint = Color.Red
+                    Tint = Color.Red,
+                    Location = new Point(GameService.Graphics.SpriteScreen.Width / 2 - X, GameService.Graphics.SpriteScreen.Height - Y)
                 };
-                hint.Location = new Point(GameService.Graphics.SpriteScreen.Width / 2 - X, GameService.Graphics.SpriteScreen.Height - Y);
             }
 
             Label remainingDuration = null;
@@ -251,14 +249,13 @@ namespace Nekres.Special_Forces.Player
                     Size = new Point(textWidth, hint.Height),
                     VerticalAlignment = VerticalAlignment.Bottom,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    Visible = GameService.GameIntegration.IsInGame,
                     StrokeText = true,
                     ShowShadow = true,
                     Text = text,
                     Font = _labelFont,
-                    TextColor = Color.Red
+                    TextColor = Color.Red,
+                    Location = new Point(hint.Location.X + (hint.Width - textWidth) / 2, hint.Location.Y)
                 };
-                currentRepetition.Location = new Point(hint.Location.X + (hint.Width / 2) - (currentRepetition.Width / 2),hint.Location.Y);
                 _controls.Add(currentRepetition);
 
             } else if (_time.Elapsed.TotalMilliseconds < duration || duration >  0) {
@@ -273,14 +270,13 @@ namespace Nekres.Special_Forces.Player
                     Size = new Point(textWidth, hint.Height),
                     VerticalAlignment = VerticalAlignment.Bottom,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    Visible = GameService.GameIntegration.IsInGame,
                     StrokeText = true,
                     ShowShadow = true,
                     Text = text,
                     Font = _labelFont,
-                    TextColor = Color.IndianRed
+                    TextColor = Color.IndianRed,
+                    Location = new Point(hint.Location.X + (hint.Width - textWidth) / 2, hint.Location.Y)
                 };
-                remainingDuration.Location = new Point(hint.Location.X + (hint.Width / 2) - (remainingDuration.Width / 2),hint.Location.Y);
                 _controls.Add(remainingDuration);
 
                 await Task.Run(() =>
@@ -307,14 +303,11 @@ namespace Nekres.Special_Forces.Player
                 {
                     Effect = _glowFx
                 },
-                Visible = hint.Visible
+                Location = new Point(hint.Location.X + (hint.Width - 58) / 2, hint.Location.Y - 58)
             };
-            arrow.Location = new Point(hint.Location.X + (hint.Width / 2) - (arrow.Width / 2),hint.Location.Y - arrow.Height);
             GameService.Animation.Tweener.Tween(arrow, new {Location = new Point(arrow.Location.X, arrow.Location.Y + 10)}, 0.7f).Repeat();
             _controls.Add(arrow);
-
             _controls.Add(hint);
-
             _pressed = delegate {
                     if (duration == 0 || _time.Elapsed.TotalMilliseconds > 0.9 * duration)
                     {

@@ -69,8 +69,7 @@ namespace Nekres.Special_Forces
             foreach (GuildWarsControls skill in Enum.GetValues(typeof(GuildWarsControls)))
             {
                 if (skill == GuildWarsControls.None) continue;
-                var friendlyName = Regex.Replace(skill.ToString(), "([A-Z]|[1-9])", " $1", RegexOptions.Compiled)
-                    .Trim();
+                var friendlyName = Regex.Replace(skill.ToString(), "([A-Z]|[1-9])", " $1").Trim();
                 SkillBindings.Add(skill,
                     skillBindingSettings.DefineSetting(skill.ToString(), new KeyBinding(Keys.None) {Enabled = true},
                         () => friendlyName,
@@ -88,12 +87,12 @@ namespace Nekres.Special_Forces
 
         protected override void Initialize()
         {
-            _cornerTexture = ContentsManager.GetTexture("specialforces_icon.png");
+            _cornerTexture = ContentsManager.GetTexture("corner_icon.png");
             _backgroundTexture = GameService.Content.GetTexture("controls/window/502049");
 
             TemplateReader = new TemplateReader();
             TemplatePlayer = new TemplatePlayer();
-            this.RenderService = new RenderService(GetModuleProgressHandler());
+            RenderService = new RenderService(GetModuleProgressHandler());
         }
 
         private void UpdateModuleLoading(string loadingMessage)
@@ -109,7 +108,6 @@ namespace Nekres.Special_Forces
 
         protected override async Task LoadAsync()
         {
-            
         }
 
         protected override void OnModuleLoaded(EventArgs e)
@@ -125,21 +123,28 @@ namespace Nekres.Special_Forces
                 Title = this.Name,
                 Id = $"{nameof(SpecialForcesModule)}_5f6e0f0b-5dc8-4c21-8f74-e4874b9d5822"
             };
-            
-            Window.Tabs.Add(new Tab(_cornerTexture, () => new HomeView(new HomeModel()), "Home"));
 
             _cornerIcon = new CornerIcon(_cornerTexture, "Special Forces");
             _cornerIcon.Click += OnModuleIconClick;
 
             this.RenderService.DownloadIcons();
 
+            this.RenderService.LoadingChanged += OnLoadingChanged;
             // Base handler must be called
             base.OnModuleLoaded(e);
         }
 
+        private void OnLoadingChanged(object o, ValueEventArgs<bool> e)
+        {
+            if (e.Value) return;
+            this.RenderService.LoadingChanged -= OnLoadingChanged;
+            this.Window.Tabs.Add(new Tab(_cornerTexture, () => new HomeView(new HomeModel()), "Home"));
+        }
+
         public void OnModuleIconClick(object o, MouseEventArgs e)
         {
-            Window?.ToggleWindow();
+            if (this.RenderService.IsLoading) return;
+            this.Window?.ToggleWindow();
         }
 
         protected override void Update(GameTime gameTime)
@@ -150,7 +155,8 @@ namespace Nekres.Special_Forces
         protected override void Unload()
         {
             // Unload
-            TemplatePlayer?.Dispose();
+            this.RenderService.LoadingChanged -= OnLoadingChanged;
+            this.TemplatePlayer?.Dispose();
 
             if (_cornerIcon != null)
             {
