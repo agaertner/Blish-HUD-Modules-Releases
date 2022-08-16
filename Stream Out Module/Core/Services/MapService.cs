@@ -78,7 +78,7 @@ namespace Nekres.Stream_Out.Core.Services
                     break;
                 case MapType.PublicMini:
                 case MapType.Public:
-                    type = map.Id != 350 ? "PvE" : "PvP"; // Edge of the Mists
+                    type = map.Id != 350 ? "PvE" : "PvP"; // Heart of the Mists (PvP Lobby)
                     break;
                 case MapType.Pvp:
                     type = "PvP";

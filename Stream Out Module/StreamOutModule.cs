@@ -208,7 +208,6 @@ namespace Nekres.Stream_Out
         protected override async void Update(GameTime gameTime)
         {
             if (!HasSubToken) return;
-            //TODO: Code-smell. This needs to be handled better.
             try
             {
                 foreach (var service in _allExportServices.ToList())

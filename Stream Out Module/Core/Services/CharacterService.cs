@@ -103,7 +103,7 @@ namespace Nekres.Stream_Out.Core.Services
                     _catmanderIcon = new Bitmap(catmanderIconStream);
                     await catmanderIconStream.FlushAsync();
                 }
-                _catmanderIcon.Save($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{COMMANDER_ICON}", ImageFormat.Png);
+                await _catmanderIcon.SaveOnNetworkShare($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{COMMANDER_ICON}", ImageFormat.Png);
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace Nekres.Stream_Out.Core.Services
                 _commanderIcon = new Bitmap(commanderIconStream);
                 await commanderIconStream.FlushAsync();
             }
-            _commanderIcon.Save($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{COMMANDER_ICON}", ImageFormat.Png);
+            await _commanderIcon.SaveOnNetworkShare($"{DirectoriesManager.GetFullDirectoryPath("stream_out")}/{COMMANDER_ICON}", ImageFormat.Png);
         }
 
         private async void OnUseCatmanderTagSettingChanged(object o, ValueChangedEventArgs<bool> e)

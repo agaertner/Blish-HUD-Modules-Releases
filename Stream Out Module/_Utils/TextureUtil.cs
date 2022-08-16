@@ -31,7 +31,8 @@ namespace Nekres.Stream_Out
                 }
                 using var textureStream = new MemoryStream(textureDataResponse.Result);
                 using var bitmap = new Bitmap(textureStream);
-                await bitmap.SaveOnNetworkShare(path, ImageFormat.Png);
+                using var resized = new Bitmap(bitmap, new Size(64, 64));
+                await resized.SaveOnNetworkShare(path, ImageFormat.Png);
             });
         }
     }
