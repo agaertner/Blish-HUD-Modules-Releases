@@ -131,12 +131,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Services\MapService.cs" />
+    <Compile Include="Services\MarkerService.cs" />
     <Compile Include="Services\WvwService.cs" />
-    <Compile Include="UI\Controls\MapImageDynamic.cs" />
     <Compile Include="UI\Controls\MapImage.cs" />
+    <Compile Include="UI\Controls\MarkerBillboard.cs" />
     <Compile Include="_Extensions\BitmapExtensions.cs" />
     <Compile Include="_Extensions\ColorExtensions.cs" />
-    <Compile Include="_Extensions\Coordinates3Extensions.cs" />
     <Compile Include="_Extensions\EnumerableExtensions.cs" />
     <Compile Include="_Extensions\MapTypeExtensions.cs" />
     <Compile Include="_Extensions\MathExtensions.cs" />
@@ -144,9 +144,11 @@
     <Compile Include="MistwarModule.cs" />
     <Compile Include="Entities\WvwObjectiveEntity.cs" />
     <Compile Include="_Extensions\SpriteBatchExtensions.cs" />
+    <Compile Include="_Extensions\VectorExtensions.cs" />
     <Compile Include="_Utils\CommonStrings.cs" />
-    <Compile Include="_Utils\ConvexHullUtil.cs" />
+    <Compile Include="_Utils\GameUtil.cs" />
     <Compile Include="_Utils\MapUtil.cs" />
+    <Compile Include="_Utils\MathUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">

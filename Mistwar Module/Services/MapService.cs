@@ -1,6 +1,9 @@
 ﻿using Blish_HUD;
+using Blish_HUD.Content;
+using Blish_HUD.Controls;
 using Blish_HUD.Modules.Managers;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nekres.Mistwar.UI.Controls;
 using System;
 using System.Collections.Generic;
@@ -8,9 +11,6 @@ using System.IO;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
-using Blish_HUD.Content;
-using Blish_HUD.Controls;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Nekres.Mistwar.Services
 {
@@ -19,7 +19,6 @@ namespace Nekres.Mistwar.Services
         private const int MAX_MAP_LOAD_RETRIES = 2;
 
         private DirectoriesManager _dir;
-        private Gw2ApiManager _api;
         private WvwService _wvw;
 
         private MapImage _mapControl;
@@ -50,28 +49,23 @@ namespace Nekres.Mistwar.Services
 
         public bool IsLoading { get; private set; }
 
-        public string Log { get; private set; }
-
         private Dictionary<int, AsyncTexture2D> _mapCache;
 
         private int _mapLoadRetries;
 
-        public MapService(Gw2ApiManager api, DirectoriesManager dir, WvwService wvw, IProgress<string> loadingIndicator)
+        public MapService(DirectoriesManager dir, WvwService wvw, IProgress<string> loadingIndicator)
         {
             _dir = dir;
-            _api = api;
             _wvw = wvw;
             _loadingIndicator = loadingIndicator;
             _mapCache = new Dictionary<int, AsyncTexture2D>();
-
             _mapControl = new MapImage
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 Size = new Point(0, 0),
-                Location = new Point(0, 0)
+                Location = new Point(0, 0),
+                Visible = false
             };
-            _mapControl.Hide();
-
             GameService.Gw2Mumble.CurrentMap.MapChanged += OnMapChanged;
             GameService.Gw2Mumble.UI.IsMapOpenChanged += OnIsMapOpenChanged;
             GameService.GameIntegration.Gw2Instance.IsInGameChanged += OnIsInGameChanged;
@@ -102,7 +96,6 @@ namespace Nekres.Mistwar.Services
                 // refactor of the code to support it would not yield much value.
             }
             this.IsLoading = false;
-            this.Log = null;
             _loadingIndicator.Report(null);
         }
 
@@ -150,7 +143,7 @@ namespace Nekres.Mistwar.Services
                     using var fil = new MemoryStream(File.ReadAllBytes(filePath));
                     var tex = Texture2D.FromStream(GameService.Graphics.GraphicsDevice, fil);
                     cacheTex.SwapTexture(tex);
-                    break;
+                    return true;
                 }
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException or SecurityException or ArgumentException or InvalidOperationException)
                 {
@@ -159,7 +152,7 @@ namespace Nekres.Mistwar.Services
                     return false;
                 }
             }
-            return true;
+            return false;
         }
 
         public async Task ReloadMap()
@@ -167,7 +160,11 @@ namespace Nekres.Mistwar.Services
             if (GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() && _mapCache.TryGetValue(GameService.Gw2Mumble.CurrentMap.Id, out var tex))
             {
                 _mapControl.Texture.SwapTexture(tex);
-                _mapControl.WvwObjectives = await _wvw.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id);
+                await _wvw.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id).ContinueWith(t =>
+                {
+                    _mapControl.WvwObjectives = t.Result;
+                    MistwarModule.ModuleInstance.MarkerService?.ReloadMarkers(t.Result);
+                });
             }
         }
 

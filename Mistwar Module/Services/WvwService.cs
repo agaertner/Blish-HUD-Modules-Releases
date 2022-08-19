@@ -9,8 +9,12 @@ using System.Threading.Tasks;
 
 namespace Nekres.Mistwar.Services
 {
-    internal class WvwService : IDisposable
+    internal class WvwService
     {
+        public IEnumerable<WvwObjectiveEntity> CurrentObjectives => _wvwObjectiveCache?.TryGetValue(GameService.Gw2Mumble.CurrentMap.Id, out var objEntities) ?? false ? objEntities : null;
+
+        public Guid? CurrentGuild { get; private set; }
+
         private Gw2ApiManager _api;
 
         private Dictionary<int, IEnumerable<WvwObjectiveEntity>> _wvwObjectiveCache;
@@ -25,11 +29,13 @@ namespace Nekres.Mistwar.Services
 
         public async Task Update()
         {
-            if (!GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() || !_wvwObjectiveCache.ContainsKey(GameService.Gw2Mumble.CurrentMap.Id)) return;
-
             if (DateTime.UtcNow.Subtract(_prevApiRequestTime).TotalSeconds < 15)
                 return;
             _prevApiRequestTime = DateTime.UtcNow;
+
+            this.CurrentGuild = await GetRepresentedGuild();
+
+            if (!GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() || !_wvwObjectiveCache.ContainsKey(GameService.Gw2Mumble.CurrentMap.Id)) return;
 
             var worldId = await GetWorldId();
             if (worldId == -1) return;
@@ -40,8 +46,19 @@ namespace Nekres.Mistwar.Services
             }
         }
 
+        public async Task<Guid?> GetRepresentedGuild()
+        {
+            if (!_api.HasPermissions(new []{TokenPermission.Account, TokenPermission.Characters})) return null;
+            return await _api.Gw2ApiClient.V2.Characters[GameService.Gw2Mumble.PlayerCharacter.Name].GetAsync().ContinueWith(t =>
+                        {
+                            if (t.IsFaulted) return null;
+                            return t.Result.Guild;
+                        });
+        }
+
         public async Task<int> GetWorldId()
         {
+            if (!_api.HasPermission(TokenPermission.Account)) return -1;
             return await _api.Gw2ApiClient.V2.Account.GetAsync().ContinueWith(task =>
             {
                 if (task.IsFaulted) return -1;
@@ -105,15 +122,13 @@ namespace Nekres.Mistwar.Services
                 {
                     var obj = task.Result.FirstOrDefault(x => x.SectorId == sector.Id);
                     if (obj == null) continue;
-                    newObjectives.Add(new WvwObjectiveEntity(obj, map, sector));
+                    var o = new WvwObjectiveEntity(obj, map, sector);
+                    newObjectives.Add(o);
                 }
                 _wvwObjectiveCache.Add(map.Id, newObjectives);
+
                 return newObjectives;
             }).Unwrap();
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

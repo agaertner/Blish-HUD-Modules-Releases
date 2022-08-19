@@ -12,6 +12,7 @@ using Nekres.Mistwar.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -35,50 +36,87 @@ namespace Nekres.Mistwar
         [ImportingConstructor]
         public MistwarModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { ModuleInstance = this; }
 
-        internal SettingEntry<KeyBinding> ToggleKeySetting;
+        // General settings
         internal SettingEntry<ColorType> ColorTypeSetting;
+        internal SettingEntry<bool> TeamShapesSetting;
+        // Hotkeys
+        internal SettingEntry<KeyBinding> ToggleMapKeySetting;
+        internal SettingEntry<KeyBinding> ToggleMarkersKeySetting;
+
+        // Map settings
         internal SettingEntry<float> ColorIntensitySetting;
         internal SettingEntry<bool> DrawSectorsSetting;
         internal SettingEntry<float> ScaleRatioSetting;
         internal SettingEntry<bool> DrawObjectiveNamesSetting;
         internal SettingEntry<float> OpacitySetting;
+        internal SettingEntry<bool> DrawRuinMapSetting;
+
+        // Marker settings
+        internal SettingEntry<bool> EnableMarkersSetting;
+        internal SettingEntry<float> MaxViewDistanceSetting;
+        internal SettingEntry<bool> HideInCombatSetting;
+        internal SettingEntry<bool> DrawRuinMarkersSetting;
+
         protected override void DefineSettings(SettingCollection settings)
         {
-            ToggleKeySetting = settings.DefineSetting("ToggleKey", new KeyBinding(Keys.N), () => "Toggle Key", () => "Key used to show and hide the tactical map overlay.");
-            ColorTypeSetting = settings.DefineSetting("ColorType", ColorType.Normal, () => "Color Type", () => "Select a different color type if you have a color deficiency.");
-            ColorIntensitySetting = settings.DefineSetting("ColorIntensity", 80f, () => "Color Intensity", () => "Intensity of the background color.");
-            OpacitySetting = settings.DefineSetting("Opacity", 80f, () => "Opacity", () => "Changes the opacity of the tactical map interface.");
-            ScaleRatioSetting = settings.DefineSetting("ScaleRatio", 80f, () => "Scale Ratio", () => "Changes the size of the tactical map interface");
-            DrawSectorsSetting = settings.DefineSetting("DrawSectors", true, () => "Draw Sector Boundaries", () => "Indicates if the sector boundaries should be drawn.");
-            DrawObjectiveNamesSetting = settings.DefineSetting("DrawObjectiveNames", true, () => "Draw Objective Names", () => "Indicates if the names of the objectives should be drawn.");
+            var generalSettings = settings.AddSubCollection("General", true, false);
+            ColorTypeSetting = generalSettings.DefineSetting("ColorType", ColorType.Normal, () => "Color Type", () => "Select a different color type if you have a color deficiency.");
+            TeamShapesSetting = generalSettings.DefineSetting("TeamShapes", true, () => "Team Shapes", () => "Enables uniquely shaped objective markers per team.");
+
+            var hotKeySettings = settings.AddSubCollection("Control Options", true, false);
+            ToggleMapKeySetting = hotKeySettings.DefineSetting("ToggleKey", new KeyBinding(Keys.N), () => "Toggle Map", () => "Key used to show and hide the strategic map.");
+            ToggleMarkersKeySetting = hotKeySettings.DefineSetting("ToggleMarkersKey", new KeyBinding(Keys.OemOpenBrackets), () => "Toggle Markers", () => "Key used to show and hide the objective markers.");
+
+            var mapSettings = settings.AddSubCollection("Map", true, false);
+            DrawSectorsSetting = mapSettings.DefineSetting("DrawSectors", true, () => "Show Sector Boundaries", () => "Indicates if the sector boundaries should be drawn.");
+            DrawObjectiveNamesSetting = mapSettings.DefineSetting("DrawObjectiveNames", true, () => "Show Objective Names", () => "Indicates if the names of the objectives should be drawn.");
+            DrawRuinMapSetting = mapSettings.DefineSetting("ShowRuins", true, () => "Show Ruins", () => "Indicates if the ruins should be shown.");
+            OpacitySetting = mapSettings.DefineSetting("Opacity", 80f, () => "Opacity", () => "Changes the opacity of the tactical map interface.");
+            ColorIntensitySetting = mapSettings.DefineSetting("ColorIntensity", 80f, () => "Color Intensity", () => "Intensity of the background color.");
+            ScaleRatioSetting = mapSettings.DefineSetting("ScaleRatio", 80f, () => "Scale Ratio", () => "Changes the size of the tactical map interface");
+
+            var markerSettings = settings.AddSubCollection("Markers", true, false);
+            EnableMarkersSetting = markerSettings.DefineSetting("EnableMarkers", true, () => "Enable Markers", () => "Enables the markers overlay which shows objectives at their world position.");
+            HideInCombatSetting = markerSettings.DefineSetting("HideInCombat", true, () => "Hide in Combat", () => "Shows only the closest objective in combat and hides all others.");
+            DrawRuinMarkersSetting = markerSettings.DefineSetting("ShowRuinMarkers", true, () => "Show Ruins", () => "Shows markers for the ruins.");
+            MaxViewDistanceSetting = markerSettings.DefineSetting("MaxViewDistance", 50f, () => "Max View Distance", () => "The max view distance at which an objective marker can be seen.");
         }
 
         private CornerIcon _moduleIcon;
-        private WvwService _wvwService;
+        internal WvwService WvwService;
         private MapService _mapService;
+        internal MarkerService MarkerService;
 
         private AsyncTexture2D _cornerTex;
         protected override void Initialize()
         {
             _cornerTex = new AsyncTexture2D(ContentsManager.GetTexture("corner_icon.png"));
             _moduleIcon = new CornerIcon(_cornerTex, this.Name);
-            _wvwService = new WvwService(Gw2ApiManager);
-            _mapService = new MapService(Gw2ApiManager, DirectoriesManager, _wvwService, GetModuleProgressHandler());
+            WvwService = new WvwService(Gw2ApiManager);
+            if (EnableMarkersSetting.Value)
+            {
+                MarkerService = new MarkerService();
+            }
+            _mapService = new MapService(DirectoriesManager, WvwService, GetModuleProgressHandler());
+
         }
 
         protected override async Task LoadAsync()
         {
             if (!this.Gw2ApiManager.HasPermission(TokenPermission.Account)) return;
-            _mapService.DownloadMaps(await _wvwService.GetWvWMapIds(await _wvwService.GetWorldId()));
+            _mapService.DownloadMaps(await WvwService.GetWvWMapIds(await WvwService.GetWorldId()));
         }
 
         protected override void OnModuleLoaded(EventArgs e)
         {
             Gw2ApiManager.SubtokenUpdated += OnSubtokenUpdated;
             ColorIntensitySetting.SettingChanged += OnColorIntensitySettingChanged;
-            ToggleKeySetting.Value.Activated += OnToggleKeyActivated;
+            ToggleMapKeySetting.Value.Activated += OnToggleKeyActivated;
+            ToggleMarkersKeySetting.Value.Activated += OnToggleMarkersKeyActivated;
             OpacitySetting.SettingChanged += OnOpacitySettingChanged;
-            ToggleKeySetting.Value.Enabled = true;
+            EnableMarkersSetting.SettingChanged += OnEnableMarkersSettingChanged;
+            ToggleMapKeySetting.Value.Enabled = true;
+            ToggleMarkersKeySetting.Value.Enabled = true;
             GameService.Gw2Mumble.CurrentMap.MapChanged += OnMapChanged;
             GameService.Gw2Mumble.UI.IsMapOpenChanged += OnIsMapOpenChanged;
 
@@ -113,10 +151,8 @@ namespace Nekres.Mistwar
         private async void OnSubtokenUpdated(object o, ValueEventArgs<IEnumerable<TokenPermission>> e)
         {
             if (!e.Value.Contains(TokenPermission.Account)) return;
-            _mapService.DownloadMaps(await _wvwService.GetWvWMapIds(await _wvwService.GetWorldId()));
+            _mapService.DownloadMaps(await WvwService.GetWvWMapIds(await WvwService.GetWorldId()));
         }
-
-        private bool IsUiAvailable() => GameService.Gw2Mumble.IsAvailable && GameService.GameIntegration.Gw2Instance.IsInGame && !GameService.Gw2Mumble.UI.IsMapOpen;
 
         private void OnOpacitySettingChanged(object o, ValueChangedEventArgs<float> e)
         {
@@ -125,13 +161,19 @@ namespace Nekres.Mistwar
 
         private void OnToggleKeyActivated(object o, EventArgs e)
         {
-            if (!IsUiAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()) return;
+            if (!GameUtil.IsUiAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()) return;
             _mapService.Toggle();
+        }
+
+        private void OnToggleMarkersKeyActivated(object o, EventArgs e)
+        {
+            if (!GameUtil.IsUiAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()) return;
+            MarkerService?.Toggle();
         }
 
         protected override async void Update(GameTime gameTime)
         {
-            await _wvwService.Update();
+            await WvwService.Update();
         }
 
         private void OnColorIntensitySettingChanged(object o, ValueChangedEventArgs<float> e)
@@ -141,7 +183,7 @@ namespace Nekres.Mistwar
 
         private void OnIsMapOpenChanged(object o, ValueEventArgs<bool> e)
         {
-            ToggleKeySetting.Value.Enabled = GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld();
+            ToggleMapKeySetting.Value.Enabled = GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld();
         }
 
         private void OnMapChanged(object o, ValueEventArgs<int> e)
@@ -151,25 +193,42 @@ namespace Nekres.Mistwar
                 _moduleIcon?.Dispose();
                 _moduleIcon = new CornerIcon(_cornerTex, this.Name);
                 _moduleIcon.Click += OnModuleIconClick;
-                ToggleKeySetting.Value.Enabled = true;
+                ToggleMapKeySetting.Value.Enabled = true;
                 return;
             }
             _moduleIcon?.Dispose();
-            ToggleKeySetting.Value.Enabled = false;
+            ToggleMapKeySetting.Value.Enabled = false;
+        }
+
+        private void OnEnableMarkersSettingChanged(object o, ValueChangedEventArgs<bool> e)
+        {
+            if (e.NewValue)
+            {
+                MarkerService ??= new MarkerService(WvwService.CurrentObjectives);
+                return;
+            }
+            MarkerService?.Dispose();
+            MarkerService = null;
         }
 
         /// <inheritdoc />
         protected override void Unload()
         {
+            Gw2ApiManager.SubtokenUpdated -= OnSubtokenUpdated;
+            ColorIntensitySetting.SettingChanged -= OnColorIntensitySettingChanged;
+            ToggleMapKeySetting.Value.Activated -= OnToggleKeyActivated;
+            ToggleMarkersKeySetting.Value.Activated -= OnToggleMarkersKeyActivated;
+            OpacitySetting.SettingChanged -= OnOpacitySettingChanged;
+            EnableMarkersSetting.SettingChanged -= OnEnableMarkersSettingChanged;
+            ToggleMapKeySetting.Value.Enabled = false;
+            ToggleMarkersKeySetting.Value.Enabled = false;
+            GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
+            GameService.Gw2Mumble.UI.IsMapOpenChanged -= OnIsMapOpenChanged;
+
+            MarkerService?.Dispose();
             _mapService?.Dispose();
             _moduleIcon?.Dispose();
             _cornerTex?.Dispose();
-            GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
-            GameService.Gw2Mumble.UI.IsMapOpenChanged -= OnIsMapOpenChanged;
-            ToggleKeySetting.Value.Enabled = false;
-            Gw2ApiManager.SubtokenUpdated -= OnSubtokenUpdated;
-            ColorIntensitySetting.SettingChanged -= OnColorIntensitySettingChanged;
-            OpacitySetting.SettingChanged -= OnOpacitySettingChanged;
             // All static members must be manually unset
             ModuleInstance = null;
         }

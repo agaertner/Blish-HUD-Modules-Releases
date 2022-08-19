@@ -48,7 +48,7 @@ namespace Nekres.Mistwar
         /// <param name="hull">the vertices of polygon</param>
         /// <param name="point">the given point</param>
         /// <returns>true if the point is inside the polygon; otherwise, false</returns>
-        public static bool InBounds(Point point, IReadOnlyList<Point> hull)
+        public static bool InBounds(PointF point, IReadOnlyList<PointF> hull)
         {
             bool result = false;
             int j = hull.Count() - 1;

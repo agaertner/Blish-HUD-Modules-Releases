@@ -1,6 +1,6 @@
 {
   "name": "Mistwar",
-  "version": "0.6.0",
+  "version": "0.9.5",
   "namespace": "Nekres.Mistwar",
   "package": "Mistwar.dll",
   "manifest_version": 1,
@@ -20,8 +20,12 @@
   ],
   "api_permissions": {
     "account": {
-      "optional": true,
+      "optional": false,
       "details": "Required to get the current match your guild alliance is participating in."
+    },
+    "characters": {
+      "optional": true,
+      "details": "Required to get your current represented guild."
     }
   }
 }

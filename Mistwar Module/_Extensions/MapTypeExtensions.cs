@@ -11,7 +11,7 @@ namespace Nekres.Mistwar
                 case MapType.BlueHome:
                 case MapType.GreenHome:
                 case MapType.RedHome:
-                case MapType.EdgeOfTheMists: return true;
+                    return true;
                 default: return false;
             }
         }

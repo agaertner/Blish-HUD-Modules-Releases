@@ -3,8 +3,12 @@ using Blish_HUD.Content;
 using Blish_HUD.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
+using MonoGame.Extended.BitmapFonts;
 using Nekres.Mistwar.Entities;
 using System.Collections.Generic;
+using System.Linq;
+using Gw2Sharp.WebApi.V2.Models;
 using Color = Microsoft.Xna.Framework.Color;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 namespace Nekres.Mistwar.UI.Controls
@@ -47,31 +51,29 @@ namespace Nekres.Mistwar.UI.Controls
 
         private Effect _grayscaleEffect;
 
-        private MapImageDynamic _dynamicLayer;
+        private SpriteBatchParameters _grayscaleSpriteBatchParams;
 
-        private bool _isVisible;
+        private BitmapFont _font;
 
         public MapImage()
         {
-            this.Texture = new AsyncTexture2D();
+            _font = Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular);
+            _spriteBatchParameters = new SpriteBatchParameters();
             _grayscaleEffect = MistwarModule.ModuleInstance.ContentsManager.GetEffect<Effect>(@"effects\grayscale.mgfx");
-            _spriteBatchParameters = new SpriteBatchParameters
+            _grayscaleSpriteBatchParams = new SpriteBatchParameters
             {
                 Effect = _grayscaleEffect
             };
-            _dynamicLayer = new MapImageDynamic(this)
-            {
-                Size = this.Size
-            };
+            this.Texture = new AsyncTexture2D();
             this.Texture.TextureSwapped += OnTextureSwapped;
             MistwarModule.ModuleInstance.ScaleRatioSetting.SettingChanged += OnScaleRatioChanged;
         }
 
         public void Toggle(float tDuration = 0.1f, bool silent = false)
         {
-            if (_isVisible)
+            if (_visible)
             {
-                _isVisible = false;
+                _visible = false;
                 if (silent)
                 {
                     this.Hide();
@@ -81,7 +83,7 @@ namespace Nekres.Mistwar.UI.Controls
                 GameService.Animation.Tweener.Tween(this, new { Opacity = 0.0f }, tDuration).OnComplete(this.Hide);
                 return;
             }
-            _isVisible = true;
+            _visible = true;
             this.Show();
             if (silent) return;
             GameService.Content.PlaySoundEffectByName("page-open-" + RandomUtil.GetRandom(1, 3));
@@ -105,16 +107,18 @@ namespace Nekres.Mistwar.UI.Controls
             if (!_texture.HasTexture) return;
             this.Size = Blish_HUD.PointExtensions.ResizeKeepAspect(_texture.Texture.Bounds.Size, (int)(ScaleRatio * GameService.Graphics.SpriteScreen.Width), (int)(ScaleRatio * GameService.Graphics.SpriteScreen.Height));
             this.Location = new Point(this.Parent.Size.X / 2 - this.Size.X / 2, this.Parent.Size.Y / 2 - this.Size.Y / 2);
-            _dynamicLayer.Size = this.Size;
         }
-        private new void Dispose()
+
+        protected override void DisposeControl()
         {
-            _dynamicLayer?.Dispose();
-            _texture.TextureSwapped -= OnTextureSwapped;
-            _texture?.Dispose();
+            if (_texture != null)
+            {
+                _texture.TextureSwapped -= OnTextureSwapped;
+                _texture.Dispose();
+            }
             _grayscaleEffect?.Dispose();
             MistwarModule.ModuleInstance.ScaleRatioSetting.SettingChanged -= OnScaleRatioChanged;
-            base.Dispose();
+            base.DisposeControl();
         }
 
         private void OnTextureSwapped(object o, ValueChangedEventArgs<Texture2D> e)
@@ -122,12 +126,14 @@ namespace Nekres.Mistwar.UI.Controls
             this.SourceRectangle = e.NewValue.Bounds;
             this.Size = Blish_HUD.PointExtensions.ResizeKeepAspect(e.NewValue.Bounds.Size, (int)(ScaleRatio * GameService.Graphics.SpriteScreen.Width), (int)(ScaleRatio * GameService.Graphics.SpriteScreen.Height));
             this.Location = new Point(this.Parent.Size.X / 2 - this.Size.X / 2, this.Parent.Size.Y / 2 - this.Size.Y / 2);
-            _dynamicLayer.Size = this.Size;
         }
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
         {
-            if (!_texture.HasTexture || WvwObjectives == null) return;
+            if (!this.Visible || !_texture.HasTexture || WvwObjectives == null) return;
+
+            spriteBatch.End();
+            spriteBatch.Begin(_grayscaleSpriteBatchParams);
 
             // Draw the texture
             spriteBatch.DrawOnCtrl(this,
@@ -138,6 +144,45 @@ namespace Nekres.Mistwar.UI.Controls
                 0f,
                 Vector2.Zero,
                 _spriteEffects);
+
+            spriteBatch.End();
+            spriteBatch.Begin(_spriteBatchParameters); // Exclude everything below from greyscale effect.
+
+            var widthRatio = bounds.Width / (float)SourceRectangle.Width;
+            var heightRatio = bounds.Height / (float)SourceRectangle.Height;
+
+            if (MistwarModule.ModuleInstance.DrawSectorsSetting.Value)
+            {
+                // Draw sector boundaries
+                // These need to be iterated separately to be drawn before any other content to avoid overlapping.
+                foreach (var objectiveEntity in WvwObjectives)
+                {
+                    var teamColor = objectiveEntity.TeamColor.GetColorBlindType(MistwarModule.ModuleInstance.ColorTypeSetting.Value, (int)(TextureOpacity * 255));
+
+                    var sectorBounds = objectiveEntity.Bounds.Select(p =>
+                    {
+                        var r = new Point((int)(widthRatio * p.X), (int)(heightRatio * p.Y)).ToBounds(this.AbsoluteBounds);
+                        return new Vector2(r.X, r.Y);
+                    }).ToArray();
+
+                    spriteBatch.DrawPolygon(new Vector2(0, 0), sectorBounds, teamColor, 3);
+                }
+            }
+
+            foreach (var objectiveEntity in WvwObjectives)
+            {
+                if (objectiveEntity.Icon == null) continue;
+
+                if (!MistwarModule.ModuleInstance.DrawRuinMapSetting.Value && objectiveEntity.Type == WvwObjectiveType.Ruins) continue;
+
+                // Calculate draw bounds.
+                var width = (int)(ScaleRatio * objectiveEntity.Icon.Width);
+                var height = (int)(ScaleRatio * objectiveEntity.Icon.Height);
+                var dest = new Rectangle((int)(widthRatio * objectiveEntity.Center.X), (int)(heightRatio * objectiveEntity.Center.Y), width, height);
+
+                // Draw the objective.
+                spriteBatch.DrawWvwObjectiveOnCtrl(this, objectiveEntity, dest, 1f, _font);
+            }
         }
     }
 }
