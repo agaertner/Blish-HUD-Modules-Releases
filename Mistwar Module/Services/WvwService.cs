@@ -21,10 +21,13 @@ namespace Nekres.Mistwar.Services
 
         private DateTime _prevApiRequestTime = DateTime.UtcNow;
 
+        private Dictionary<int, Map> _mapCache;
+
         public WvwService(Gw2ApiManager api)
         {
             _api = api;
             _wvwObjectiveCache = new Dictionary<int, IEnumerable<WvwObjectiveEntity>>();
+            _mapCache = new Dictionary<int, Map>();
         }
 
         public async Task Update()
@@ -103,6 +106,11 @@ namespace Nekres.Mistwar.Services
                 });
         }
 
+        public bool TryGetMap(int mapId, out Map map)
+        {
+            return _mapCache.TryGetValue(mapId, out map);
+        }
+
         public async Task<IEnumerable<WvwObjectiveEntity>> GetObjectives(int mapId)
         {
             if (_wvwObjectiveCache.TryGetValue(mapId, out var objEntities))
@@ -114,6 +122,10 @@ namespace Nekres.Mistwar.Services
             {
                 if (task.IsFaulted) return Enumerable.Empty<WvwObjectiveEntity>();
                 var map = await MapUtil.RequestMap(mapId);
+                if (!_mapCache.ContainsKey(map.Id))
+                {
+                    _mapCache.Add(map.Id, map);
+                }
                 var sectors = await MapUtil.RequestSectorsForFloor(map.ContinentId, map.DefaultFloor, map.RegionId, mapId);
                 if (sectors == null) return Enumerable.Empty<WvwObjectiveEntity>();
 

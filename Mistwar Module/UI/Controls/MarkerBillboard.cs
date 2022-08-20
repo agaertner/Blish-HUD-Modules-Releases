@@ -3,7 +3,6 @@ using Blish_HUD.Controls;
 using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended.BitmapFonts;
 using Nekres.Mistwar.Entities;
 using System;
 using System.Collections.Generic;
@@ -16,11 +15,8 @@ namespace Nekres.Mistwar.UI.Controls
     {
         public IEnumerable<WvwObjectiveEntity> WvwObjectives;
 
-        private BitmapFont _font;
-
         public MarkerBillboard()
         {
-            _font = Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular);
             _spriteBatchParameters = new SpriteBatchParameters();
         }
 
@@ -83,7 +79,7 @@ namespace Nekres.Mistwar.UI.Controls
                 var dest = new Rectangle((int)transformed.X, (int)transformed.Y, width, height);
 
                 // Draw the objective.
-                spriteBatch.DrawWvwObjectiveOnCtrl(this, objectiveEntity, dest, objectiveEntity.Opacity, _font);
+                spriteBatch.DrawWvwObjectiveOnCtrl(this, objectiveEntity, dest, objectiveEntity.Opacity, MathUtil.Clamp(MistwarModule.ModuleInstance.MarkerScaleSetting.Value / 100f, 0f, 1f));
             }
         }
 

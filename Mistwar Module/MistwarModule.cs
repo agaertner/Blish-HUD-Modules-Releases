@@ -12,7 +12,6 @@ using Nekres.Mistwar.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -53,9 +52,10 @@ namespace Nekres.Mistwar
 
         // Marker settings
         internal SettingEntry<bool> EnableMarkersSetting;
-        internal SettingEntry<float> MaxViewDistanceSetting;
         internal SettingEntry<bool> HideInCombatSetting;
         internal SettingEntry<bool> DrawRuinMarkersSetting;
+        internal SettingEntry<float> MaxViewDistanceSetting;
+        internal SettingEntry<float> MarkerScaleSetting;
 
         protected override void DefineSettings(SettingCollection settings)
         {
@@ -80,6 +80,7 @@ namespace Nekres.Mistwar
             HideInCombatSetting = markerSettings.DefineSetting("HideInCombat", true, () => "Hide in Combat", () => "Shows only the closest objective in combat and hides all others.");
             DrawRuinMarkersSetting = markerSettings.DefineSetting("ShowRuinMarkers", true, () => "Show Ruins", () => "Shows markers for the ruins.");
             MaxViewDistanceSetting = markerSettings.DefineSetting("MaxViewDistance", 50f, () => "Max View Distance", () => "The max view distance at which an objective marker can be seen.");
+            MarkerScaleSetting = markerSettings.DefineSetting("ScaleRatio", 70f, () => "Scale Ratio", () => "Changes the size of the markers.");
         }
 
         private CornerIcon _moduleIcon;
@@ -167,8 +168,15 @@ namespace Nekres.Mistwar
 
         private void OnToggleMarkersKeyActivated(object o, EventArgs e)
         {
-            if (!GameUtil.IsUiAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()) return;
-            MarkerService?.Toggle();
+            EnableMarkersSetting.Value = !EnableMarkersSetting.Value;
+            if (EnableMarkersSetting.Value)
+            {
+                MarkerService?.Dispose();
+            }
+            else
+            {
+                MarkerService = new MarkerService(WvwService.CurrentObjectives);
+            }
         }
 
         protected override async void Update(GameTime gameTime)

@@ -1,15 +1,17 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Content;
 using Blish_HUD.Controls;
+using Gw2Sharp.Models;
+using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using MonoGame.Extended.BitmapFonts;
 using Nekres.Mistwar.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gw2Sharp.WebApi.V2.Models;
 using Color = Microsoft.Xna.Framework.Color;
+using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 namespace Nekres.Mistwar.UI.Controls
 {
@@ -53,11 +55,11 @@ namespace Nekres.Mistwar.UI.Controls
 
         private SpriteBatchParameters _grayscaleSpriteBatchParams;
 
-        private BitmapFont _font;
+        private Texture2D _playerArrow;
 
         public MapImage()
         {
-            _font = Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular);
+            _playerArrow = MistwarModule.ModuleInstance.ContentsManager.GetTexture("156081.png");
             _spriteBatchParameters = new SpriteBatchParameters();
             _grayscaleEffect = MistwarModule.ModuleInstance.ContentsManager.GetEffect<Effect>(@"effects\grayscale.mgfx");
             _grayscaleSpriteBatchParams = new SpriteBatchParameters
@@ -117,6 +119,7 @@ namespace Nekres.Mistwar.UI.Controls
                 _texture.Dispose();
             }
             _grayscaleEffect?.Dispose();
+            _playerArrow?.Dispose();
             MistwarModule.ModuleInstance.ScaleRatioSetting.SettingChanged -= OnScaleRatioChanged;
             base.DisposeControl();
         }
@@ -181,8 +184,21 @@ namespace Nekres.Mistwar.UI.Controls
                 var dest = new Rectangle((int)(widthRatio * objectiveEntity.Center.X), (int)(heightRatio * objectiveEntity.Center.Y), width, height);
 
                 // Draw the objective.
-                spriteBatch.DrawWvwObjectiveOnCtrl(this, objectiveEntity, dest, 1f, _font);
+                spriteBatch.DrawWvwObjectiveOnCtrl(this, objectiveEntity, dest, 1f, 1f, MistwarModule.ModuleInstance.DrawObjectiveNamesSetting.Value);
             }
+
+            // Draw player position indicator (camera transforms are used because avatar transforms are not exposed in competitive modes.)
+            if (!MistwarModule.ModuleInstance.WvwService.TryGetMap(GameService.Gw2Mumble.CurrentMap.Id, out var map)) return;
+            var v = GameService.Gw2Mumble.PlayerCamera.Position * 39.37008f; // world meters to inches.
+            var worldInchesMap = new Vector2(
+                (float)(map.ContinentRect.TopLeft.X + (v.X - map.MapRect.TopLeft.X) / map.MapRect.Width * map.ContinentRect.Width), 
+                (float)(map.ContinentRect.TopLeft.Y - (v.Y - map.MapRect.TopLeft.Y) / map.MapRect.Height * map.ContinentRect.Height)); // clamp to map bounds
+            var mapCenter = GameService.Gw2Mumble.UI.MapCenter.ToXnaVector2(); // might be (0,0) in competitive..
+            var pos = Vector2.Transform(worldInchesMap - mapCenter, Matrix.CreateRotationZ(0f));
+            var fit = MapUtil.Refit(new Coordinates2(pos.X, pos.Y), map.ContinentRect.TopLeft); // refit to our 256x256 tiled map
+            var tDest = new Rectangle((int)(widthRatio * fit.X), (int)(heightRatio * fit.Y), (int)(ScaleRatio * _playerArrow.Width), (int)(ScaleRatio * _playerArrow.Height)); // apply user scale
+            var rot = Math.Atan2(GameService.Gw2Mumble.PlayerCamera.Forward.X, GameService.Gw2Mumble.PlayerCamera.Forward.Y) * 3.6f / Math.PI; // rotate the arrow in the forward direction
+            spriteBatch.DrawOnCtrl(this, _playerArrow, new Rectangle(tDest.X + tDest.Width / 4, tDest.Y + tDest.Height / 4, tDest.Width, tDest.Height), _playerArrow.Bounds, Color.White, (float)rot, new Vector2(_playerArrow.Width / 2f, _playerArrow.Height / 2f));
         }
     }
 }
