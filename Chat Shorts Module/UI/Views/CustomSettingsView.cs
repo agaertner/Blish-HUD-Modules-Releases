@@ -1,12 +1,12 @@
-﻿using System;
-using System.Linq;
-using Blish_HUD.Controls;
+﻿using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
 using Blish_HUD.Settings.UI.Views;
 using Microsoft.Xna.Framework;
 using Nekres.Chat_Shorts.UI.Models;
 using Nekres.Chat_Shorts.UI.Presenters;
+using System;
+using System.Linq;
 
 namespace Nekres.Chat_Shorts.UI.Views
 {

@@ -26,7 +26,7 @@ namespace Nekres.Chat_Shorts.UI.Models
             _contentsManager = contentsManager;
             _socialUrls = new Dictionary<Social, string>
             {
-                {Social.KoFi, "https://ko-fi.com/TypoTiger"},
+                {Social.KoFi, "https://ko-fi.com/Nekres"},
                 {Social.Twitch, "https://twitch.tv/sNekCmd"},
             };
             _socialLogos = new Dictionary<Social, Texture2D>

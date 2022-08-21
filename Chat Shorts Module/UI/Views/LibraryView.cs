@@ -40,12 +40,6 @@ namespace Nekres.Chat_Shorts.UI.Views
             ctrl?.Dispose();
         }
 
-        protected override async Task<bool> Load(IProgress<string> progress)
-        {
-            this.Presenter.Model.MacroModels = (await ChatShorts.Instance.DataService.GetAll()).Select(MacroModel.FromEntity).ToList();
-            return !ChatShorts.Instance.DataService.Loading;
-        }
-
         protected override void Build(Container buildPanel)
         {
             var searchBar = new TextBox

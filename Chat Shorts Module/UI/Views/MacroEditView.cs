@@ -36,9 +36,12 @@ namespace Nekres.Chat_Shorts.UI.Views
             return _maps.Any();
         }
 
-        protected override async void Unload()
+        protected override void Unload()
         {
-            if (!_deleted) await ChatShorts.Instance.DataService.UpsertMacro(this.Presenter.Model);
+            if (!_deleted)
+            {
+                ChatShorts.Instance.DataService.UpsertMacro(this.Presenter.Model);
+            }
             base.Unload();
         }
 
@@ -247,10 +250,10 @@ namespace Nekres.Chat_Shorts.UI.Views
             this.Presenter.Model.NewKeysAssigned();
         }
 
-        private async void DeleteButton_Click(object o, MouseEventArgs e)
+        private void DeleteButton_Click(object o, MouseEventArgs e)
         {
             _deleted = true;
-            await this.Presenter.Delete();
+            this.Presenter.Delete();
             ((DeleteButton)o).Parent.Hide();
         }
     }

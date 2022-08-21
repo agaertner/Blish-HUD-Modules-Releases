@@ -1,12 +1,13 @@
-﻿using Blish_HUD.Graphics.UI;
+﻿using Blish_HUD;
+using Blish_HUD.Controls;
+using Blish_HUD.Graphics.UI;
+using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Nekres.Chat_Shorts.UI.Controls;
 using Nekres.Chat_Shorts.UI.Models;
 using Nekres.Chat_Shorts.UI.Views;
 using System;
-using Blish_HUD;
-using Blish_HUD.Controls;
-using Blish_HUD.Input;
+using System.Linq;
 
 namespace Nekres.Chat_Shorts.UI.Presenters
 {
@@ -14,14 +15,15 @@ namespace Nekres.Chat_Shorts.UI.Presenters
     {
         public LibraryPresenter(LibraryView view, LibraryModel model) : base(view, model)
         {
+            model.MacroModels = ChatShorts.Instance.DataService.GetAll().Select(MacroModel.FromEntity).ToList();
             this.View.AddNewClick += OnAddNewClicked;
         }
 
-        private async void OnAddNewClicked(object o, EventArgs e)
+        private void OnAddNewClicked(object o, EventArgs e)
         {
             var model = new MacroModel();
             this.AddMacro(model);
-            await ChatShorts.Instance.DataService.UpsertMacro(model);
+            ChatShorts.Instance.DataService.UpsertMacro(model);
         }
 
         internal void AddMacro(MacroModel model)

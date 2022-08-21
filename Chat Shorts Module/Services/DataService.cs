@@ -1,13 +1,10 @@
 ﻿using Blish_HUD;
-using LiteDB.Async;
+using LiteDB;
 using Nekres.Chat_Shorts.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using LiteDB;
 
 namespace Nekres.Chat_Shorts.Services
 {
@@ -15,8 +12,8 @@ namespace Nekres.Chat_Shorts.Services
     {
         public event EventHandler<ValueEventArgs<Guid>> MacroDeleted;
 
-        private LiteDatabaseAsync _db;
-        private ILiteCollectionAsync<MacroEntity> _ctx;
+        private LiteDatabase _db;
+        private ILiteCollection<MacroEntity> _ctx;
 
         public bool Loading { get; private set; }
 
@@ -25,7 +22,7 @@ namespace Nekres.Chat_Shorts.Services
         public DataService(string cacheDir)
         {
             _cacheDir = cacheDir;
-            _db = new LiteDatabaseAsync(new ConnectionString
+            _db = new LiteDatabase(new ConnectionString
             {
                 Filename = Path.Combine(_cacheDir, "data.db"),
                 Connection = ConnectionType.Shared
@@ -33,13 +30,13 @@ namespace Nekres.Chat_Shorts.Services
             _ctx = _db.GetCollection<MacroEntity>("macros");
         }
 
-        public async Task UpsertMacro(MacroModel model)
+        public void UpsertMacro(MacroModel model)
         {
-            await _ctx.EnsureIndexAsync(x => x.Id);
-            var e = await _ctx.FindOneAsync(x => x.Id.Equals(model.Id));
+            _ctx.EnsureIndex(x => x.Id);
+            var e = _ctx.FindOne(x => x.Id.Equals(model.Id));
             if (e == null)
             {
-                await _ctx.InsertAsync(model.ToEntity());
+                _ctx.Insert(model.ToEntity());
                 GameService.Content.PlaySoundEffectByName("color-change");
             }
             else
@@ -52,33 +49,29 @@ namespace Nekres.Chat_Shorts.Services
                 e.SquadBroadcast = model.SquadBroadcast;
                 e.PrimaryKey = model.KeyBinding.PrimaryKey;
                 e.ModifierKey = model.KeyBinding.ModifierKeys;
-                await _ctx.UpdateAsync(e);
+                _ctx.Update(e);
             }
-            await ChatShorts.Instance.BuildContextMenu();
+            ChatShorts.Instance.BuildContextMenu();
         }
 
-        public async Task<IEnumerable<MacroEntity>> GetAll()
+        public IEnumerable<MacroEntity> GetAll()
         {
             this.Loading = true;
-            var result = await _ctx.FindAllAsync().ContinueWith(t =>
-            {
-                this.Loading = false;
-                return t.Result;
-            });
+            var result = _ctx.FindAll();
             return result;
         }
 
-        public async Task DeleteById(Guid id)
-        {
-            await _ctx.DeleteManyAsync(x => x.Id.Equals(id));
+        public void DeleteById(Guid id)
+        { 
+            _ctx.DeleteMany(x => x.Id.Equals(id));
             MacroDeleted?.Invoke(this, new ValueEventArgs<Guid>(id));
         }
 
-        public async Task<IEnumerable<MacroEntity>> GetAllActives() => await _ctx.FindAsync(e => 
+        public IEnumerable<MacroEntity> GetAllActives() => _ctx.Find(e => 
             (e.GameMode == MapUtil.GetCurrentGameMode() || e.GameMode == GameMode.All) &&
             (e.MapIds.Any(id => id == GameService.Gw2Mumble.CurrentMap.Id) || !e.MapIds.Any()) &&
             e.ExcludedMapIds.All(id => id != GameService.Gw2Mumble.CurrentMap.Id) &&
-            (!e.SquadBroadcast || GameService.Gw2Mumble.PlayerCharacter.IsCommander)); // async lib no haz method group overload :(
+            (!e.SquadBroadcast || GameService.Gw2Mumble.PlayerCharacter.IsCommander));
 
         public void Dispose()
         {

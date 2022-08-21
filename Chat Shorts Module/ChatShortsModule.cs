@@ -7,16 +7,15 @@ using Blish_HUD.Modules.Managers;
 using Blish_HUD.Settings;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Nekres.Chat_Shorts.Services;
+using Nekres.Chat_Shorts.UI.Controls;
 using Nekres.Chat_Shorts.UI.Models;
 using Nekres.Chat_Shorts.UI.Views;
 using System;
-using System.CodeDom;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework.Input;
-using Nekres.Chat_Shorts.UI.Controls;
 
 namespace Nekres.Chat_Shorts
 {
@@ -47,6 +46,7 @@ namespace Nekres.Chat_Shorts
         private Texture2D _backgroundTexture;
 
         internal SettingEntry<KeyBinding> SquadBroadcast;
+        internal SettingEntry<KeyBinding> ChatMessage;
 
         [ImportingConstructor]
         public ChatShorts([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters)
@@ -56,8 +56,11 @@ namespace Nekres.Chat_Shorts
 
         protected override void DefineSettings(SettingCollection settings)
         {
-            SquadBroadcast = settings.DefineSetting("squadBroadcastKeyBinding",
-                new KeyBinding(ModifierKeys.Shift, Keys.Enter),
+            var controlSettings = settings.AddSubCollection("Control Options (User Interface)", true, false);
+            ChatMessage = controlSettings.DefineSetting("chatMessageKeyBinding", new KeyBinding(Keys.Enter),
+                () => "Chat Message",
+                () => "Give focus to the chat edit box.");
+            SquadBroadcast = controlSettings.DefineSetting("squadBroadcastKeyBinding", new KeyBinding(ModifierKeys.Shift, Keys.Enter),
                 () => "Squad Broadcast Message", 
                 () => "Give focus to the chat edit box.");
         }
@@ -69,12 +72,7 @@ namespace Nekres.Chat_Shorts
             _backgroundTexture = ContentsManager.GetTexture("background.png");
             ChatService = new ChatService(this.DataService);
             SquadBroadcast.Value.Enabled = false;
-        }
-
-        protected override async Task LoadAsync()
-        {
-            await ChatService.LoadAsync();
-            await BuildContextMenu();
+            ChatMessage.Value.Enabled = false;
         }
 
         protected override void OnModuleLoaded(EventArgs e)
@@ -98,20 +96,25 @@ namespace Nekres.Chat_Shorts
 
             GameService.Gw2Mumble.CurrentMap.MapChanged += OnMapChanged;
             GameService.Gw2Mumble.PlayerCharacter.IsCommanderChanged += OnIsCommanderChanged;
+
+            ChatService.LoadMacros();
+
+            BuildContextMenu();
+
             // Base handler must be called
             base.OnModuleLoaded(e);
         }
 
-        private async void OnMapChanged(object o, ValueEventArgs<int> e)
+        private void OnMapChanged(object o, ValueEventArgs<int> e)
         {
             if (!this.Loaded) return;
-            await BuildContextMenu();
+            BuildContextMenu();
         }
 
-        private async void OnIsCommanderChanged(object o, ValueEventArgs<bool> e)
+        private void OnIsCommanderChanged(object o, ValueEventArgs<bool> e)
         {
             if (!this.Loaded) return;
-            await BuildContextMenu();
+            BuildContextMenu();
         }
 
         public void OnModuleIconClick(object o, MouseEventArgs e)
@@ -119,7 +122,7 @@ namespace Nekres.Chat_Shorts
             _moduleContextMenu?.Show(_cornerIcon);
         }
 
-        internal async Task BuildContextMenu()
+        internal void BuildContextMenu()
         {
             var prevVisible = _moduleContextMenu?.Visible;
             var prevLocation = _moduleContextMenu?.Location;
@@ -139,7 +142,7 @@ namespace Nekres.Chat_Shorts
                 Enabled = false
             };
 
-            var macros = (await DataService.GetAllActives()).Select(MacroModel.FromEntity);
+            var macros = DataService.GetAllActives().Select(MacroModel.FromEntity);
 
             foreach (var model in macros)
             {
@@ -155,11 +158,6 @@ namespace Nekres.Chat_Shorts
             if (!prevVisible.GetValueOrDefault()) return;
             _moduleContextMenu.Location = prevLocation.GetValueOrDefault();
             _moduleContextMenu.Show();
-        }
-
-        protected override void Update(GameTime gameTime)
-        {
-
         }
 
         public override IView GetSettingsView()
@@ -186,7 +184,5 @@ namespace Nekres.Chat_Shorts
             _cornerTexture?.Dispose();
             // All static members must be manually unset
         }
-
     }
-
 }

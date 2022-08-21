@@ -13,14 +13,14 @@ namespace Nekres.Chat_Shorts.UI.Presenters
             model.Changed += View_OnModelChanged;
         }
 
-        public async Task Delete()
+        public void Delete()
         {
-            await ChatShorts.Instance.DataService.DeleteById(this.Model.Id);
+            ChatShorts.Instance.DataService.DeleteById(this.Model.Id);
         }
 
-        private async void View_OnModelChanged(object o, EventArgs e)
+        private void View_OnModelChanged(object o, EventArgs e)
         {
-            await ChatShorts.Instance.DataService.UpsertMacro(this.Model);
+            ChatShorts.Instance.DataService.UpsertMacro(this.Model);
             ChatShorts.Instance.ChatService.ToggleMacro(this.Model);
         }
     }

@@ -37,24 +37,19 @@ namespace Nekres.Chat_Shorts.Services
             GameService.Gw2Mumble.PlayerCharacter.IsCommanderChanged += OnIsCommanderChanged;
         }
 
-        private async void OnMapChanged(object o, ValueEventArgs<int> e)
+        private void OnMapChanged(object o, ValueEventArgs<int> e)
         {
             if (!ChatShorts.Instance.Loaded) return;
-            await LoadMacros();
+            LoadMacros();
         }
 
-        private async void OnIsCommanderChanged(object o, ValueEventArgs<bool> e)
+        private void OnIsCommanderChanged(object o, ValueEventArgs<bool> e)
         {
             if (!ChatShorts.Instance.Loaded) return;
-            await LoadMacros();
+            LoadMacros();
         }
 
-        public async Task LoadAsync()
-        {
-            await LoadMacros();
-        }
-
-        private async Task LoadMacros()
+        public void LoadMacros()
         {
             foreach (var macro in _activeMacros)
             {
@@ -62,7 +57,7 @@ namespace Nekres.Chat_Shorts.Services
                 macro.Dispose();
             }
             _activeMacros.Clear();
-            foreach (var entity in await _dataService.GetAllActives())
+            foreach (var entity in _dataService.GetAllActives())
             {
                 this.ToggleMacro(MacroModel.FromEntity(entity));
             }
@@ -99,7 +94,7 @@ namespace Nekres.Chat_Shorts.Services
             await ClipboardUtil.WindowsClipboardService.SetTextAsync(text)
                 .ContinueWith(async clipboardResult => {
                     if (clipboardResult.IsFaulted) {
-                        ChatShorts.Logger.Warn(clipboardResult.Exception, "Failed to set clipboard text to {message}!", text);
+                        ChatShorts.Logger.Warn(clipboardResult.Exception, $"Failed to set clipboard text to {text}!");
                     } else {
                         await Task.Run(() =>
                         {
@@ -125,17 +120,34 @@ namespace Nekres.Chat_Shorts.Services
 
             if (squadBroadcast)
             {
-                if (ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys != ModifierKeys.None)
+                if (ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys != ModifierKeys.None) 
+                {
                     Keyboard.Press(_modifierLookUp[ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys]);
+                }
                 if (ChatShorts.Instance.SquadBroadcast.Value.PrimaryKey != Keys.None)
                 {
                     Keyboard.Press((VirtualKeyShort)ChatShorts.Instance.SquadBroadcast.Value.PrimaryKey);
                     Keyboard.Release((VirtualKeyShort)ChatShorts.Instance.SquadBroadcast.Value.PrimaryKey);
                 }
-                if (ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys != ModifierKeys.None)
+                if (ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys != ModifierKeys.None) 
+                {
                     Keyboard.Release(_modifierLookUp[ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys]);
-            } else {
-                Keyboard.Stroke(VirtualKeyShort.RETURN);
+                }
+                return;
+            }
+
+            if (ChatShorts.Instance.ChatMessage.Value.ModifierKeys != ModifierKeys.None)
+            {
+                Keyboard.Press(_modifierLookUp[ChatShorts.Instance.ChatMessage.Value.ModifierKeys]);
+            }
+            if (ChatShorts.Instance.ChatMessage.Value.PrimaryKey != Keys.None)
+            {
+                Keyboard.Press((VirtualKeyShort)ChatShorts.Instance.ChatMessage.Value.PrimaryKey);
+                Keyboard.Release((VirtualKeyShort)ChatShorts.Instance.ChatMessage.Value.PrimaryKey);
+            }
+            if (ChatShorts.Instance.ChatMessage.Value.ModifierKeys != ModifierKeys.None) 
+            {
+                Keyboard.Release(_modifierLookUp[ChatShorts.Instance.ChatMessage.Value.ModifierKeys]);
             }
         }
 
