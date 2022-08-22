@@ -11,15 +11,14 @@ namespace Nekres.Mistwar.Services
     {
         private MarkerBillboard _billboard;
 
-        public MarkerService(IEnumerable<WvwObjectiveEntity> currentObjectives = null)
+        public MarkerService()
         {
             _billboard = new MarkerBillboard
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 Size = GameService.Graphics.SpriteScreen.AbsoluteBounds.Size,
                 Location = new Point(0, 0),
-                Visible = currentObjectives != null,
-                WvwObjectives = currentObjectives
+                Visible = false
             };
             GameService.Gw2Mumble.UI.IsMapOpenChanged += OnIsMapOpenChanged;
             GameService.GameIntegration.Gw2Instance.IsInGameChanged += OnIsInGameChanged;
@@ -28,22 +27,11 @@ namespace Nekres.Mistwar.Services
         public void ReloadMarkers(IEnumerable<WvwObjectiveEntity> entities)
         {
             _billboard.WvwObjectives = entities;
-            this.Toggle(true);
         }
 
-        public void Toggle(bool keepOpen = false)
+        public void Toggle(bool forceHide = false)
         {
-            if (!GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld())
-            {
-                return;
-            }
-            if (keepOpen && _billboard.Visible)
-            {
-                _billboard.Hide();
-                _billboard.Show(); // We are already visible, but this fixes no icons being drawn.
-                return;
-            }
-            _billboard?.Toggle();
+            _billboard?.Toggle(forceHide);
         }
 
         private void OnIsMapOpenChanged(object o, ValueEventArgs<bool> e)
@@ -53,17 +41,17 @@ namespace Nekres.Mistwar.Services
                 this.Toggle();
                 return;
             }
-            _billboard.Hide();
+            this.Toggle(true);
         }
 
         private void OnIsInGameChanged(object o, ValueEventArgs<bool> e)
         {
             if (e.Value)
             {
-                this.Toggle(true);
+                this.Toggle();
                 return;
             }
-            _billboard.Hide();
+            this.Toggle(true);
         }
 
         public void Dispose()

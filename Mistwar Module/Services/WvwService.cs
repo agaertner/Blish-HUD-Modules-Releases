@@ -1,10 +1,12 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Modules.Managers;
+using Gw2Sharp.WebApi.Exceptions;
 using Gw2Sharp.WebApi.V2.Models;
 using Nekres.Mistwar.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Nekres.Mistwar.Services
@@ -13,6 +15,10 @@ namespace Nekres.Mistwar.Services
     {
         public Guid? CurrentGuild { get; private set; }
         public WvwOwner CurrentTeam { get; private set; }
+
+        public bool IsLoading => !string.IsNullOrEmpty(LoadingMessage);
+
+        public string LoadingMessage { get; private set; }
 
         private Gw2ApiManager _api;
 
@@ -38,20 +44,40 @@ namespace Nekres.Mistwar.Services
 
         public async Task Update()
         {
-            if (DateTime.UtcNow.Subtract(_prevApiRequestTime).TotalSeconds < 15)
-                return;
-            _prevApiRequestTime = DateTime.UtcNow;
-
+            if (IsLoading || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() || DateTime.UtcNow.Subtract(_prevApiRequestTime).TotalSeconds < 15) return;
+            this.LoadingMessage = "Refreshing";
             this.CurrentGuild = await GetRepresentedGuild();
-            if (!GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()) return;
-
             var worldId = await GetWorldId();
-            if (worldId == -1) return;
+            if (worldId == -1)
+            {
+                LoadingMessage = string.Empty;
+                _prevApiRequestTime = DateTime.UtcNow;
+                return;
+            }
+            UpdateInBackground(worldId);
+        }
 
+        private void UpdateInBackground(int worldId)
+        {
+            var thread = new Thread(() => UpdateObjectives(worldId))
+            {
+                IsBackground = true
+            }; 
+            thread.Start();
+        }
+
+        private async Task UpdateObjectives(int worldId)
+        {
+            var taskList = new List<Task>();
             foreach (var id in await GetWvWMapIds(worldId))
             {
-                await UpdateObjectives(worldId, id);
+                var t = new Task<Task>(() => UpdateObjectives(worldId, id));
+                taskList.Add(t);
+                t.Start();
             }
+            Task.WaitAll(taskList.ToArray());
+            LoadingMessage = string.Empty;
+            _prevApiRequestTime = DateTime.UtcNow;
         }
 
         public async Task<Guid?> GetRepresentedGuild()
@@ -110,30 +136,35 @@ namespace Nekres.Mistwar.Services
         private async Task UpdateObjectives(int worldId, int mapId)
         {
             var objEntities = await GetObjectives(mapId);
-            await _api.Gw2ApiClient.V2.Wvw.Matches.World(worldId).GetAsync()
-                .ContinueWith(task =>
-                {
-                    if (task.IsFaulted) return;
+            WvwMatch match;
+            try
+            {
+                match = await _api.Gw2ApiClient.V2.Wvw.Matches.World(worldId).GetAsync();
+            }
+            catch (RequestException)
+            {
+                return;
+            }
+            if (match == null) return;
+            _teams = match.AllWorlds;
+            this.CurrentTeam =
+                _teams.Blue.Contains(worldId) ? WvwOwner.Blue :
+                _teams.Red.Contains(worldId) ? WvwOwner.Red :
+                _teams.Green.Contains(worldId) ? WvwOwner.Green : WvwOwner.Unknown;
 
-                    _teams = task.Result.AllWorlds;
-                    this.CurrentTeam = 
-                        _teams.Blue.Contains(worldId) ? WvwOwner.Blue : 
-                        _teams.Red.Contains(worldId) ? WvwOwner.Red :
-                        _teams.Green.Contains(worldId) ? WvwOwner.Green : WvwOwner.Unknown;
-
-                    var objectives = task.Result.Maps.FirstOrDefault(x => x.Id == mapId)?.Objectives;
-                    if (objectives.IsNullOrEmpty()) return;
-                    foreach (var objEntity in objEntities)
-                    {
-                        var obj = objectives.FirstOrDefault(v => v.Id.Equals(objEntity.Id, StringComparison.InvariantCultureIgnoreCase));
-                        if (obj == null) continue;
-                        objEntity.LastFlipped = obj.LastFlipped ?? DateTime.MinValue;
-                        objEntity.Owner = obj.Owner.Value;
-                        objEntity.ClaimedBy = obj.ClaimedBy ?? Guid.Empty;
-                        objEntity.GuildUpgrades = obj.GuildUpgrades;
-                        objEntity.YaksDelivered = obj.YaksDelivered ?? 0;
-                    }
-                });
+            var objectives = match.Maps.FirstOrDefault(x => x.Id == mapId)?.Objectives;
+            if (objectives.IsNullOrEmpty()) return;
+            foreach (var objEntity in objEntities)
+            {
+                var obj = objectives.FirstOrDefault(v =>
+                    v.Id.Equals(objEntity.Id, StringComparison.InvariantCultureIgnoreCase));
+                if (obj == null) continue;
+                objEntity.LastFlipped = obj.LastFlipped ?? DateTime.MinValue;
+                objEntity.Owner = obj.Owner.Value;
+                objEntity.ClaimedBy = obj.ClaimedBy ?? Guid.Empty;
+                objEntity.GuildUpgrades = obj.GuildUpgrades;
+                objEntity.YaksDelivered = obj.YaksDelivered ?? 0;
+            }
         }
 
         private async Task<IEnumerable<WvwObjectiveEntity>> RequestObjectives(int mapId)

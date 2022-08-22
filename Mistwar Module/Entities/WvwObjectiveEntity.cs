@@ -11,6 +11,14 @@ using Point = System.Drawing.Point;
 
 namespace Nekres.Mistwar.Entities
 {
+    public enum WvwObjectiveTier
+    {
+        Supported,
+        Secured,
+        Reinforced,
+        Fortified
+    }
+
     public class WvwObjectiveEntity
     {
         private static readonly Texture2D TextureFortified = MistwarModule.ModuleInstance.ContentsManager.GetTexture("1324351.png");
@@ -53,7 +61,6 @@ namespace Nekres.Mistwar.Entities
             {"95-64", TextureRuinEstate}, // Gertzz's Estate 
             {"1099-122", TextureRuinOther} // Tilly's Encampment
         };
-
 
         private static readonly Color ColorRed = new Color(213, 71, 67);
         private static readonly Color ColorGreen = new Color(73, 190, 111);
@@ -191,12 +198,32 @@ namespace Nekres.Mistwar.Entities
 
         public bool HasGuildUpgrades()
         {
-            return GuildUpgrades.IsNullOrEmpty();
+            return !GuildUpgrades.IsNullOrEmpty();
         }
 
         public bool HasUpgraded()
         {
             return YaksDelivered >= 20;
+        }
+
+        public bool HasEmergencyWaypoint()
+        {
+            return HasGuildUpgrades() && GuildUpgrades.Contains(178);
+        }
+
+        public bool HasRegularWaypoint()
+        {
+            return IsSpawn() || GetTier() == WvwObjectiveTier.Fortified && (Type == WvwObjectiveType.Keep || Type == WvwObjectiveType.Castle);
+        }
+
+        public bool IsSpawn()
+        {
+            return this.Type == WvwObjectiveType.Spawn;
+        }
+
+        public WvwObjectiveTier GetTier()
+        {
+            return YaksDelivered >= 140 ? WvwObjectiveTier.Fortified : YaksDelivered >= 60 ? WvwObjectiveTier.Reinforced : YaksDelivered >= 20 ? WvwObjectiveTier.Secured : WvwObjectiveTier.Supported;
         }
 
         public bool HasBuff(out TimeSpan remainingTime)
@@ -241,22 +268,24 @@ namespace Nekres.Mistwar.Entities
 
         private Color GetColor()
         {
-            switch (Owner)
+            return Owner switch
             {
-                case WvwOwner.Red:
-                    return ColorRed;
-                case WvwOwner.Blue:
-                    return ColorBlue;
-                case WvwOwner.Green:
-                    return ColorGreen;
-                default:
-                    return ColorNeutral;
-            }
+                WvwOwner.Red => ColorRed,
+                WvwOwner.Blue => ColorBlue,
+                WvwOwner.Green => ColorGreen,
+                _ => ColorNeutral
+            };
         }
 
         private Texture2D GetUpgradeTierTexture()
         {
-            return YaksDelivered >= 140 ? TextureFortified : YaksDelivered >= 60 ? TextureReinforced : TextureSecured;
+            return GetTier() switch
+            {
+                WvwObjectiveTier.Fortified => TextureFortified,
+                WvwObjectiveTier.Reinforced => TextureReinforced,
+                WvwObjectiveTier.Secured => TextureSecured,
+                _ => ContentService.Textures.TransparentPixel
+            };
         }
 
         private float GetOpacity()

@@ -29,7 +29,11 @@ namespace Nekres.Mistwar.UI.Controls
         public ContinentFloorRegionMap Map
         {
             get => _map;
-            set => SetProperty(ref _map, value);
+            set
+            {
+                if (!SetProperty(ref _map, value)) return;
+                _wayPointBounds?.Clear();
+            }
         }
 
         protected AsyncTexture2D _texture;
@@ -87,9 +91,10 @@ namespace Nekres.Mistwar.UI.Controls
             MistwarModule.ModuleInstance.ScaleRatioSetting.SettingChanged += OnScaleRatioChanged;
         }
 
-        public void Toggle(float tDuration = 0.1f, bool silent = false)
+        public void Toggle(bool forceHide = false, float tDuration = 0.1f, bool silent = false)
         {
-            if (_visible)
+            silent = silent || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld();
+            if (forceHide || !GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() || _visible)
             {
                 _visible = false;
                 if (silent)
@@ -199,7 +204,10 @@ namespace Nekres.Mistwar.UI.Controls
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
         {
-            if (!this.Visible || !_texture.HasTexture || WvwObjectives == null) return;
+            if (!GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()
+                                        || !this.Visible 
+                                        || !_texture.HasTexture 
+                                        || WvwObjectives == null) return;
 
             spriteBatch.End();
             spriteBatch.Begin(_grayscaleSpriteBatchParams);
@@ -260,6 +268,11 @@ namespace Nekres.Mistwar.UI.Controls
                     {
                         if (!MistwarModule.ModuleInstance.DrawEmergencyWayPointsSetting.Value) continue;
                         if (objectiveEntity.Owner != MistwarModule.ModuleInstance.WvwService.CurrentTeam) continue; // Skip opposing team's emergency waypoints.
+                        if (!objectiveEntity.HasEmergencyWaypoint()) continue;
+                    } 
+                    else if (!objectiveEntity.HasRegularWaypoint())
+                    {
+                        continue;
                     }
 
                     var wpDest = new Rectangle(
@@ -279,19 +292,30 @@ namespace Nekres.Mistwar.UI.Controls
                 }
             }
 
-            if (this.Map == null) return;
+            if (this.Map != null)
+            {
 
-            // Draw player position indicator (camera transforms are used because avatar transforms are not exposed in competitive modes.)
-            var v = GameService.Gw2Mumble.PlayerCamera.Position * 39.37008f; // world meters to inches.
-            var worldInchesMap = new Vector2(
-                (float)(this.Map.ContinentRect.TopLeft.X + (v.X - this.Map.MapRect.TopLeft.X) / this.Map.MapRect.Width * this.Map.ContinentRect.Width), 
-                (float)(this.Map.ContinentRect.TopLeft.Y - (v.Y - this.Map.MapRect.TopLeft.Y) / this.Map.MapRect.Height * this.Map.ContinentRect.Height)); // clamp to map bounds
-            var mapCenter = GameService.Gw2Mumble.UI.MapCenter.ToXnaVector2(); // might be (0,0) in competitive..
-            var pos = Vector2.Transform(worldInchesMap - mapCenter, Matrix.CreateRotationZ(0f));
-            var fit = MapUtil.Refit(new Coordinates2(pos.X, pos.Y), this.Map.ContinentRect.TopLeft); // refit to our 256x256 tiled map
-            var tDest = new Rectangle((int)(widthRatio * fit.X), (int)(heightRatio * fit.Y), (int)(ScaleRatio * _playerArrow.Width), (int)(ScaleRatio * _playerArrow.Height)); // apply user scale
-            var rot = Math.Atan2(GameService.Gw2Mumble.PlayerCamera.Forward.X, GameService.Gw2Mumble.PlayerCamera.Forward.Y) * 3.6f / Math.PI; // rotate the arrow in the forward direction
-            spriteBatch.DrawOnCtrl(this, _playerArrow, new Rectangle(tDest.X + tDest.Width / 4, tDest.Y + tDest.Height / 4, tDest.Width, tDest.Height), _playerArrow.Bounds, Color.White, (float)rot, new Vector2(_playerArrow.Width / 2f, _playerArrow.Height / 2f));
+                // Draw player position indicator (camera transforms are used because avatar transforms are not exposed in competitive modes.)
+                var v = GameService.Gw2Mumble.PlayerCamera.Position * 39.37008f; // world meters to inches.
+                var worldInchesMap = new Vector2(
+                    (float)(this.Map.ContinentRect.TopLeft.X + (v.X - this.Map.MapRect.TopLeft.X) / this.Map.MapRect.Width * this.Map.ContinentRect.Width), 
+                    (float)(this.Map.ContinentRect.TopLeft.Y - (v.Y - this.Map.MapRect.TopLeft.Y) / this.Map.MapRect.Height * this.Map.ContinentRect.Height)); // clamp to map bounds
+                var mapCenter = GameService.Gw2Mumble.UI.MapCenter.ToXnaVector2(); // might be (0,0) in competitive..
+                var pos = Vector2.Transform(worldInchesMap - mapCenter, Matrix.CreateRotationZ(0f));
+                var fit = MapUtil.Refit(new Coordinates2(pos.X, pos.Y), this.Map.ContinentRect.TopLeft); // refit to our 256x256 tiled map
+                var tDest = new Rectangle((int) (widthRatio * fit.X), (int) (heightRatio * fit.Y), (int) (ScaleRatio * _playerArrow.Width), (int) (ScaleRatio * _playerArrow.Height)); // apply user scale
+                var rot = Math.Atan2(GameService.Gw2Mumble.PlayerCamera.Forward.X, GameService.Gw2Mumble.PlayerCamera.Forward.Y) * 3.6f / Math.PI; // rotate the arrow in the forward direction
+                spriteBatch.DrawOnCtrl(this, _playerArrow, new Rectangle(tDest.X + tDest.Width / 4, tDest.Y + tDest.Height / 4, tDest.Width, tDest.Height), _playerArrow.Bounds, Color.White, (float) rot, new Vector2(_playerArrow.Width / 2f, _playerArrow.Height / 2f));
+            }
+
+            if (MistwarModule.ModuleInstance.WvwService.IsLoading)
+            {
+                var spinnerBnds = new Rectangle(bounds.Width / 2, bounds.Height - 100, 70, 70);
+                LoadingSpinnerUtil.DrawLoadingSpinner(this, spriteBatch, spinnerBnds);
+                var size = Content.DefaultFont32.MeasureString(MistwarModule.ModuleInstance.WvwService.LoadingMessage);
+                var dest = new Rectangle((int)(spinnerBnds.X + spinnerBnds.Width / 2 - size.Width / 2), spinnerBnds.Bottom, (int)size.Width, (int)size.Height);
+                spriteBatch.DrawStringOnCtrl(this, MistwarModule.ModuleInstance.WvwService.LoadingMessage, Content.DefaultFont16, dest, Color.White, false, true, 1, HorizontalAlignment.Center);
+            }
         }
     }
 }

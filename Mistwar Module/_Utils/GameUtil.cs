@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Gw2Sharp.WebApi.V2.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nekres.Mistwar
 {
     internal static class GameUtil
     {
-        public static bool IsUiAvailable()
+        public static bool IsAvailable()
         {
-            return GameService.Gw2Mumble.IsAvailable && GameService.GameIntegration.Gw2Instance.IsInGame && !GameService.Gw2Mumble.UI.IsMapOpen;
+            return GameService.Gw2Mumble.IsAvailable && GameService.GameIntegration.Gw2Instance.IsInGame
+                                                      && !GameService.Gw2Mumble.UI.IsMapOpen;
         }
 
         private static readonly IReadOnlyList<int> EmergencyWayPoints = new List<int>

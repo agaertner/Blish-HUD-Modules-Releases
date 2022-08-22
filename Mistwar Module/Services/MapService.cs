@@ -47,6 +47,8 @@ namespace Nekres.Mistwar.Services
             }
         }
 
+        public bool IsVisible => _mapControl?.Visible ?? false;
+
         private readonly IProgress<string> _loadingIndicator;
 
         public bool IsLoading { get; private set; }
@@ -179,30 +181,26 @@ namespace Nekres.Mistwar.Services
             return await MapUtil.GetMapExpanded(map, map.DefaultFloor);
         }
 
-        public void Toggle()
+        public void Toggle(bool forceHide = false)
         {
             if (IsLoading)
             {
                 ScreenNotification.ShowNotification("Mistwar is initializing.", ScreenNotification.NotificationType.Error);
                 return;
             }
-            if (!GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld())
-            {
-                return;
-            }
-            _mapControl?.Toggle();
+            _mapControl?.Toggle(forceHide);
         }
 
         private void OnIsMapOpenChanged(object o, ValueEventArgs<bool> e)
         {
             if (!e.Value) return;
-            _mapControl.Hide();
+            this.Toggle(true);
         }
 
         private void OnIsInGameChanged(object o, ValueEventArgs<bool> e)
         {
-            if (!e.Value) return;
-            _mapControl.Hide();
+            if (e.Value) return;
+            this.Toggle(true);
         }
 
         private async void OnMapChanged(object o, ValueEventArgs<int> e)

@@ -99,14 +99,6 @@ namespace Nekres.Mistwar
             return new System.Drawing.Point(x, y);
         }
 
-        public static Point Refit(Point value, Coordinates2 destTopLeft, int padding = 0, int tileSize = 256)
-        {
-            var node = new Point(value.X / tileSize, value.Y / tileSize);
-            var x = (int)(node.X * tileSize - destTopLeft.X + padding);
-            var y = (int)(node.Y * tileSize - destTopLeft.Y + padding);
-            return new Point(x, y);
-        }
-
         private static async Task<Map> RequestMap(int mapId)
         {
             try

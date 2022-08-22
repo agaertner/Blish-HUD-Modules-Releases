@@ -56,6 +56,10 @@ namespace Nekres.Mistwar
         {
             UnFocus();
 
+            // Tell the game to release the shift keys so chat can be opened.
+            Keyboard.Release(VirtualKeyShort.LSHIFT);
+            Keyboard.Release(VirtualKeyShort.RSHIFT);
+
             if (MistwarModule.ModuleInstance.ChatMessageKeySetting.Value.ModifierKeys != ModifierKeys.None)
             {
                 Keyboard.Press(ModifierLookUp[MistwarModule.ModuleInstance.ChatMessageKeySetting.Value.ModifierKeys]);

@@ -1,6 +1,7 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Content;
 using Blish_HUD.Controls;
+using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
 using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
@@ -9,13 +10,12 @@ using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nekres.Mistwar.Services;
+using Nekres.Mistwar.UI.CustomSettingsView;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
-using Blish_HUD.Graphics.UI;
-using Nekres.Mistwar.UI.CustomSettingsView;
 
 namespace Nekres.Mistwar
 {
@@ -176,21 +176,13 @@ namespace Nekres.Mistwar
 
         private void OnToggleKeyActivated(object o, EventArgs e)
         {
-            if (!GameUtil.IsUiAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()) return;
             _mapService.Toggle();
+            MarkerService?.Toggle(_mapService.IsVisible);
         }
 
-        private async void OnToggleMarkersKeyActivated(object o, EventArgs e)
+        private void OnToggleMarkersKeyActivated(object o, EventArgs e)
         {
             EnableMarkersSetting.Value = !EnableMarkersSetting.Value;
-            if (EnableMarkersSetting.Value)
-            {
-                MarkerService?.Dispose();
-            }
-            else
-            {
-                MarkerService = new MarkerService(await WvwService.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id));
-            }
         }
 
         protected override async void Update(GameTime gameTime)
@@ -226,7 +218,9 @@ namespace Nekres.Mistwar
         {
             if (e.NewValue)
             {
-                MarkerService ??= new MarkerService(await WvwService.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id));
+                MarkerService ??= new MarkerService();
+                MarkerService.ReloadMarkers(await WvwService.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id));
+                MarkerService.Toggle(_mapService.IsVisible);
                 return;
             }
             MarkerService?.Dispose();
@@ -246,7 +240,6 @@ namespace Nekres.Mistwar
             ToggleMarkersKeySetting.Value.Enabled = false;
             GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
             GameService.Gw2Mumble.UI.IsMapOpenChanged -= OnIsMapOpenChanged;
-
             MarkerService?.Dispose();
             _mapService?.Dispose();
             _moduleIcon?.Dispose();
