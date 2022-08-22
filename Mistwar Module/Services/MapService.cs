@@ -169,6 +169,7 @@ namespace Nekres.Mistwar.Services
 
                 await _wvw.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id).ContinueWith(t =>
                 {
+                    if (t.IsFaulted) return;
                     _mapControl.WvwObjectives = t.Result;
                     MistwarModule.ModuleInstance.MarkerService?.ReloadMarkers(t.Result);
                 });

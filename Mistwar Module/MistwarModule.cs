@@ -14,7 +14,6 @@ using Nekres.Mistwar.UI.CustomSettingsView;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nekres.Mistwar
@@ -90,12 +89,12 @@ namespace Nekres.Mistwar
             MarkerScaleSetting = markerSettings.DefineSetting("ScaleRatio", 70f, () => "Scale Ratio", () => "Changes the size of the markers.");
         }
 
+        private AsyncTexture2D _cornerTex;
         private CornerIcon _moduleIcon;
         internal WvwService WvwService;
         private MapService _mapService;
         internal MarkerService MarkerService;
 
-        private AsyncTexture2D _cornerTex;
         protected override void Initialize()
         {
             ChatMessageKeySetting.Value.Enabled = false;
@@ -107,7 +106,6 @@ namespace Nekres.Mistwar
                 MarkerService = new MarkerService();
             }
             _mapService = new MapService(DirectoriesManager, WvwService, GetModuleProgressHandler());
-
         }
 
         public override IView GetSettingsView()
@@ -118,7 +116,6 @@ namespace Nekres.Mistwar
         protected override async Task LoadAsync()
         {
             await this.WvwService.LoadAsync();
-            if (!this.Gw2ApiManager.HasPermission(TokenPermission.Account)) return;
             _mapService.DownloadMaps(await WvwService.GetWvWMapIds(await WvwService.GetWorldId()));
         }
 
@@ -130,10 +127,11 @@ namespace Nekres.Mistwar
             ToggleMarkersKeySetting.Value.Activated += OnToggleMarkersKeyActivated;
             OpacitySetting.SettingChanged += OnOpacitySettingChanged;
             EnableMarkersSetting.SettingChanged += OnEnableMarkersSettingChanged;
-            ToggleMapKeySetting.Value.Enabled = true;
-            ToggleMarkersKeySetting.Value.Enabled = true;
             GameService.Gw2Mumble.CurrentMap.MapChanged += OnMapChanged;
             GameService.Gw2Mumble.UI.IsMapOpenChanged += OnIsMapOpenChanged;
+            GameService.GameIntegration.Gw2Instance.IsInGameChanged += OnIsInGameChanged;
+            ToggleMapKeySetting.Value.Enabled = true;
+            ToggleMarkersKeySetting.Value.Enabled = true;
 
             OnColorIntensitySettingChanged(null, new ValueChangedEventArgs<float>(0, ColorIntensitySetting.Value));
             OnOpacitySettingChanged(null, new ValueChangedEventArgs<float>(0, OpacitySetting.Value));
@@ -165,7 +163,6 @@ namespace Nekres.Mistwar
 
         private async void OnSubtokenUpdated(object o, ValueEventArgs<IEnumerable<TokenPermission>> e)
         {
-            if (!e.Value.Contains(TokenPermission.Account)) return;
             _mapService.DownloadMaps(await WvwService.GetWvWMapIds(await WvwService.GetWorldId()));
         }
 
@@ -187,6 +184,7 @@ namespace Nekres.Mistwar
 
         protected override async void Update(GameTime gameTime)
         {
+            if (!Gw2ApiManager.HasPermission(TokenPermission.Account)) return;
             await WvwService.Update();
         }
 
@@ -203,6 +201,20 @@ namespace Nekres.Mistwar
         private void OnMapChanged(object o, ValueEventArgs<int> e)
         {
             if (GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld())
+            {
+                _moduleIcon?.Dispose();
+                _moduleIcon = new CornerIcon(_cornerTex, this.Name);
+                _moduleIcon.Click += OnModuleIconClick;
+                ToggleMapKeySetting.Value.Enabled = true;
+                return;
+            }
+            _moduleIcon?.Dispose();
+            ToggleMapKeySetting.Value.Enabled = false;
+        }
+
+        private void OnIsInGameChanged(object o, ValueEventArgs<bool> e)
+        {
+            if (e.Value && GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld())
             {
                 _moduleIcon?.Dispose();
                 _moduleIcon = new CornerIcon(_cornerTex, this.Name);
@@ -238,6 +250,7 @@ namespace Nekres.Mistwar
             EnableMarkersSetting.SettingChanged -= OnEnableMarkersSettingChanged;
             ToggleMapKeySetting.Value.Enabled = false;
             ToggleMarkersKeySetting.Value.Enabled = false;
+            GameService.GameIntegration.Gw2Instance.IsInGameChanged -= OnIsInGameChanged;
             GameService.Gw2Mumble.CurrentMap.MapChanged -= OnMapChanged;
             GameService.Gw2Mumble.UI.IsMapOpenChanged -= OnIsMapOpenChanged;
             MarkerService?.Dispose();

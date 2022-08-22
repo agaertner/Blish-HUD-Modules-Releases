@@ -121,6 +121,7 @@ namespace Nekres.Mistwar.Services
 
         public async Task<int[]> GetWvWMapIds(int worldId)
         {
+            if (worldId < 0) return Array.Empty<int>();
             return await _api.Gw2ApiClient.V2.Wvw.Matches.World(worldId).GetAsync().ContinueWith(t =>
             {
                 if (t.IsFaulted) return Array.Empty<int>();
