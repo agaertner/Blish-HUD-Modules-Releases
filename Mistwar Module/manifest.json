@@ -1,11 +1,11 @@
 {
   "name": "Mistwar",
-  "version": "0.9.8",
+  "version": "1.0.0",
   "namespace": "Nekres.Mistwar",
   "package": "Mistwar.dll",
   "manifest_version": 1,
 
-  "description": "A tactical map for World VS. World to track objectives, their timers and territory control.",
+  "description": "A tactical map and head-up display for World VS. World to track objectives, their timers and territory control.",
   "dependencies": {
     "bh.blishhud": ">=0.11.6"
   },

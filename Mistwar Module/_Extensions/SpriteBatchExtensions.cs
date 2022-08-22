@@ -92,5 +92,5 @@ namespace Nekres.Mistwar
                 spriteBatch.DrawStringOnCtrl(control, objectiveEntity.Name, font, new Rectangle(dest.X - (int)nameSize.Width / 2, dest.Y + dest.Height / 2 + 3, (int)nameSize.Width, (int)nameSize.Height), textColor, false, opacity >= 0.99f);
             }
 		}
-	}
+    }
 }

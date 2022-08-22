@@ -11,23 +11,29 @@ namespace Nekres.Mistwar.Services
 {
     internal class WvwService
     {
-        public IEnumerable<WvwObjectiveEntity> CurrentObjectives => _wvwObjectiveCache?.TryGetValue(GameService.Gw2Mumble.CurrentMap.Id, out var objEntities) ?? false ? objEntities : null;
-
         public Guid? CurrentGuild { get; private set; }
+        public WvwOwner CurrentTeam { get; private set; }
 
         private Gw2ApiManager _api;
 
-        private Dictionary<int, IEnumerable<WvwObjectiveEntity>> _wvwObjectiveCache;
+        private AsyncCache<int, IEnumerable<WvwObjectiveEntity>> _wvwObjectiveCache;
 
-        private DateTime _prevApiRequestTime = DateTime.UtcNow;
+        private IEnumerable<World> _worlds;
 
-        private Dictionary<int, Map> _mapCache;
+        private WvwMatchTeamList _teams;
+
+        private DateTime _prevApiRequestTime;
 
         public WvwService(Gw2ApiManager api)
         {
+            _prevApiRequestTime = DateTime.MinValue.ToUniversalTime();
             _api = api;
-            _wvwObjectiveCache = new Dictionary<int, IEnumerable<WvwObjectiveEntity>>();
-            _mapCache = new Dictionary<int, Map>();
+            _wvwObjectiveCache = new AsyncCache<int, IEnumerable<WvwObjectiveEntity>>(RequestObjectives);
+        }
+
+        public async Task LoadAsync()
+        {
+            _worlds = await _api.Gw2ApiClient.V2.Worlds.AllAsync();
         }
 
         public async Task Update()
@@ -37,8 +43,7 @@ namespace Nekres.Mistwar.Services
             _prevApiRequestTime = DateTime.UtcNow;
 
             this.CurrentGuild = await GetRepresentedGuild();
-
-            if (!GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() || !_wvwObjectiveCache.ContainsKey(GameService.Gw2Mumble.CurrentMap.Id)) return;
+            if (!GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()) return;
 
             var worldId = await GetWorldId();
             if (worldId == -1) return;
@@ -57,6 +62,25 @@ namespace Nekres.Mistwar.Services
                             if (t.IsFaulted) return null;
                             return t.Result.Guild;
                         });
+        }
+
+        public string GetWorldName(WvwOwner owner)
+        {
+            IReadOnlyList<int> team;
+            switch (owner)
+            {
+                case WvwOwner.Red:
+                    team = _teams.Red;
+                    break;
+                case WvwOwner.Blue:
+                    team = _teams.Blue;
+                    break;
+                case WvwOwner.Green:
+                    team = _teams.Green;
+                    break;
+                default: return string.Empty;
+            }
+            return _worlds.OrderBy(x => x.Population.Value).Reverse().FirstOrDefault(y => team.Contains(y.Id))?.Name ?? string.Empty;
         }
 
         public async Task<int> GetWorldId()
@@ -78,67 +102,58 @@ namespace Nekres.Mistwar.Services
             });
         }
 
+        public async Task<IEnumerable<WvwObjectiveEntity>> GetObjectives(int mapId)
+        {
+            return await _wvwObjectiveCache.GetItem(mapId);
+        }
+
         private async Task UpdateObjectives(int worldId, int mapId)
         {
             var objEntities = await GetObjectives(mapId);
-            var objectives = await RequestObjectives(worldId, GameService.Gw2Mumble.CurrentMap.Id);
-            if (objectives.IsNullOrEmpty()) return;
-
-            foreach (var objEntity in objEntities)
-            {
-                var obj = objectives.FirstOrDefault(v => v.Id.Equals(objEntity.Id, StringComparison.InvariantCultureIgnoreCase));
-                if (obj == null) continue;
-                objEntity.LastFlipped = obj.LastFlipped ?? DateTime.MinValue;
-                objEntity.Owner = obj.Owner.Value;
-                objEntity.ClaimedBy = obj.ClaimedBy ?? Guid.Empty;
-                objEntity.GuildUpgrades = obj.GuildUpgrades;
-                objEntity.YaksDelivered = obj.YaksDelivered ?? 0;
-            }
-        }
-
-        private async Task<IReadOnlyList<WvwMatchMapObjective>> RequestObjectives(int worldId, int mapId)
-        {
-            return await _api.Gw2ApiClient.V2.Wvw.Matches.World(worldId).GetAsync()
+            await _api.Gw2ApiClient.V2.Wvw.Matches.World(worldId).GetAsync()
                 .ContinueWith(task =>
                 {
-                    if (task.IsFaulted) return null;
-                    return task.Result.Maps.FirstOrDefault(x => x.Id == mapId)?.Objectives;
+                    if (task.IsFaulted) return;
+
+                    _teams = task.Result.AllWorlds;
+                    this.CurrentTeam = 
+                        _teams.Blue.Contains(worldId) ? WvwOwner.Blue : 
+                        _teams.Red.Contains(worldId) ? WvwOwner.Red :
+                        _teams.Green.Contains(worldId) ? WvwOwner.Green : WvwOwner.Unknown;
+
+                    var objectives = task.Result.Maps.FirstOrDefault(x => x.Id == mapId)?.Objectives;
+                    if (objectives.IsNullOrEmpty()) return;
+                    foreach (var objEntity in objEntities)
+                    {
+                        var obj = objectives.FirstOrDefault(v => v.Id.Equals(objEntity.Id, StringComparison.InvariantCultureIgnoreCase));
+                        if (obj == null) continue;
+                        objEntity.LastFlipped = obj.LastFlipped ?? DateTime.MinValue;
+                        objEntity.Owner = obj.Owner.Value;
+                        objEntity.ClaimedBy = obj.ClaimedBy ?? Guid.Empty;
+                        objEntity.GuildUpgrades = obj.GuildUpgrades;
+                        objEntity.YaksDelivered = obj.YaksDelivered ?? 0;
+                    }
                 });
         }
 
-        public bool TryGetMap(int mapId, out Map map)
+        private async Task<IEnumerable<WvwObjectiveEntity>> RequestObjectives(int mapId)
         {
-            return _mapCache.TryGetValue(mapId, out map);
-        }
-
-        public async Task<IEnumerable<WvwObjectiveEntity>> GetObjectives(int mapId)
-        {
-            if (_wvwObjectiveCache.TryGetValue(mapId, out var objEntities))
-            {
-                return objEntities;
-            }
-
             return await _api.Gw2ApiClient.V2.Wvw.Objectives.AllAsync().ContinueWith(async task =>
             {
                 if (task.IsFaulted) return Enumerable.Empty<WvwObjectiveEntity>();
-                var map = await MapUtil.RequestMap(mapId);
-                if (!_mapCache.ContainsKey(map.Id))
-                {
-                    _mapCache.Add(map.Id, map);
-                }
-                var sectors = await MapUtil.RequestSectorsForFloor(map.ContinentId, map.DefaultFloor, map.RegionId, mapId);
-                if (sectors == null) return Enumerable.Empty<WvwObjectiveEntity>();
 
+                var map = await MapUtil.GetMap(mapId);
+                var mapExpanded = await MapUtil.GetMapExpanded(map, map.DefaultFloor);
+
+                if (mapExpanded == null) return Enumerable.Empty<WvwObjectiveEntity>();
                 var newObjectives = new List<WvwObjectiveEntity>();
-                foreach (var sector in sectors)
+                foreach (var sector in mapExpanded.Sectors.Values)
                 {
                     var obj = task.Result.FirstOrDefault(x => x.SectorId == sector.Id);
                     if (obj == null) continue;
-                    var o = new WvwObjectiveEntity(obj, map, sector);
+                    var o = new WvwObjectiveEntity(obj, mapExpanded);
                     newObjectives.Add(o);
                 }
-                _wvwObjectiveCache.Add(map.Id, newObjectives);
-
                 return newObjectives;
             }).Unwrap();
         }

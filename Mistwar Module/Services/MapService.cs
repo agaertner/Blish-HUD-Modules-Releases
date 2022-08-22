@@ -2,6 +2,7 @@
 using Blish_HUD.Content;
 using Blish_HUD.Controls;
 using Blish_HUD.Modules.Managers;
+using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nekres.Mistwar.UI.Controls;
@@ -11,6 +12,7 @@ using System.IO;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using File = System.IO.File;
 
 namespace Nekres.Mistwar.Services
 {
@@ -116,7 +118,7 @@ namespace Nekres.Mistwar.Services
                 return;
             }
 
-            await MapUtil.BuildMap(await MapUtil.RequestMap(id), filePath, true, _loadingIndicator).ContinueWith(async _ =>
+            await MapUtil.BuildMap(await MapUtil.GetMap(id), filePath, true, _loadingIndicator).ContinueWith(async _ =>
             {
                 if (!LoadFromCache(filePath, cacheTex))
                 {
@@ -160,12 +162,21 @@ namespace Nekres.Mistwar.Services
             if (GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() && _mapCache.TryGetValue(GameService.Gw2Mumble.CurrentMap.Id, out var tex))
             {
                 _mapControl.Texture.SwapTexture(tex);
+
+                _mapControl.Map = await GetMap(GameService.Gw2Mumble.CurrentMap.Id);
+
                 await _wvw.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id).ContinueWith(t =>
                 {
                     _mapControl.WvwObjectives = t.Result;
                     MistwarModule.ModuleInstance.MarkerService?.ReloadMarkers(t.Result);
                 });
             }
+        }
+
+        private async Task<ContinentFloorRegionMap> GetMap(int mapId)
+        {
+            var map = await MapUtil.GetMap(mapId);
+            return await MapUtil.GetMapExpanded(map, map.DefaultFloor);
         }
 
         public void Toggle()

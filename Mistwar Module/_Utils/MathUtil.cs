@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
+using System.Runtime.CompilerServices;
 
 namespace Nekres.Mistwar
 {
@@ -73,6 +75,12 @@ namespace Nekres.Mistwar
         public static float Map(float value, float fromLow, float fromHigh, float toLow, float toHigh)
         {
             return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Cross(Vector2 a, Vector2 b)
+        {
+            return a.X * b.Y - a.Y * b.X;
         }
     }
 }

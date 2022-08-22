@@ -9,51 +9,23 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading.Tasks;
+using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Gw2Sharp.WebApi.V2.Models.Rectangle;
 namespace Nekres.Mistwar
 {
     internal static class MapUtil
     {
-        private static Point FromPixelToTileXY(Coordinates2 p, int zoom = 8)
+        private static AsyncCache<(Map, int), ContinentFloorRegionMap> _mapExpandedCache = new (p => RequestMapExpanded(p.Item1, p.Item2));
+        private static AsyncCache<int, Map> _mapCache = new (RequestMap);
+
+        public static async Task<Map> GetMap(int mapId)
         {
-            var tileSize = zoom * 32;
-            return new Point((int)(p.X / tileSize), (int)(p.Y / tileSize));
+            return await _mapCache.GetItem(mapId);
         }
 
-        private static List<Point> GetAreaTileList(Rectangle rect)
+        public static async Task<ContinentFloorRegionMap> GetMapExpanded(Map map, int floorId)
         {
-            var topLeft = FromPixelToTileXY(rect.TopLeft);
-            var rightBottom = FromPixelToTileXY(rect.BottomRight);
-
-            int x = Math.Max(0, topLeft.X);
-            int toX = rightBottom.X;
-            int y0 = Math.Max(0, topLeft.Y);
-            int toY = rightBottom.Y;
-
-            var list = new List<Point>((toX - x + 1) * (toY - y0 + 1));
-
-            for (; x <= toX; x++)
-            {
-                for (int y = y0; y <= toY; y++)
-                {
-                    list.Add(new Point(x, y));
-                }
-            }
-
-            return list;
-        }
-
-        private static async Task<Bitmap> GetTileImage(int dnsAlias, int continentId, int floor, int x, int y, int zoom = 6)
-        {
-            if (zoom < 0 || zoom > 7) return null;
-
-            var dns = dnsAlias > 0 && dnsAlias < 5 ? dnsAlias.ToString() : string.Empty;
-
-            System.Net.WebRequest request = System.Net.WebRequest.Create($"https://tiles{dns}.guildwars2.com/{continentId}/{floor}/{zoom}/{x}/{y}.jpg");
-            System.Net.WebResponse response = await request.GetResponseAsync();
-            System.IO.Stream responseStream = response.GetResponseStream();
-            if (responseStream == null) return null;
-            return new Bitmap(responseStream);
+            return await _mapExpandedCache.GetItem((map, floorId));
         }
 
         public static async Task BuildMap(Map map, string filePath, bool removeBackground = false, IProgress<string> progress = null)
@@ -95,11 +67,11 @@ namespace Nekres.Mistwar
 
                 if (removeBackground)
                 {
-                    var sectors = await RequestSectorsForFloor(map.ContinentId, map.DefaultFloor, map.RegionId, map.Id);
+                    var mapExp = await GetMapExpanded(map, map.DefaultFloor);
 
                     var polygonPath = new GraphicsPath();
                     polygonPath.FillMode = FillMode.Alternate;
-                    foreach (var sector in sectors)
+                    foreach (var sector in mapExp.Sectors.Values)
                     {
                         var bbox = sector.Bounds.Select(coord => Refit(coord, topLeftPx, padding)).ToArray();
                         polygonPath.AddPolygon(bbox);
@@ -119,44 +91,27 @@ namespace Nekres.Mistwar
             bmpDestination.Dispose();
         }
 
-        public static Point Refit(Coordinates2 value, Coordinates2 destTopLeft, int padding = 0, int tileSize = 256)
+        public static System.Drawing.Point Refit(Coordinates2 value, Coordinates2 destTopLeft, int padding = 0, int tileSize = 256)
         {
             var node = new Coordinates2(value.X / tileSize, value.Y / tileSize);
+            var x = (int)(node.X * tileSize - destTopLeft.X + padding);
+            var y = (int)(node.Y * tileSize - destTopLeft.Y + padding);
+            return new System.Drawing.Point(x, y);
+        }
+
+        public static Point Refit(Point value, Coordinates2 destTopLeft, int padding = 0, int tileSize = 256)
+        {
+            var node = new Point(value.X / tileSize, value.Y / tileSize);
             var x = (int)(node.X * tileSize - destTopLeft.X + padding);
             var y = (int)(node.Y * tileSize - destTopLeft.Y + padding);
             return new Point(x, y);
         }
 
-        private static async Task<List<List<Point>>> GetSectors(Map map)
-        {
-            var sectors = await RequestSectorsForFloor(map.ContinentId, map.DefaultFloor, map.RegionId, map.Id);
-            var coords = sectors.Select(x => x.Bounds);
-            var result = coords.Select(l => l.Select(coord => new Point((int)coord.X, (int)coord.Y)).ToList()).ToList();
-            return result;
-        }
-
-        public static async Task<IEnumerable<ContinentFloorRegionMapSector>> RequestSectorsForFloor(int continentId, int floor, int regionId, int mapId)
+        private static async Task<Map> RequestMap(int mapId)
         {
             try
             {
-                return await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents[continentId].Floors[floor].Regions[regionId].Maps[mapId].Sectors.AllAsync();
-            }
-            catch (Exception ex) when (ex is BadRequestException or NotFoundException)
-            {
-                return Enumerable.Empty<ContinentFloorRegionMapSector>();
-            }
-            catch (UnexpectedStatusException)
-            {
-                MistwarModule.Logger.Warn(CommonStrings.WebApiDown);
-                return Enumerable.Empty<ContinentFloorRegionMapSector>();
-            }
-        }
-
-        public static async Task<Map> RequestMap(int id)
-        {
-            try
-            {
-                return await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Maps.GetAsync(id);
+                return await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Maps.GetAsync(mapId);
             }
             catch (Exception ex) when (ex is BadRequestException or NotFoundException)
             {
@@ -167,6 +122,65 @@ namespace Nekres.Mistwar
                 MistwarModule.Logger.Warn(CommonStrings.WebApiDown);
                 return null;
             }
+        }
+
+        private static async Task<ContinentFloorRegionMap> RequestMapExpanded(Map map, int floorId)
+        {
+            try
+            {
+                return await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents[map.ContinentId].Floors[floorId].Regions[map.RegionId].Maps.GetAsync(map.Id);
+            }
+            catch (Exception ex) when (ex is BadRequestException or NotFoundException)
+            {
+                return null;
+            }
+            catch (UnexpectedStatusException)
+            {
+                MistwarModule.Logger.Warn(CommonStrings.WebApiDown);
+                return null;
+            }
+        }
+
+        private static Point FromPixelToTileXY(Coordinates2 p, int zoom = 8)
+        {
+            var tileSize = zoom * 32;
+            return new Point((int)(p.X / tileSize), (int)(p.Y / tileSize));
+        }
+
+        private static List<Point> GetAreaTileList(Rectangle rect)
+        {
+            var topLeft = FromPixelToTileXY(rect.TopLeft);
+            var rightBottom = FromPixelToTileXY(rect.BottomRight);
+
+            int x = Math.Max(0, topLeft.X);
+            int toX = rightBottom.X;
+            int y0 = Math.Max(0, topLeft.Y);
+            int toY = rightBottom.Y;
+
+            var list = new List<Point>((toX - x + 1) * (toY - y0 + 1));
+
+            for (; x <= toX; x++)
+            {
+                for (int y = y0; y <= toY; y++)
+                {
+                    list.Add(new Point(x, y));
+                }
+            }
+
+            return list;
+        }
+
+        private static async Task<Bitmap> GetTileImage(int dnsAlias, int continentId, int floor, int x, int y, int zoom = 6)
+        {
+            if (zoom < 0 || zoom > 7) return null;
+
+            var dns = dnsAlias > 0 && dnsAlias < 5 ? dnsAlias.ToString() : string.Empty;
+
+            System.Net.WebRequest request = System.Net.WebRequest.Create($"https://tiles{dns}.guildwars2.com/{continentId}/{floor}/{zoom}/{x}/{y}.jpg");
+            System.Net.WebResponse response = await request.GetResponseAsync();
+            System.IO.Stream responseStream = response.GetResponseStream();
+            if (responseStream == null) return null;
+            return new Bitmap(responseStream);
         }
     }
 }

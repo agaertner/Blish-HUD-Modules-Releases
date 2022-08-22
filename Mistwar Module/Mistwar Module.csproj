@@ -130,6 +130,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="UI\CustomSettingsView\CustomSettingsModel.cs" />
+    <Compile Include="UI\CustomSettingsView\CustomSettingsPresenter.cs" />
+    <Compile Include="UI\CustomSettingsView\CustomSettingsView.cs" />
+    <Compile Include="_Utils\BrowserUtil.cs" />
+    <Compile Include="_Utils\ChatUtil.cs" />
+    <Compile Include="_Utils\etc\AsyncCache.cs" />
     <Compile Include="Services\MapService.cs" />
     <Compile Include="Services\MarkerService.cs" />
     <Compile Include="Services\WvwService.cs" />
@@ -146,6 +152,8 @@
     <Compile Include="_Extensions\SpriteBatchExtensions.cs" />
     <Compile Include="_Extensions\VectorExtensions.cs" />
     <Compile Include="_Utils\CommonStrings.cs" />
+    <Compile Include="_Utils\etc\PInvoke.cs" />
+    <Compile Include="_Utils\PolygonUtil.cs" />
     <Compile Include="_Utils\GameUtil.cs" />
     <Compile Include="_Utils\MapUtil.cs" />
     <Compile Include="_Utils\MathUtil.cs" />
@@ -163,6 +171,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="AsyncClipboardService, Version=1.7.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\AsyncClipboardService.1.7.1\lib\net45\AsyncClipboardService.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Blish HUD, Version=0.11.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\BlishHUD.0.11.6\lib\net472\Blish HUD.exe</HintPath>
       <Private>False</Private>

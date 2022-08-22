@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
+using Blish_HUD.Graphics.UI;
+using Nekres.Mistwar.UI.CustomSettingsView;
 
 namespace Nekres.Mistwar
 {
@@ -38,9 +40,11 @@ namespace Nekres.Mistwar
         // General settings
         internal SettingEntry<ColorType> ColorTypeSetting;
         internal SettingEntry<bool> TeamShapesSetting;
+
         // Hotkeys
         internal SettingEntry<KeyBinding> ToggleMapKeySetting;
         internal SettingEntry<KeyBinding> ToggleMarkersKeySetting;
+        internal SettingEntry<KeyBinding> ChatMessageKeySetting;
 
         // Map settings
         internal SettingEntry<float> ColorIntensitySetting;
@@ -54,6 +58,7 @@ namespace Nekres.Mistwar
         internal SettingEntry<bool> EnableMarkersSetting;
         internal SettingEntry<bool> HideInCombatSetting;
         internal SettingEntry<bool> DrawRuinMarkersSetting;
+        internal SettingEntry<bool> DrawEmergencyWayPointsSetting;
         internal SettingEntry<float> MaxViewDistanceSetting;
         internal SettingEntry<float> MarkerScaleSetting;
 
@@ -66,11 +71,13 @@ namespace Nekres.Mistwar
             var hotKeySettings = settings.AddSubCollection("Control Options", true, false);
             ToggleMapKeySetting = hotKeySettings.DefineSetting("ToggleKey", new KeyBinding(Keys.N), () => "Toggle Map", () => "Key used to show and hide the strategic map.");
             ToggleMarkersKeySetting = hotKeySettings.DefineSetting("ToggleMarkersKey", new KeyBinding(Keys.OemOpenBrackets), () => "Toggle Markers", () => "Key used to show and hide the objective markers.");
+            ChatMessageKeySetting = hotKeySettings.DefineSetting("ChatMessageKey", new KeyBinding(Keys.Enter), () => "Chat Message", () => "Give focus to the chat edit box.");
 
             var mapSettings = settings.AddSubCollection("Map", true, false);
             DrawSectorsSetting = mapSettings.DefineSetting("DrawSectors", true, () => "Show Sector Boundaries", () => "Indicates if the sector boundaries should be drawn.");
             DrawObjectiveNamesSetting = mapSettings.DefineSetting("DrawObjectiveNames", true, () => "Show Objective Names", () => "Indicates if the names of the objectives should be drawn.");
             DrawRuinMapSetting = mapSettings.DefineSetting("ShowRuins", true, () => "Show Ruins", () => "Indicates if the ruins should be shown.");
+            DrawEmergencyWayPointsSetting = mapSettings.DefineSetting("ShowEmergencyWayPoints", false, () => "Show Emergency Waypoints", () => "Shows your team's Emergency Waypoints.");
             OpacitySetting = mapSettings.DefineSetting("Opacity", 80f, () => "Opacity", () => "Changes the opacity of the tactical map interface.");
             ColorIntensitySetting = mapSettings.DefineSetting("ColorIntensity", 80f, () => "Color Intensity", () => "Intensity of the background color.");
             ScaleRatioSetting = mapSettings.DefineSetting("ScaleRatio", 80f, () => "Scale Ratio", () => "Changes the size of the tactical map interface");
@@ -91,6 +98,7 @@ namespace Nekres.Mistwar
         private AsyncTexture2D _cornerTex;
         protected override void Initialize()
         {
+            ChatMessageKeySetting.Value.Enabled = false;
             _cornerTex = new AsyncTexture2D(ContentsManager.GetTexture("corner_icon.png"));
             _moduleIcon = new CornerIcon(_cornerTex, this.Name);
             WvwService = new WvwService(Gw2ApiManager);
@@ -102,8 +110,14 @@ namespace Nekres.Mistwar
 
         }
 
+        public override IView GetSettingsView()
+        {
+            return new CustomSettingsView(new CustomSettingsModel(this.SettingsManager.ModuleSettings, this.ContentsManager));
+        }
+
         protected override async Task LoadAsync()
         {
+            await this.WvwService.LoadAsync();
             if (!this.Gw2ApiManager.HasPermission(TokenPermission.Account)) return;
             _mapService.DownloadMaps(await WvwService.GetWvWMapIds(await WvwService.GetWorldId()));
         }
@@ -166,7 +180,7 @@ namespace Nekres.Mistwar
             _mapService.Toggle();
         }
 
-        private void OnToggleMarkersKeyActivated(object o, EventArgs e)
+        private async void OnToggleMarkersKeyActivated(object o, EventArgs e)
         {
             EnableMarkersSetting.Value = !EnableMarkersSetting.Value;
             if (EnableMarkersSetting.Value)
@@ -175,7 +189,7 @@ namespace Nekres.Mistwar
             }
             else
             {
-                MarkerService = new MarkerService(WvwService.CurrentObjectives);
+                MarkerService = new MarkerService(await WvwService.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id));
             }
         }
 
@@ -208,11 +222,11 @@ namespace Nekres.Mistwar
             ToggleMapKeySetting.Value.Enabled = false;
         }
 
-        private void OnEnableMarkersSettingChanged(object o, ValueChangedEventArgs<bool> e)
+        private async void OnEnableMarkersSettingChanged(object o, ValueChangedEventArgs<bool> e)
         {
             if (e.NewValue)
             {
-                MarkerService ??= new MarkerService(WvwService.CurrentObjectives);
+                MarkerService ??= new MarkerService(await WvwService.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id));
                 return;
             }
             MarkerService?.Dispose();

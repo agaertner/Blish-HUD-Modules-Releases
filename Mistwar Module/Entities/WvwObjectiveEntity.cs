@@ -27,6 +27,10 @@ namespace Nekres.Mistwar.Entities
         private static readonly Texture2D TextureRuinAscent = MistwarModule.ModuleInstance.ContentsManager.GetTexture("ruin_ascent.png");
         private static readonly Texture2D TextureRuinOther = MistwarModule.ModuleInstance.ContentsManager.GetTexture("ruin_other.png");
 
+        private static readonly Texture2D TextureWayPoint = MistwarModule.ModuleInstance.ContentsManager.GetTexture("157353.png");
+        private static readonly Texture2D TextureWayPointHover = MistwarModule.ModuleInstance.ContentsManager.GetTexture("60970.png");
+        private static readonly Texture2D TextureWayPointContested = MistwarModule.ModuleInstance.ContentsManager.GetTexture("102349.png");
+
         private static readonly IReadOnlyDictionary<string, Texture2D> _ruinsTexLookUp = new Dictionary<string, Texture2D>
         {
             {"95-62", TextureRuinTemple}, // Temple of the Fallen
@@ -50,6 +54,7 @@ namespace Nekres.Mistwar.Entities
             {"1099-122", TextureRuinOther} // Tilly's Encampment
         };
 
+
         private static readonly Color ColorRed = new Color(213, 71, 67);
         private static readonly Color ColorGreen = new Color(73, 190, 111);
         private static readonly Color ColorBlue = new Color(100, 164, 228);
@@ -57,6 +62,7 @@ namespace Nekres.Mistwar.Entities
         public static readonly Color BrightGold = new Color(223, 194, 149, 255);
 
         private readonly WvwObjective _internalObjective;
+        private readonly ContinentFloorRegionMapSector _internalSector;
 
         public int MapId { get; }
 
@@ -129,7 +135,7 @@ namespace Nekres.Mistwar.Entities
         /// <summary>
         /// Texture indicating that a guild has claimed the objective.
         /// </summary>
-        public Texture2D ClaimedTexture => IsClaimedByRepresentedGuild() ? TextureClaimedRepGuild : TextureClaimed;
+        public Texture2D ClaimedTexture => ClaimedBy.Equals(MistwarModule.ModuleInstance.WvwService.CurrentGuild) ? TextureClaimedRepGuild : TextureClaimed;
 
         /// <summary>
         /// Texture of the protection buff.
@@ -142,35 +148,80 @@ namespace Nekres.Mistwar.Entities
         /// </summary>
         public float Opacity => GetOpacity();
 
-        public WvwObjectiveEntity(WvwObjective objective, Map map, ContinentFloorRegionMapSector sector)
+        public List<ContinentFloorRegionMapPoi> WayPoints { get; }
+
+        public WvwObjectiveEntity(WvwObjective objective, ContinentFloorRegionMap map)
         {
             _internalObjective = objective;
+            _internalSector = map.Sectors[objective.SectorId];
             _opacity = 1f;
             Icon = GetTexture(objective.Type);
             MapId = map.Id;
-            Bounds = sector.Bounds.Select(coord => MapUtil.Refit(coord, map.ContinentRect.TopLeft));
-            Center = MapUtil.Refit(sector.Coord, map.ContinentRect.TopLeft);
+            Bounds = _internalSector.Bounds.Select(coord => MapUtil.Refit(coord, map.ContinentRect.TopLeft));
+            Center = MapUtil.Refit(_internalSector.Coord, map.ContinentRect.TopLeft);
             LastFlipped = DateTime.MinValue.ToUniversalTime();
             BuffDuration = new TimeSpan(0, 5, 0);
+            WorldPosition = CalculateWorldPosition(map);
 
-            //Langor fix-hack
-            var v = objective.Coord;
-            if (objective.Id.Equals("38-15") && Math.Abs(v.X - 11766.3) < 1 && Math.Abs(v.Y - 14793.5) < 1 && Math.Abs(v.Z - (-2133.39)) < 1)
+            WayPoints = map.PointsOfInterest.Values.Where(x => x.Type == PoiType.Waypoint).Where(y =>
+                PolygonUtil.InBounds(new Vector2((float) y.Coord.X, (float) y.Coord.Y), _internalSector.Bounds.Select(z => new Vector2((float)z.X, (float)z.Y)).ToList())).ToList();
+
+            foreach (var wp in WayPoints)
             {
-                v = new Coordinates3(11462.5f, 15600 - 2650 / 24, objective.Coord.Z - 500);
+                var fit = MapUtil.Refit(wp.Coord, map.ContinentRect.TopLeft);
+                wp.Coord = new Coordinates2(fit.X, fit.Y);
             }
+        }
 
+        public Texture2D GetWayPointIcon(bool hover)
+        {
+            return this.Owner == MistwarModule.ModuleInstance.WvwService.CurrentTeam ? 
+                hover ? TextureWayPointHover : TextureWayPoint : TextureWayPointContested;
+        }
+
+        public bool IsOwned()
+        {
+            return (int)this.Owner <= 1;
+        }
+
+        public bool IsClaimed()
+        {
+            return !ClaimedBy.Equals(Guid.Empty);
+        }
+
+        public bool HasGuildUpgrades()
+        {
+            return GuildUpgrades.IsNullOrEmpty();
+        }
+
+        public bool HasUpgraded()
+        {
+            return YaksDelivered >= 20;
+        }
+
+        public bool HasBuff(out TimeSpan remainingTime)
+        {
+            var buffTime = DateTime.UtcNow.Subtract(LastFlipped);
+            remainingTime = BuffDuration.Subtract(buffTime);
+            return remainingTime.Ticks > 0;
+        }
+
+        private Vector3 CalculateWorldPosition(ContinentFloorRegionMap map)
+        {
+            var v = _internalObjective.Coord;
+            if (_internalObjective.Id.Equals("38-15") && Math.Abs(v.X - 11766.3) < 1 && Math.Abs(v.Y - 14793.5) < 1 && Math.Abs(v.Z - (-2133.39)) < 1) 
+            {
+                v = new Coordinates3(11462.5f, 15600 - 2650 / 24, _internalObjective.Coord.Z - 500); // Langor fix-hack
+            }
             var r = map.ContinentRect;
             var offset = new Vector3(
-                (float)(( r.TopLeft.X + r.BottomRight.X ) / 2.0f), 
-                0, 
-                (float)(( r.TopLeft.Y + r.BottomRight.Y ) / 2.0f)); // Centers the marker position
-
-            var pos = new Vector3( 
-                WorldUtil.GameToWorldCoord((float)(( v.X - offset.X ) * 24)),
+                (float)((r.TopLeft.X + r.BottomRight.X) / 2.0f),
+                0,
+                (float)((r.TopLeft.Y + r.BottomRight.Y) / 2.0f));
+            return new Vector3(
+                WorldUtil.GameToWorldCoord((float)((v.X - offset.X) * 24)),
                 WorldUtil.GameToWorldCoord((float)(-(v.Y - offset.Z) * 24)),
                 WorldUtil.GameToWorldCoord((float)-v.Z));
-            WorldPosition = pos;
         }
 
         private Texture2D GetTexture(WvwObjectiveType type)
@@ -201,33 +252,6 @@ namespace Nekres.Mistwar.Entities
                 default:
                     return ColorNeutral;
             }
-        }
-
-        public bool IsClaimed()
-        {
-            return !ClaimedBy.Equals(Guid.Empty);
-        }
-
-        public bool IsClaimedByRepresentedGuild()
-        {
-            return ClaimedBy.Equals(MistwarModule.ModuleInstance.WvwService.CurrentGuild);
-        }
-
-        public bool HasGuildUpgrades()
-        {
-            return GuildUpgrades.IsNullOrEmpty();
-        }
-
-        public bool HasUpgraded()
-        {
-            return YaksDelivered >= 20;
-        }
-
-        public bool HasBuff(out TimeSpan remainingTime)
-        {
-            var buffTime = DateTime.UtcNow.Subtract(LastFlipped);
-            remainingTime = BuffDuration.Subtract(buffTime);
-            return remainingTime.Ticks > 0;
         }
 
         private Texture2D GetUpgradeTierTexture()
