@@ -10,11 +10,12 @@ using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nekres.Mistwar.Services;
-using Nekres.Mistwar.UI.CustomSettingsView;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
+using Blish_HUD.Extended;
+using Blish_HUD.Extended.Core.Views;
 
 namespace Nekres.Mistwar
 {
@@ -110,7 +111,7 @@ namespace Nekres.Mistwar
 
         public override IView GetSettingsView()
         {
-            return new CustomSettingsView(new CustomSettingsModel(this.SettingsManager.ModuleSettings, this.ContentsManager));
+            return new SocialsSettingsView(new SocialsSettingsModel(this.SettingsManager.ModuleSettings, "https://pastebin.com/raw/Kk9DgVmL"));
         }
 
         protected override async Task LoadAsync()
@@ -151,7 +152,7 @@ namespace Nekres.Mistwar
         {
             if (_moduleIcon == null) return;
             _moduleIcon.LoadingMessage = loadingMessage;
-            if (loadingMessage == null && !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()) {
+            if (loadingMessage == null && !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch()) {
                 _moduleIcon?.Dispose(); // Show during initialization, but hide on completion if we are not in WvW.
             }
         }
@@ -195,12 +196,12 @@ namespace Nekres.Mistwar
 
         private void OnIsMapOpenChanged(object o, ValueEventArgs<bool> e)
         {
-            ToggleMapKeySetting.Value.Enabled = GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld();
+            ToggleMapKeySetting.Value.Enabled = GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch();
         }
 
         private void OnMapChanged(object o, ValueEventArgs<int> e)
         {
-            if (GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld())
+            if (GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch())
             {
                 _moduleIcon?.Dispose();
                 _moduleIcon = new CornerIcon(_cornerTex, this.Name);
@@ -214,7 +215,7 @@ namespace Nekres.Mistwar
 
         private void OnIsInGameChanged(object o, ValueEventArgs<bool> e)
         {
-            if (e.Value && GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld())
+            if (e.Value && GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch())
             {
                 _moduleIcon?.Dispose();
                 _moduleIcon = new CornerIcon(_cornerTex, this.Name);
@@ -231,8 +232,10 @@ namespace Nekres.Mistwar
             if (e.NewValue)
             {
                 MarkerService ??= new MarkerService();
-                MarkerService.ReloadMarkers(await WvwService.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id));
-                MarkerService.Toggle(_mapService.IsVisible);
+                if (!GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch()) return;
+                var obj = await WvwService.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id);
+                MarkerService?.ReloadMarkers(obj);
+                MarkerService?.Toggle(_mapService.IsVisible);
                 return;
             }
             MarkerService?.Dispose();

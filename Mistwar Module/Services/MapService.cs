@@ -12,6 +12,7 @@ using System.IO;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using Blish_HUD.Extended;
 using File = System.IO.File;
 
 namespace Nekres.Mistwar.Services
@@ -161,7 +162,7 @@ namespace Nekres.Mistwar.Services
 
         public async Task ReloadMap()
         {
-            if (GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() && _mapCache.TryGetValue(GameService.Gw2Mumble.CurrentMap.Id, out var tex))
+            if (GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch() && _mapCache.TryGetValue(GameService.Gw2Mumble.CurrentMap.Id, out var tex))
             {
                 _mapControl.Texture.SwapTexture(tex);
 
@@ -169,9 +170,9 @@ namespace Nekres.Mistwar.Services
 
                 await _wvw.GetObjectives(GameService.Gw2Mumble.CurrentMap.Id).ContinueWith(t =>
                 {
-                    if (t.IsFaulted) return;
+                    if (t.IsFaulted || t.Result == null) return;
                     _mapControl.WvwObjectives = t.Result;
-                    MistwarModule.ModuleInstance.MarkerService?.ReloadMarkers(t.Result);
+                    MistwarModule.ModuleInstance?.MarkerService?.ReloadMarkers(t.Result);
                 });
             }
         }

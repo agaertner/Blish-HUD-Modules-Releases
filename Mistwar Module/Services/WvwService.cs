@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Blish_HUD.Extended;
 
 namespace Nekres.Mistwar.Services
 {
@@ -44,7 +45,7 @@ namespace Nekres.Mistwar.Services
 
         public async Task Update()
         {
-            if (IsLoading || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() || DateTime.UtcNow.Subtract(_prevApiRequestTime).TotalSeconds < 15) return;
+            if (IsLoading || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch() || DateTime.UtcNow.Subtract(_prevApiRequestTime).TotalSeconds < 15) return;
             this.LoadingMessage = "Refreshing";
             this.CurrentGuild = await GetRepresentedGuild();
             var worldId = await GetWorldId();

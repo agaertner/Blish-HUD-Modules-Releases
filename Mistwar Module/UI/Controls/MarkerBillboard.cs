@@ -1,5 +1,6 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
+using Blish_HUD.Extended;
 using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -22,8 +23,8 @@ namespace Nekres.Mistwar.UI.Controls
 
         public void Toggle(bool forceHide = false, float tDuration = 0.1f, bool silent = false)
         {
-            silent = silent || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld();
-            if (forceHide || !GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() || _visible)
+            silent = silent || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch();
+            if (forceHide || !GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch() || _visible)
             {
                 _visible = false;
                 if (silent)
@@ -44,7 +45,7 @@ namespace Nekres.Mistwar.UI.Controls
 
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds)
         {
-            if (!GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() || !this.Visible || WvwObjectives == null) return;
+            if (!GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch() || !this.Visible || WvwObjectives == null) return;
 
             this.Size = Parent.AbsoluteBounds.Size; // Always keep at screen size.
 

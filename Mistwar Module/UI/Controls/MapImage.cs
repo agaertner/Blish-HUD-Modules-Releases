@@ -11,6 +11,7 @@ using Nekres.Mistwar.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Blish_HUD.Extended;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -93,8 +94,8 @@ namespace Nekres.Mistwar.UI.Controls
 
         public void Toggle(bool forceHide = false, float tDuration = 0.1f, bool silent = false)
         {
-            silent = silent || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld();
-            if (forceHide || !GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld() || _visible)
+            silent = silent || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch();
+            if (forceHide || !GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch() || _visible)
             {
                 _visible = false;
                 if (silent)
@@ -142,12 +143,12 @@ namespace Nekres.Mistwar.UI.Controls
                 GameService.Content.PlaySoundEffectByName("button-click");
                 if (PInvoke.IsLControlPressed())
                 {
-                    await ChatUtil.PastText(wp.ChatLink);
+                    await ChatUtil.Send(wp.ChatLink, MistwarModule.ModuleInstance.ChatMessageKeySetting.Value);
                     break;
                 }
                 if (PInvoke.IsLShiftPressed())
                 {
-                    await ChatUtil.InsertText(wp.ChatLink);
+                    await ChatUtil.Insert(wp.ChatLink, MistwarModule.ModuleInstance.ChatMessageKeySetting.Value);
                     break;
                 }
                 if (await ClipboardUtil.WindowsClipboardService.SetTextAsync(wp.ChatLink))
@@ -204,7 +205,7 @@ namespace Nekres.Mistwar.UI.Controls
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
         {
-            if (!GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWorldVsWorld()
+            if (!GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch()
                                         || !this.Visible 
                                         || !_texture.HasTexture 
                                         || WvwObjectives == null) return;

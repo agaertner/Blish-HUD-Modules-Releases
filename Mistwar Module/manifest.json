@@ -1,6 +1,6 @@
 {
   "name": "Mistwar",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "namespace": "Nekres.Mistwar",
   "package": "Mistwar.dll",
   "manifest_version": 1,

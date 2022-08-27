@@ -130,11 +130,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UI\CustomSettingsView\CustomSettingsModel.cs" />
-    <Compile Include="UI\CustomSettingsView\CustomSettingsPresenter.cs" />
-    <Compile Include="UI\CustomSettingsView\CustomSettingsView.cs" />
-    <Compile Include="_Utils\BrowserUtil.cs" />
-    <Compile Include="_Utils\ChatUtil.cs" />
     <Compile Include="_Utils\etc\AsyncCache.cs" />
     <Compile Include="Services\MapService.cs" />
     <Compile Include="Services\MarkerService.cs" />
@@ -144,7 +139,6 @@
     <Compile Include="_Extensions\BitmapExtensions.cs" />
     <Compile Include="_Extensions\ColorExtensions.cs" />
     <Compile Include="_Extensions\EnumerableExtensions.cs" />
-    <Compile Include="_Extensions\MapTypeExtensions.cs" />
     <Compile Include="_Extensions\MathExtensions.cs" />
     <Compile Include="_Extensions\PointExtensions.cs" />
     <Compile Include="MistwarModule.cs" />
@@ -179,8 +173,19 @@
       <HintPath>packages\BlishHUD.0.11.6\lib\net472\Blish HUD.exe</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Blish-HUD-Extended, Version=0.1.0.4, Culture=neutral, PublicKeyToken=c85c5ab9c73059c1, processorArchitecture=MSIL">
+      <HintPath>packages\Blish-HUD-Extended.0.1.0.4\lib\net472\Blish-HUD-Extended.dll</HintPath>
+    </Reference>
     <Reference Include="CSCore, Version=1.2.1.2, Culture=neutral, PublicKeyToken=5a08f2b6f4415dea, processorArchitecture=MSIL">
       <HintPath>.\packages\CSCore.1.2.1.2\lib\net35-client\CSCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Flurl, Version=2.8.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Flurl.2.8.2\lib\net40\Flurl.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Flurl.Http, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Flurl.Http.2.4.2\lib\net46\Flurl.Http.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Gapotchenko.FX, Version=2021.1.5.4096, Culture=neutral, PublicKeyToken=a750ee378eaf756f, processorArchitecture=MSIL">
