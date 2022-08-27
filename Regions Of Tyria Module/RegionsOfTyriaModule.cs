@@ -11,10 +11,9 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
+using Blish_HUD.Extended.Core.Views;
 using Blish_HUD.Graphics.UI;
 using Nekres.Regions_Of_Tyria.UI.Controls;
-using Nekres.Regions_Of_Tyria.UI.Models;
-using Nekres.Regions_Of_Tyria.UI.Views;
 using static Blish_HUD.GameService;
 namespace Nekres.Regions_Of_Tyria
 {
@@ -89,12 +88,12 @@ namespace Nekres.Regions_Of_Tyria
 
         public override IView GetSettingsView()
         {
-            return new CustomSettingsView(new CustomSettingsModel(SettingsManager.ModuleSettings));
+            return new SocialsSettingsView(new SocialsSettingsModel(SettingsManager.ModuleSettings, "https://pastebin.com/raw/Kk9DgVmL"));
         }
 
         protected override async void Update(GameTime gameTime) {
             
-            if (gameTime.TotalGameTime.TotalMilliseconds - _lastRun < 10 || DateTime.UtcNow.Subtract(_lastUpdate).TotalMilliseconds < 1000 || !_toggleSectorNotificationSetting.Value || !Gw2Mumble.IsAvailable || !GameIntegration.Gw2Instance.IsInGame || Gw2Mumble.CurrentMap.IsCompetitiveMode)
+            if (gameTime.TotalGameTime.TotalMilliseconds - _lastRun < 10 || DateTime.UtcNow.Subtract(_lastUpdate).TotalMilliseconds < 1000 || !_toggleSectorNotificationSetting.Value || !Gw2Mumble.IsAvailable || !GameIntegration.Gw2Instance.IsInGame)
                 return;
 
             _lastRun = gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -174,7 +173,8 @@ namespace Nekres.Regions_Of_Tyria
         {
             if (currentMap == null) 
                 return null;
-            var playerLocation = Gw2Mumble.RawClient.AvatarPosition.ToContinentCoords(CoordsUnit.Mumble, currentMap.MapRect, currentMap.ContinentRect).SwapYZ().ToPlane();
+            var playerPos = Gw2Mumble.RawClient.IsCompetitiveMode ? Gw2Mumble.RawClient.CameraPosition : Gw2Mumble.RawClient.AvatarPosition;
+            var playerLocation = playerPos.ToContinentCoords(CoordsUnit.Mumble, currentMap.MapRect, currentMap.ContinentRect).SwapYZ().ToPlane();
             var rtree = await _sectorRepository.GetItem(Gw2Mumble.CurrentMap.Id);
             var foundPoints = rtree.Search(new Envelope(playerLocation.X, playerLocation.Y, playerLocation.X, playerLocation.Y));
             if (foundPoints == null || foundPoints.Count == 0 || _prevSectorId.Equals(foundPoints[0].Id))

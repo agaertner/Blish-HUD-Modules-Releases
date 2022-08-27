@@ -1,6 +1,6 @@
 {
   "name": "Regions of Tyria",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "namespace": "Nekres.Regions_Of_Tyria",
   "package": "RegionsOfTyriaModule.dll",
   "manifest_version": 1,
@@ -12,8 +12,8 @@
   "enabled_without_gw2": false,
   "contributors": [
     {
-      "name": "TypoTiger",
-      "username": "TypoTiger.8352"
+      "name": "Nekres",
+      "username": "Nekres.1943"
     }
   ]
 }

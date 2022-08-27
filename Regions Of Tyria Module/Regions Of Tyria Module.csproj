@@ -133,9 +133,6 @@
   <ItemGroup>
     <Compile Include="UI\Controls\MapNotification.cs" />
     <Compile Include="Geometry\Sector.cs" />
-    <Compile Include="UI\Models\CustomSettingsModel.cs" />
-    <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
-    <Compile Include="UI\Views\CustomSettingsView.cs" />
     <Compile Include="_Utils\AsyncCache.cs" />
     <Compile Include="RegionsOfTyriaModule.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
@@ -154,8 +151,19 @@
       <HintPath>packages\BlishHUD.0.11.6\lib\net472\Blish HUD.exe</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Blish-HUD-Extended, Version=0.1.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Blish-HUD-Extended.0.1.0.1\lib\net472\Blish-HUD-Extended.dll</HintPath>
+    </Reference>
     <Reference Include="CSCore, Version=1.2.1.2, Culture=neutral, PublicKeyToken=5a08f2b6f4415dea">
       <HintPath>.\packages\CSCore.1.2.1.2\lib\net35-client\CSCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Flurl, Version=2.8.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Flurl.2.8.2\lib\net40\Flurl.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Flurl.Http, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Flurl.Http.2.4.2\lib\net46\Flurl.Http.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Gapotchenko.FX, Version=2021.1.5.4096, Culture=neutral, PublicKeyToken=a750ee378eaf756f, processorArchitecture=MSIL">
