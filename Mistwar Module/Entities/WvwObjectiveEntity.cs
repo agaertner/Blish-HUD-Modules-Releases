@@ -233,6 +233,11 @@ namespace Nekres.Mistwar.Entities
             return remainingTime.Ticks > 0;
         }
 
+        public float GetDistance()
+        {
+            return WorldPosition.Distance(GameService.Gw2Mumble.PlayerCamera.Position);
+        }
+
         private Vector3 CalculateWorldPosition(ContinentFloorRegionMap map)
         {
             var v = _internalObjective.Coord;

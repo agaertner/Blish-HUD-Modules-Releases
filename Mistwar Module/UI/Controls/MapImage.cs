@@ -92,7 +92,7 @@ namespace Nekres.Mistwar.UI.Controls
             MistwarModule.ModuleInstance.ScaleRatioSetting.SettingChanged += OnScaleRatioChanged;
         }
 
-        public void Toggle(bool forceHide = false, float tDuration = 0.1f, bool silent = false)
+        public void Toggle(bool forceHide = false, bool silent = false, float tDuration = 0.1f)
         {
             silent = silent || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch();
             if (forceHide || !GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch() || _visible)
@@ -100,7 +100,7 @@ namespace Nekres.Mistwar.UI.Controls
                 _visible = false;
                 if (silent)
                 {
-                    this.Hide();
+                    this.Visible = false;
                     return;
                 }
                 GameService.Content.PlaySoundEffectByName("window-close");
@@ -108,7 +108,7 @@ namespace Nekres.Mistwar.UI.Controls
                 return;
             }
             _visible = true;
-            this.Show();
+            this.Visible = true;
             if (silent) return;
             GameService.Content.PlaySoundEffectByName("page-open-" + RandomUtil.GetRandom(1, 3));
             GameService.Animation.Tweener.Tween(this, new { Opacity = 1.0f }, 0.35f);
@@ -269,10 +269,15 @@ namespace Nekres.Mistwar.UI.Controls
                     {
                         if (!MistwarModule.ModuleInstance.DrawEmergencyWayPointsSetting.Value) continue;
                         if (objectiveEntity.Owner != MistwarModule.ModuleInstance.WvwService.CurrentTeam) continue; // Skip opposing team's emergency waypoints.
-                        if (!objectiveEntity.HasEmergencyWaypoint()) continue;
+                        if (!objectiveEntity.HasEmergencyWaypoint())
+                        {
+                            _wayPointBounds.Remove(wp.Id);
+                            continue;
+                        }
                     } 
                     else if (!objectiveEntity.HasRegularWaypoint())
                     {
+                        _wayPointBounds.Remove(wp.Id);
                         continue;
                     }
 

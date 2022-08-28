@@ -183,26 +183,26 @@ namespace Nekres.Mistwar.Services
             return await MapUtil.GetMapExpanded(map, map.DefaultFloor);
         }
 
-        public void Toggle(bool forceHide = false)
+        public void Toggle(bool forceHide = false, bool silent = false)
         {
             if (IsLoading)
             {
                 ScreenNotification.ShowNotification("Mistwar is initializing.", ScreenNotification.NotificationType.Error);
                 return;
             }
-            _mapControl?.Toggle(forceHide);
+            _mapControl?.Toggle(forceHide, silent);
         }
 
         private void OnIsMapOpenChanged(object o, ValueEventArgs<bool> e)
         {
             if (!e.Value) return;
-            this.Toggle(true);
+            this.Toggle(true, true);
         }
 
         private void OnIsInGameChanged(object o, ValueEventArgs<bool> e)
         {
             if (e.Value) return;
-            this.Toggle(true);
+            this.Toggle(true, true);
         }
 
         private async void OnMapChanged(object o, ValueEventArgs<int> e)

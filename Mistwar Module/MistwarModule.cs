@@ -57,8 +57,10 @@ namespace Nekres.Mistwar
         // Marker settings
         internal SettingEntry<bool> EnableMarkersSetting;
         internal SettingEntry<bool> HideInCombatSetting;
+        internal SettingEntry<bool> HideAlliedMarkersSetting;
         internal SettingEntry<bool> DrawRuinMarkersSetting;
         internal SettingEntry<bool> DrawEmergencyWayPointsSetting;
+        internal SettingEntry<bool> DrawDistanceSetting;
         internal SettingEntry<float> MaxViewDistanceSetting;
         internal SettingEntry<float> MarkerScaleSetting;
 
@@ -84,8 +86,10 @@ namespace Nekres.Mistwar
 
             var markerSettings = settings.AddSubCollection("Markers", true, false);
             EnableMarkersSetting = markerSettings.DefineSetting("EnableMarkers", true, () => "Enable Markers", () => "Enables the markers overlay which shows objectives at their world position.");
-            HideInCombatSetting = markerSettings.DefineSetting("HideInCombat", true, () => "Hide in Combat", () => "Shows only the closest objective in combat and hides all others.");
-            DrawRuinMarkersSetting = markerSettings.DefineSetting("ShowRuinMarkers", true, () => "Show Ruins", () => "Shows markers for the ruins.");
+            HideAlliedMarkersSetting = markerSettings.DefineSetting("HideAlliedMarkers", false, () => "Hide Allied Objectives", () => "Only hostile objectives will be shown.");
+            HideInCombatSetting = markerSettings.DefineSetting("HideInCombat", true, () => "Hide in Combat", () => "Only the closest objective will be shown when in combat.");
+            DrawRuinMarkersSetting = markerSettings.DefineSetting("ShowRuinMarkers", true, () => "Show Ruins", () => "Show markers for the ruins.");
+            DrawDistanceSetting = markerSettings.DefineSetting("ShowDistance", true, () => "Show Distance", () => "Show flight distance to objectives.");
             MaxViewDistanceSetting = markerSettings.DefineSetting("MaxViewDistance", 50f, () => "Max View Distance", () => "The max view distance at which an objective marker can be seen.");
             MarkerScaleSetting = markerSettings.DefineSetting("ScaleRatio", 70f, () => "Scale Ratio", () => "Changes the size of the markers.");
         }

@@ -12,7 +12,7 @@ namespace Nekres.Mistwar
 {
     public static class SpriteBatchExtensions
     {
-        public static void DrawWvwObjectiveOnCtrl(this SpriteBatch spriteBatch, Control control, WvwObjectiveEntity objectiveEntity, Rectangle dest, float opacity = 1f, float scale = 1f, bool drawName = true)
+        public static void DrawWvwObjectiveOnCtrl(this SpriteBatch spriteBatch, Control control, WvwObjectiveEntity objectiveEntity, Rectangle dest, float opacity = 1f, float scale = 1f, bool drawName = true, bool drawDistance = false)
         {
 			if (objectiveEntity.Icon == null) return;
 
@@ -69,8 +69,10 @@ namespace Nekres.Mistwar
 				var text = remainingTime.ToString(@"m\:ss");
 				var size = font.MeasureString(text);
 				var texSize = Blish_HUD.PointExtensions.ResizeKeepAspect(new Point(objectiveEntity.BuffTexture.Width, objectiveEntity.BuffTexture.Height), (int)(scale * size.Width), (int)(scale * size.Height));
-				spriteBatch.DrawOnCtrl(control, objectiveEntity.BuffTexture, new Rectangle(dest.X + texSize.X / 2, dest.Y - texSize.Y + 1, texSize.X, texSize.Y), objectiveEntity.BuffTexture.Bounds, whiteColor);
-                spriteBatch.DrawStringOnCtrl(control, text, font, new Rectangle(dest.X - (int)size.Width / 2, dest.Y - (int)size.Height - dest.Height / 2 - 10, dest.Width, dest.Height), textColor, false, opacity >= 0.99f);
+                var iconBnds = new Rectangle(dest.X - 20, (int)(dest.Y - scale * 80), texSize.X, texSize.Y);
+                var textBnds = new Rectangle(iconBnds.Right + 3, iconBnds.Y, iconBnds.Width, iconBnds.Height);
+                spriteBatch.DrawOnCtrl(control, objectiveEntity.BuffTexture, iconBnds, objectiveEntity.BuffTexture.Bounds, whiteColor);
+                spriteBatch.DrawStringOnCtrl(control, text, font, textBnds, textColor, false, opacity >= 0.99f);
             }
 
             // draw claimed indicator
@@ -89,7 +91,16 @@ namespace Nekres.Mistwar
 			if (drawName)
             {
                 var nameSize = font.MeasureString(objectiveEntity.Name);
-                spriteBatch.DrawStringOnCtrl(control, objectiveEntity.Name, font, new Rectangle(dest.X - (int)nameSize.Width / 2, dest.Y + dest.Height / 2 + 3, (int)nameSize.Width, (int)nameSize.Height), textColor, false, opacity >= 0.99f);
+                spriteBatch.DrawStringOnCtrl(control, objectiveEntity.Name, font, new Rectangle(dest.X - (int)nameSize.Width / 2, dest.Y + dest.Height / 2 + (int)(scale * 12), (int)nameSize.Width, (int)nameSize.Height), textColor, false, opacity >= 0.99f);
+            }
+
+            if (!drawDistance) return;
+            var distance = objectiveEntity.GetDistance() - 25;
+            if (distance > 1)
+            {
+                var text = distance >= 1000 ? $"{distance / 1000:N2}km" : $"{distance:N0}m";
+                var size = font.MeasureString(text);
+                spriteBatch.DrawStringOnCtrl(control, text, font, new Rectangle(dest.X - (int)size.Width / 2, dest.Y - (int)size.Height - dest.Height / 2 - (int)(scale * 80), dest.Width, dest.Height), textColor, false, opacity >= 0.99f);
             }
 		}
     }

@@ -1,7 +1,5 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Modules.Managers;
-using Gw2Sharp.WebApi.Exceptions;
-using Gw2Sharp.WebApi.V2.Models;
 using Nekres.Mistwar.Entities;
 using System;
 using System.Collections.Generic;
@@ -9,6 +7,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Blish_HUD.Extended;
+using Gw2Sharp.WebApi.Exceptions;
+using Gw2Sharp.WebApi.V2.Models;
 
 namespace Nekres.Mistwar.Services
 {

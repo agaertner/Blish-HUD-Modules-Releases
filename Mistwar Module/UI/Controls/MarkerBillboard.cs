@@ -21,25 +21,17 @@ namespace Nekres.Mistwar.UI.Controls
             _spriteBatchParameters = new SpriteBatchParameters();
         }
 
-        public void Toggle(bool forceHide = false, float tDuration = 0.1f, bool silent = false)
+        public void Toggle(bool forceHide = false, float tDuration = 0.1f)
         {
-            silent = silent || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch();
             if (forceHide || !GameUtil.IsAvailable() || !GameService.Gw2Mumble.CurrentMap.Type.IsWvWMatch() || _visible)
             {
                 _visible = false;
-                if (silent)
-                {
-                    this.Hide();
-                    return;
-                }
-                GameService.Content.PlaySoundEffectByName("window-close");
+                this.Visible = false;
                 GameService.Animation.Tweener.Tween(this, new { Opacity = 0.0f }, tDuration).OnComplete(this.Hide);
                 return;
             }
             _visible = true;
-            this.Show();
-            if (silent) return;
-            GameService.Content.PlaySoundEffectByName("page-open-" + RandomUtil.GetRandom(1, 3));
+            this.Visible = true;
             GameService.Animation.Tweener.Tween(this, new { Opacity = 1.0f }, 0.35f);
         }
 
@@ -49,8 +41,14 @@ namespace Nekres.Mistwar.UI.Controls
 
             this.Size = Parent.AbsoluteBounds.Size; // Always keep at screen size.
 
+            var objectives = WvwObjectives.Where(x => x.Icon != null);
+            if (MistwarModule.ModuleInstance.HideAlliedMarkersSetting.Value)
+            {
+                objectives = objectives.Where(x => x.Owner != MistwarModule.ModuleInstance.WvwService.CurrentTeam);
+            }
+
             // Order by distance.
-            var distanceSort = WvwObjectives.Where(x => x.Icon != null).OrderBy(x => x.WorldPosition.Distance(GameService.Gw2Mumble.PlayerCamera.Position)).ToList();
+            var distanceSort = objectives.OrderBy(x => x.GetDistance()).ToList();
             if (MistwarModule.ModuleInstance.HideInCombatSetting.Value && GameService.Gw2Mumble.PlayerCharacter.IsInCombat)
             {
                 distanceSort = distanceSort.IsNullOrEmpty() ? distanceSort : distanceSort.Take(1).ToList(); // Show only the closest objective during combat.
@@ -80,7 +78,10 @@ namespace Nekres.Mistwar.UI.Controls
                 var dest = new Rectangle((int)transformed.X, (int)transformed.Y, width, height);
 
                 // Draw the objective.
-                spriteBatch.DrawWvwObjectiveOnCtrl(this, objectiveEntity, dest, objectiveEntity.Opacity, MathUtil.Clamp(MistwarModule.ModuleInstance.MarkerScaleSetting.Value / 100f, 0f, 1f));
+                spriteBatch.DrawWvwObjectiveOnCtrl(this, objectiveEntity, dest, objectiveEntity.Opacity, 
+                    MathUtil.Clamp(MistwarModule.ModuleInstance.MarkerScaleSetting.Value / 100f, 0f, 1f), 
+                    true, 
+                    MistwarModule.ModuleInstance.DrawDistanceSetting.Value);
             }
         }
 
