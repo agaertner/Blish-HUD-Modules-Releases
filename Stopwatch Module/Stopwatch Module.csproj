@@ -136,10 +136,9 @@
     <Compile Include="Core\Controllers\StopwatchController.cs" />
     <Compile Include="Core\Controls\TimeSpanInputPrompt.cs" />
     <Compile Include="StopwatchModule.cs" />
-    <Compile Include="UI\Models\CustomSettingsModel.cs" />
-    <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
-    <Compile Include="UI\Views\CustomSettingsView.cs" />
-    <Compile Include="_Utils\BrowserUtil.cs" />
+    <Compile Include="UI\Views\CustomSettingsView\CustomSettingsModel.cs" />
+    <Compile Include="UI\Views\CustomSettingsView\CustomSettingsPresenter.cs" />
+    <Compile Include="UI\Views\CustomSettingsView\CustomSettingsView.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AsyncClipboardService, Version=1.7.1.0, Culture=neutral, processorArchitecture=MSIL">
@@ -331,6 +330,9 @@
   <ItemGroup>
     <Folder Include="ref\" />
     <Folder Include="UI\Controls\" />
+    <Folder Include="UI\Models\" />
+    <Folder Include="UI\Presenters\" />
+    <Folder Include="_Utils\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

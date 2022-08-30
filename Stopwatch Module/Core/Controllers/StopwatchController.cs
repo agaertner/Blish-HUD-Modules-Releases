@@ -147,7 +147,7 @@ namespace Nekres.Stopwatch.Core.Controllers
 
             if (StopwatchModule.ModuleInstance.StartOnMovementEnabled.Value)
             {
-                PlayerPosition = GameService.Gw2Mumble.PlayerCharacter.Position;
+                PlayerPosition = GameService.Gw2Mumble.CurrentMap.IsCompetitiveMode ? GameService.Gw2Mumble.PlayerCamera.Position : GameService.Gw2Mumble.PlayerCharacter.Position;
                 _display.Text = $"Awaiting movement...\nX:{PlayerPosition.X:F} Y:{PlayerPosition.Y:F} Z:{PlayerPosition.Z:F}";
                 return;
             }

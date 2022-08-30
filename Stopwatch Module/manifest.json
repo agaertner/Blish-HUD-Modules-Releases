@@ -1,6 +1,6 @@
 {
   "name": "Stopwatch",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "namespace": "Nekres.Stopwatch",
   "package": "Stopwatch.dll",
   "manifest_version": 1,
@@ -13,8 +13,8 @@
   "url": "https://github.com/agaertner/Blish-HUD-Modules-Releases",
   "contributors": [
     {
-      "name": "TypoTiger",
-      "username": "TypoTiger.8352"
+      "name": "Nekres",
+      "username": "Nekres.1943"
     }
   ]
 }

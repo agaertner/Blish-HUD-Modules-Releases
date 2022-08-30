@@ -51,45 +51,48 @@ namespace Stopwatch
 
         protected override void DefineSettings(SettingCollection settings)
         {
-            Toggle = settings.DefineSetting("toggleKey", new KeyBinding(Keys.LeftAlt), 
+            var hotkeys = settings.AddSubCollection("Control Options", true, false);
+            Toggle = hotkeys.DefineSetting("toggleKey", new KeyBinding(Keys.LeftAlt), 
                 () => "Toggle", 
                 () => "Starts or pauses the stopwatch.");
 
-            StartOnMovementEnabled = settings.DefineSetting("startOnMovement", false, 
-                () => "Wait for Character Movement", 
-                () => "When you activate the stopwatch it will delay its start until the moment you move from where you toggled it.");
-
-            Reset = settings.DefineSetting("resetKey", new KeyBinding(ModifierKeys.Alt, Keys.R), 
-                () => "Reset", 
+            Reset = hotkeys.DefineSetting("resetKey", new KeyBinding(ModifierKeys.Alt, Keys.R),
+                () => "Reset",
                 () => "Rewinds and stops the stopwatch.");
-            
-            SetStartTime = settings.DefineSetting("setStartTimeKey", new KeyBinding(ModifierKeys.Alt, Keys.C), 
+
+            SetStartTime = hotkeys.DefineSetting("setStartTimeKey", new KeyBinding(ModifierKeys.Alt, Keys.C),
                 () => "Set Goal Time",
                 () => "Set a goal time and make the stopwatch count down into the negative.");
-            
-            FontSize = settings.DefineSetting("fontSize", ContentService.FontSize.Size36, 
+
+
+            var general = settings.AddSubCollection("General", true, false);
+            StartOnMovementEnabled = general.DefineSetting("startOnMovement", false,
+                () => "Wait for Character Movement",
+                () => "When you activate the stopwatch it will delay its start until the moment you move from where you toggled it.\nIn competitive modes it will wait for camera movement instead.");
+            FontSize = general.DefineSetting("fontSize", ContentService.FontSize.Size36, 
                 () => "Font Size",
                 () => "Sets the font size of the timer.");
 
-            FontColor = settings.DefineSetting("fontColor", Color.White,
+            FontColor = general.DefineSetting("fontColor", Color.White,
                 () => "Font Color",
                 () => "Sets the font color of the timer.");
 
-            BackgroundOpacity = settings.DefineSetting("backgroundOpacity", 30f, 
+            BackgroundOpacity = general.DefineSetting("backgroundOpacity", 30f, 
                 () => "Background Opacity",
                 () => "Sets the transparency of the background.");
 
-            SoundVolume = settings.DefineSetting("soundVolume", 80f, 
-                () => "Audio Volume",
-                () => "Sets the volume of the audio effects");
-
-            TickingSoundDisabledSetting = settings.DefineSetting("tickingSfxDisabled", false,
+            var audio = settings.AddSubCollection("Sound Options", true, false);
+            TickingSoundDisabledSetting = audio.DefineSetting("tickingSfxDisabled", false,
                 () => "Disable Ticking Sound", 
                 () => "Disables the ticking sounds");
 
-            BeepSoundDisabledSetting = settings.DefineSetting("beepSfxDisabled", false,
+            BeepSoundDisabledSetting = audio.DefineSetting("beepSfxDisabled", false,
                 () => "Disable Beep Alerts",
                 () => "Disables the beeping alerts during a count from three to zero.");
+
+            SoundVolume = audio.DefineSetting("soundVolume", 80f,
+                () => "Audio Volume",
+                () => "Sets the volume of the audio effects");
 
             var hiddenSettingsCache = settings.AddSubCollection("hiddenSettingsCache", false, false);
             Position = hiddenSettingsCache.DefineSetting("position", new Point(180, 60));
