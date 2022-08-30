@@ -172,6 +172,17 @@
       <HintPath>packages\BlishHUD.0.11.6\lib\net472\Blish HUD.exe</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Blish-HUD-Extended, Version=0.1.0.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Blish-HUD-Extended.0.1.0.6\lib\net472\Blish-HUD-Extended.dll</HintPath>
+    </Reference>
+    <Reference Include="Flurl, Version=2.8.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Flurl.2.8.2\lib\net40\Flurl.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Flurl.Http, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Flurl.Http.2.4.2\lib\net46\Flurl.Http.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Gapotchenko.FX, Version=2021.1.5.4096, Culture=neutral, PublicKeyToken=a750ee378eaf756f, processorArchitecture=MSIL">
       <HintPath>packages\Gapotchenko.FX.2021.1.5\lib\net472\Gapotchenko.FX.dll</HintPath>
       <Private>False</Private>
@@ -190,6 +201,7 @@
     </Reference>
     <Reference Include="LiteDB, Version=5.0.11.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
       <HintPath>packages\LiteDB.5.0.11\lib\net45\LiteDB.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>

@@ -14,6 +14,8 @@ using Nekres.Chat_Shorts.UI.Views;
 using System;
 using System.ComponentModel.Composition;
 using System.Linq;
+using Blish_HUD.Extended.Core.Views;
+using Blish_HUD.Graphics.UI;
 
 namespace Nekres.Chat_Shorts
 {
@@ -109,6 +111,11 @@ namespace Nekres.Chat_Shorts
         {
             if (!this.Loaded) return;
             BuildContextMenu();
+        }
+
+        public override IView GetSettingsView()
+        {
+            return new SocialsSettingsView(new SocialsSettingsModel(this.SettingsManager.ModuleSettings, "https://pastebin.com/raw/Kk9DgVmL"));
         }
 
         private void OnIsCommanderChanged(object o, ValueEventArgs<bool> e)

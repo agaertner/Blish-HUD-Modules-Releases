@@ -1,16 +1,11 @@
 ﻿using Blish_HUD;
-using Blish_HUD.Controls.Extern;
-using Blish_HUD.Controls.Intern;
-using Microsoft.Xna.Framework.Input;
+using Blish_HUD.Extended;
 using Nekres.Chat_Shorts.Core;
 using Nekres.Chat_Shorts.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Keyboard = Blish_HUD.Controls.Intern.Keyboard;
-using Mouse = Blish_HUD.Controls.Intern.Mouse;
 
 namespace Nekres.Chat_Shorts.Services
 {
@@ -21,18 +16,10 @@ namespace Nekres.Chat_Shorts.Services
 
         private List<Macro> _activeMacros;
 
-        private Dictionary<ModifierKeys, VirtualKeyShort> _modifierLookUp;
-
         public ChatService(DataService dataService)
         {
             _dataService = dataService;
             _activeMacros = new List<Macro>();
-            _modifierLookUp = new Dictionary<ModifierKeys, VirtualKeyShort>()
-            {
-                {ModifierKeys.Alt, VirtualKeyShort.MENU},
-                {ModifierKeys.Ctrl, VirtualKeyShort.CONTROL},
-                {ModifierKeys.Shift, VirtualKeyShort.SHIFT}
-            };
             GameService.Gw2Mumble.CurrentMap.MapChanged += OnMapChanged;
             GameService.Gw2Mumble.PlayerCharacter.IsCommanderChanged += OnIsCommanderChanged;
         }
@@ -85,75 +72,7 @@ namespace Nekres.Chat_Shorts.Services
         {
             if (IsBusy() || !IsTextValid(text)) return;
             if (squadBroadcast && !GameService.Gw2Mumble.PlayerCharacter.IsCommander) return;
-            await this.PastText(text, squadBroadcast);
-        }
-
-        private async Task PastText(string text, bool squadBroadcast = false)
-        {
-            byte[] prevClipboardContent = await ClipboardUtil.WindowsClipboardService.GetAsUnicodeBytesAsync();
-            await ClipboardUtil.WindowsClipboardService.SetTextAsync(text)
-                .ContinueWith(async clipboardResult => {
-                    if (clipboardResult.IsFaulted) {
-                        ChatShorts.Logger.Warn(clipboardResult.Exception, $"Failed to set clipboard text to {text}!");
-                    } else {
-                        await Task.Run(() =>
-                        {
-                            Focus(squadBroadcast);
-                            Keyboard.Press(VirtualKeyShort.LCONTROL, true);
-                            Keyboard.Stroke(VirtualKeyShort.KEY_V, true);
-                            Thread.Sleep(50);
-                            Keyboard.Release(VirtualKeyShort.LCONTROL, true);
-                            Keyboard.Stroke(VirtualKeyShort.RETURN);
-                            UnFocus();
-                        }).ContinueWith(async _ =>
-                        {
-                            if (prevClipboardContent == null) return;
-                            await ClipboardUtil.WindowsClipboardService.SetUnicodeBytesAsync(prevClipboardContent);
-                        });
-                    }
-                });
-        }
-
-        private void Focus(bool squadBroadcast = false)
-        {
-            UnFocus();
-
-            if (squadBroadcast)
-            {
-                if (ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys != ModifierKeys.None) 
-                {
-                    Keyboard.Press(_modifierLookUp[ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys]);
-                }
-                if (ChatShorts.Instance.SquadBroadcast.Value.PrimaryKey != Keys.None)
-                {
-                    Keyboard.Press((VirtualKeyShort)ChatShorts.Instance.SquadBroadcast.Value.PrimaryKey);
-                    Keyboard.Release((VirtualKeyShort)ChatShorts.Instance.SquadBroadcast.Value.PrimaryKey);
-                }
-                if (ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys != ModifierKeys.None) 
-                {
-                    Keyboard.Release(_modifierLookUp[ChatShorts.Instance.SquadBroadcast.Value.ModifierKeys]);
-                }
-                return;
-            }
-
-            if (ChatShorts.Instance.ChatMessage.Value.ModifierKeys != ModifierKeys.None)
-            {
-                Keyboard.Press(_modifierLookUp[ChatShorts.Instance.ChatMessage.Value.ModifierKeys]);
-            }
-            if (ChatShorts.Instance.ChatMessage.Value.PrimaryKey != Keys.None)
-            {
-                Keyboard.Press((VirtualKeyShort)ChatShorts.Instance.ChatMessage.Value.PrimaryKey);
-                Keyboard.Release((VirtualKeyShort)ChatShorts.Instance.ChatMessage.Value.PrimaryKey);
-            }
-            if (ChatShorts.Instance.ChatMessage.Value.ModifierKeys != ModifierKeys.None) 
-            {
-                Keyboard.Release(_modifierLookUp[ChatShorts.Instance.ChatMessage.Value.ModifierKeys]);
-            }
-        }
-
-        private void UnFocus()
-        {
-            Mouse.Click(MouseButton.LEFT, GameService.Graphics.WindowWidth - 1);
+            await ChatUtil.Send(text, squadBroadcast ? ChatShorts.Instance.SquadBroadcast.Value : ChatShorts.Instance.ChatMessage.Value);
         }
 
         private bool IsTextValid(string text)
