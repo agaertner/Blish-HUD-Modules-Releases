@@ -1,10 +1,10 @@
-﻿using Blish_HUD.Graphics.UI;
+﻿using Blish_HUD;
+using Blish_HUD.Controls;
+using Blish_HUD.Graphics.UI;
 using Nekres.Inquest_Module.UI.Models;
 using Nekres.Inquest_Module.UI.Views;
 using System;
 using System.Threading.Tasks;
-using Blish_HUD;
-using Blish_HUD.Controls;
 
 namespace Nekres.Inquest_Module.UI.Presenters
 {

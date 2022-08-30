@@ -136,9 +136,9 @@
     <Compile Include="UI\Controls\TaskIndicator\ClickIndicator.cs" />
     <Compile Include="UI\Controls\TaskIndicator\TaskIndicator.cs" />
     <Compile Include="UI\Controls\TaskIndicator\TaskIndicatorBase.cs" />
-    <Compile Include="UI\Models\CustomSettingsModel.cs" />
-    <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
-    <Compile Include="UI\Views\CustomSettingsView.cs" />
+    <Compile Include="UI\Views\CustomSettingsView\CustomSettingsModel.cs" />
+    <Compile Include="UI\Views\CustomSettingsView\CustomSettingsPresenter.cs" />
+    <Compile Include="UI\Views\CustomSettingsView\CustomSettingsView.cs" />
     <Compile Include="_Utils\BrowserUtil.cs" />
     <Compile Include="_Utils\WindowUtil.cs" />
   </ItemGroup>

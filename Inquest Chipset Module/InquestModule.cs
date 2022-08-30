@@ -59,33 +59,38 @@ namespace Nekres.Inquest_Module
 
         protected override void DefineSettings(SettingCollection settings)
         {
-            AutoClickHoldKeySetting = settings.DefineSetting("autoClickHoldKeyBinding", new KeyBinding(Keys.OemComma), 
+            var hotkeys = settings.AddSubCollection("Control Options", true, false);
+
+            AutoClickHoldKeySetting = hotkeys.DefineSetting("autoClickHoldKeyBinding", new KeyBinding(Keys.OemComma), 
                 () => "Hold Double Clicking", 
                 () => "Perform Double Clicks at the current cursor position while the key is being pressed.");
+            AutoClickToggleKeySetting = hotkeys.DefineSetting("autoClickToggleKeyBinding", new KeyBinding(Keys.OemOpenBrackets),
+                () => "Toggle Double Clicking",
+                () => "Perform Double Clicks in an interval at the position of the cursor at the time of pressing the key.");
+            DodgeJumpKeyBindingSetting = hotkeys.DefineSetting("dodgeJumpKeyBinding", new KeyBinding(ModifierKeys.Ctrl, Keys.Space),
+                () => "Dodge-Jump",
+                () => "Perform a dodge roll and a jump simultaneously.");
 
-            HoldKeyWithLeftClickEnabledSetting = settings.DefineSetting("holdKeyWithLeftClick", false,
+            var controlOptions = hotkeys.AddSubCollection("Movement Keys to Trigger on Dodge-Jump", true, false);
+            DodgeKeyBindingSetting = controlOptions.DefineSetting("dodgeKeyBinding", new KeyBinding(Keys.V), () => "Dodge", () => "Do an evasive dodge roll, negating damage, in the direction your character is moving (backward if stationary).");
+            JumpKeyBindingSetting = controlOptions.DefineSetting("jumpKeyBinding", new KeyBinding(Keys.Space), () => "Jump", () => "Press to jump over obstacles.");
+
+            HoldKeyWithLeftClickEnabledSetting = hotkeys.DefineSetting("holdKeyWithLeftClick", false,
                 () => "Hold Double Clicking + Left Mouse Button",
                 () => "Perform Double clicks at the current cursor position while Hold Double Clicking and Left Mouse Button is being pressed.");
 
-            AutoClickToggleKeySetting = settings.DefineSetting("autoClickToggleKeyBinding", new KeyBinding(Keys.OemOpenBrackets), 
-                () => "Toggle Double Clicking", 
-                () => "Perform Double Clicks in an interval at the position of the cursor at the time of pressing the key.");
-
-            AutoClickSoundDisabledSetting = settings.DefineSetting("autoClickSoundsDisabled", false, 
+            var audio = settings.AddSubCollection("Sound Options", true, false);
+            AutoClickSoundDisabledSetting = audio.DefineSetting("autoClickSoundsDisabled", false, 
                 () => "Disable Clicking Sounds", 
                 () => "Disables the sound alert when an auto click is performed.");
 
-            AutoClickSoundVolume = settings.DefineSetting("autoClickSoundsVolume", 80f,
+            AutoClickSoundVolume = audio.DefineSetting("autoClickSoundsVolume", 80f,
                 () => "Clicking Sounds Volume", 
                 () => "Sets the audio volume of the clicking alerts.");
 
-            DodgeJumpKeyBindingSetting = settings.DefineSetting("dodgeJumpKeyBinding", new KeyBinding(ModifierKeys.Ctrl, Keys.Space), 
-                () => "Dodge-Jump", 
-                () => "Perform a dodge roll and a jump simultaneously.");
 
-            var controlOptions = settings.AddSubCollection("Movement Keys to Trigger on Dodge-Jump", true, false);
-            DodgeKeyBindingSetting = controlOptions.DefineSetting("dodgeKeyBinding", new KeyBinding(Keys.V), () => "Dodge", () => "Do an evasive dodge roll, negating damage, in the direction your character is moving (backward if stationary).");
-            JumpKeyBindingSetting = controlOptions.DefineSetting("jumpKeyBinding", new KeyBinding(Keys.Space), () => "Jump", () => "Press to jump over obstacles.");
+
+
 
             var hiddenSettingsCache = settings.AddSubCollection("hiddenSettingsCache", false, false);
             AutoClickToggleInterval = hiddenSettingsCache.DefineSetting("autoClickToggleInterval", 0.0);
