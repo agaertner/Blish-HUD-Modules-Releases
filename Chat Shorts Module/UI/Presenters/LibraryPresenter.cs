@@ -45,6 +45,7 @@ namespace Nekres.Chat_Shorts.UI.Presenters
             var contentRegion = new Rectangle(70, 41, 895 - 43, 780 - 142);
             var editWindow = new StandardWindow(bgTex, windowRegion, contentRegion)
             {
+                Emblem = ChatShorts.Instance.EditTexture,
                 Parent = GameService.Graphics.SpriteScreen,
                 Location = new Point((GameService.Graphics.SpriteScreen.Width - windowRegion.Width) / 2, (GameService.Graphics.SpriteScreen.Height - windowRegion.Height) / 2),
                 Title = $"Edit Macro - {ctrl.Title}",

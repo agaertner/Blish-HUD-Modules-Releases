@@ -1,6 +1,5 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
-using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
 using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
@@ -15,7 +14,6 @@ using Nekres.Chat_Shorts.UI.Views;
 using System;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Nekres.Chat_Shorts
 {
@@ -42,6 +40,7 @@ namespace Nekres.Chat_Shorts
         private ContextMenuStrip _moduleContextMenu;
 
         // Textures
+        internal Texture2D EditTexture;
         private Texture2D _cornerTexture;
         private Texture2D _backgroundTexture;
 
@@ -70,6 +69,7 @@ namespace Nekres.Chat_Shorts
             DataService = new DataService(this.DirectoriesManager.GetFullDirectoryPath("chat_shorts"));
             _cornerTexture = ContentsManager.GetTexture("corner_icon.png");
             _backgroundTexture = ContentsManager.GetTexture("background.png");
+            EditTexture = ContentsManager.GetTexture("edit_icon.png");
             ChatService = new ChatService(this.DataService);
             SquadBroadcast.Value.Enabled = false;
             ChatMessage.Value.Enabled = false;
@@ -160,11 +160,6 @@ namespace Nekres.Chat_Shorts
             _moduleContextMenu.Show();
         }
 
-        public override IView GetSettingsView()
-        {
-            return new CustomSettingsView(new CustomSettingsModel(this.SettingsManager.ModuleSettings, this.ContentsManager));
-        }
-
         /// <inheritdoc />
         protected override void Unload()
         {
@@ -182,6 +177,7 @@ namespace Nekres.Chat_Shorts
             _moduleWindow?.Dispose();
             _backgroundTexture?.Dispose();
             _cornerTexture?.Dispose();
+            EditTexture?.Dispose();
             // All static members must be manually unset
         }
     }

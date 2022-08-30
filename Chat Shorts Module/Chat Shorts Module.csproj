@@ -138,17 +138,13 @@
     <Compile Include="UI\Controls\DeleteButton.cs" />
     <Compile Include="UI\Controls\MacroDetails.cs" />
     <Compile Include="UI\Controls\MapEntry.cs" />
-    <Compile Include="UI\Models\CustomSettingsModel.cs" />
     <Compile Include="Services\Entities\MacroEntity.cs" />
     <Compile Include="UI\Models\LibraryModel.cs" />
     <Compile Include="UI\Models\MacroModel.cs" />
-    <Compile Include="UI\Presenters\CustomSettingsPresenter.cs" />
     <Compile Include="UI\Presenters\LibraryPresenter.cs" />
     <Compile Include="UI\Presenters\MacroEditPresenter.cs" />
-    <Compile Include="UI\Views\CustomSettingsView.cs" />
     <Compile Include="UI\Views\LibraryView.cs" />
     <Compile Include="UI\Views\MacroEditView.cs" />
-    <Compile Include="_Utils\BrowserUtil.cs" />
     <Compile Include="_Utils\MapUtil.cs" />
   </ItemGroup>
   <ItemGroup>
