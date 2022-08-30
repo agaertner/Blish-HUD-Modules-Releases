@@ -29,11 +29,13 @@ namespace Nekres.Stream_Out.Core.Services
             await this.ResetDaily();
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public virtual async Task Initialize() { /* NOOP */ }
 
         protected virtual async Task Update() { /* NOOP */ }
 
         protected virtual async Task ResetDaily() { /* NOOP */ }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
         public abstract Task Clear();
 

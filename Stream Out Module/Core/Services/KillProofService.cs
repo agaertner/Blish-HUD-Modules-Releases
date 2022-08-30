@@ -3,6 +3,7 @@ using Blish_HUD.Modules.Managers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Blish_HUD.Extended;
 
 namespace Nekres.Stream_Out.Core.Services
 {
@@ -24,9 +25,9 @@ namespace Nekres.Stream_Out.Core.Services
         public override async Task Initialize()
         {
             var moduleDir = DirectoriesManager.GetFullDirectoryPath("stream_out");
-            ContentsManager.ExtractIcons("legendary_divination.png", Path.Combine($@"{moduleDir}\static", "legendary_divination.png"));
-            ContentsManager.ExtractIcons("legendary_insight.png", Path.Combine($@"{moduleDir}\static", "legendary_insight.png"));
-            ContentsManager.ExtractIcons("unstable_fractal_essence.png", Path.Combine($@"{moduleDir}\static", "unstable_fractal_essence.png"));
+            await ContentsManager.Extract("legendary_divination.png", Path.Combine($@"{moduleDir}\static", "legendary_divination.png"));
+            await ContentsManager.Extract("legendary_insight.png", Path.Combine($@"{moduleDir}\static", "legendary_insight.png"));
+            await ContentsManager.Extract("unstable_fractal_essence.png", Path.Combine($@"{moduleDir}\static", "unstable_fractal_essence.png"));
         }
 
         protected override async Task Update()

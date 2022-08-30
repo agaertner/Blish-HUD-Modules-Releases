@@ -1,4 +1,5 @@
 ﻿using Blish_HUD;
+using Blish_HUD.Extended.Core.Views;
 using Blish_HUD.Graphics.UI;
 using Blish_HUD.Modules;
 using Blish_HUD.Modules.Managers;
@@ -6,17 +7,11 @@ using Blish_HUD.Settings;
 using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Nekres.Stream_Out.Core.Services;
-using Nekres.Stream_Out.UI.Models;
-using Nekres.Stream_Out.UI.Views;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Primitives;
-using System.Drawing.Text;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using NAudio.MediaFoundation;
 
 namespace Nekres.Stream_Out
 {
@@ -91,9 +86,10 @@ namespace Nekres.Stream_Out
 
         protected override void DefineSettings(SettingCollection settings)
         {
-            OnlyLastDigitSettingEntry = settings.DefineSetting("OnlyLastDigits",true, () => "Only Output Last Digits of Server Address", () => "Only outputs the last digits of the server address you are currently connected to.\nThis is the address shown when entering \"/ip\" in chat.");
-            AddUnicodeSymbols = settings.DefineSetting("UnicodeSymbols",UnicodeSigning.Suffixed, () => "Numeric Value Signing", () => "The way numeric values should be signed with unicode symbols.");
-            UseCatmanderTag = settings.DefineSetting("CatmanderTag", false, () => "Use Catmander Tag", () => $"Replaces the Commander icon with the Catmander icon if you tag up as Commander in-game.");
+            var general = settings.AddSubCollection("General", true, false);
+            OnlyLastDigitSettingEntry = general.DefineSetting("OnlyLastDigits",true, () => "Only Output Last Digits of Server Address", () => "Only outputs the last digits of the server address you are currently connected to.\nThis is the address shown when entering \"/ip\" in chat.");
+            UseCatmanderTag = general.DefineSetting("CatmanderTag", false, () => "Use Catmander Tag", () => $"Replaces the Commander icon with the Catmander icon if you tag up as Commander in-game.");
+            AddUnicodeSymbols = general.DefineSetting("UnicodeSymbols", UnicodeSigning.Suffixed, () => "Numeric Value Signing", () => "The way numeric values should be signed with unicode symbols.");
 
             var toggles = settings.AddSubCollection("Export Toggles", true, false);
             ExportClientInfo = toggles.DefineSetting("clientInfo", true, 
@@ -145,7 +141,7 @@ namespace Nekres.Stream_Out
 
         public override IView GetSettingsView()
         {
-            return new CustomSettingsView(new CustomSettingsModel(SettingsManager.ModuleSettings));
+            return new SocialsSettingsView(new SocialsSettingsModel(SettingsManager.ModuleSettings, "https://pastebin.com/raw/Kk9DgVmL"));
         }
 
         protected override void Initialize()

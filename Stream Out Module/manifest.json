@@ -1,6 +1,6 @@
 {
   "name": "Stream Out",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "namespace": "Nekres.Stream_Out",
   "package": "StreamOut.dll",
   "manifest_version": 1,
@@ -19,7 +19,7 @@
   ],
   "api_permissions": {
     "account": {
-      "optional": true,
+      "optional": false,
       "details": "Always required if any other permission is present."
     },
     "characters": {
