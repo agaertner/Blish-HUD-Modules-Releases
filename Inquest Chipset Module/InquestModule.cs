@@ -88,10 +88,6 @@ namespace Nekres.Inquest_Module
                 () => "Clicking Sounds Volume", 
                 () => "Sets the audio volume of the clicking alerts.");
 
-
-
-
-
             var hiddenSettingsCache = settings.AddSubCollection("hiddenSettingsCache", false, false);
             AutoClickToggleInterval = hiddenSettingsCache.DefineSetting("autoClickToggleInterval", 0.0);
         }
