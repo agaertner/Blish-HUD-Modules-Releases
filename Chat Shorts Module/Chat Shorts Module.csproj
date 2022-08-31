@@ -172,8 +172,8 @@
       <HintPath>packages\BlishHUD.0.11.6\lib\net472\Blish HUD.exe</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Blish-HUD-Extended, Version=0.1.0.6, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Blish-HUD-Extended.0.1.0.6\lib\net472\Blish-HUD-Extended.dll</HintPath>
+    <Reference Include="Blish-HUD-Extended, Version=0.1.0.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Blish-HUD-Extended.0.1.0.8\lib\net472\Blish-HUD-Extended.dll</HintPath>
     </Reference>
     <Reference Include="Flurl, Version=2.8.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Flurl.2.8.2\lib\net40\Flurl.dll</HintPath>
