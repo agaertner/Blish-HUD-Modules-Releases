@@ -1,7 +1,8 @@
-﻿using Gw2Sharp.Models;
+﻿using System.Numerics;
+using Gw2Sharp.Models;
 using Gw2Sharp.WebApi.V2.Models;
 
-namespace Nekres.Mumble_Info._Extensions
+namespace Nekres.Mumble_Info
 {
     internal static class Coordinates3Extensions
     {
@@ -36,6 +37,11 @@ namespace Nekres.Mumble_Info._Extensions
             double x = ((mapCoords.X - mapRectangle.TopLeft.X) / mapRectangle.Width * continentRectangle.Width) + continentRectangle.TopLeft.X;
             double z = ((1 - ((mapCoords.Z - mapRectangle.BottomRight.Y) / mapRectangle.Height)) * continentRectangle.Height) + continentRectangle.TopRight.Y;
             return new Coordinates3(x, mapCoords.Y, z);
+        }
+
+        public static Vector3 ToVector3(this Coordinates3 coords)
+        {
+            return new Vector3((float)coords.X, (float)coords.Y,(float)coords.Z);
         }
 
     }

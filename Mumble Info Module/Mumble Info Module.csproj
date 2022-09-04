@@ -40,6 +40,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
     <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -53,6 +54,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -129,8 +131,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataPanel.cs" />
+    <Compile Include="Core\Controls\DataPanel.cs" />
+    <Compile Include="Core\Services\MockService.cs" />
+    <Compile Include="Core\Services\Models\Identity.cs" />
     <Compile Include="MumbleInfoModule.cs" />
+    <Compile Include="_Extensions\StructExtensions.cs" />
+    <Compile Include="_Extensions\Vector3Extensions.cs" />
+    <Compile Include="_Utils\BitmaskUtil.cs" />
     <Compile Include="_Utils\DirectionUtil.cs" />
     <Compile Include="_Utils\PInvoke.cs" />
     <Compile Include="_Extensions\Coordinates3Extensions.cs" />

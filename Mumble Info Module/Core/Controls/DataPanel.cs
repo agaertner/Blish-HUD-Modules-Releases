@@ -8,20 +8,19 @@ using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.BitmapFonts;
-using Nekres.Mumble_Info._Extensions;
 using static Blish_HUD.GameService;
 using Color = Microsoft.Xna.Framework.Color;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
-namespace Nekres.Mumble_Info
+namespace Nekres.Mumble_Info.Core.Controls
 {
     internal class DataPanel : Container
     {
-        private float         _memoryUsage          => MumbleInfoModule.ModuleInstance.MemoryUsage;
-        private float          _cpuUsage            => MumbleInfoModule.ModuleInstance.CpuUsage;
-        private string         _cpuName             => MumbleInfoModule.ModuleInstance.CpuName;
-        private Map            _currentMap          => MumbleInfoModule.ModuleInstance.CurrentMap;
-        private Specialization _currentSpec         => MumbleInfoModule.ModuleInstance.CurrentSpec;
+        private float         _memoryUsage          => MumbleInfoModule.Instance.MemoryUsage;
+        private float          _cpuUsage            => MumbleInfoModule.Instance.CpuUsage;
+        private string         _cpuName             => MumbleInfoModule.Instance.CpuName;
+        private Map            _currentMap          => MumbleInfoModule.Instance.CurrentMap;
+        private Specialization _currentSpec         => MumbleInfoModule.Instance.CurrentSpec;
 
         #region Colors
 
@@ -111,8 +110,8 @@ namespace Nekres.Mumble_Info
                 ClipboardUtil.WindowsClipboardService.SetTextAsync(
                     string.Format("xpos=\"{0}\" ypos=\"{1}\" zpos=\"{2}\"",
                         Gw2Mumble.PlayerCharacter.Position.X.ToString(CultureInfo.InvariantCulture),
-                        (MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? Gw2Mumble.PlayerCharacter.Position.Z : Gw2Mumble.PlayerCharacter.Position.Y).ToString(CultureInfo.InvariantCulture),
-                        (MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? Gw2Mumble.PlayerCharacter.Position.Y : Gw2Mumble.PlayerCharacter.Position.Z).ToString(CultureInfo.InvariantCulture)));
+                        (MumbleInfoModule.Instance.SwapYZAxes.Value ? Gw2Mumble.PlayerCharacter.Position.Z : Gw2Mumble.PlayerCharacter.Position.Y).ToString(CultureInfo.InvariantCulture),
+                        (MumbleInfoModule.Instance.SwapYZAxes.Value ? Gw2Mumble.PlayerCharacter.Position.Y : Gw2Mumble.PlayerCharacter.Position.Z).ToString(CultureInfo.InvariantCulture)));
                 
                 ScreenNotification.ShowNotification(_clipboardMessage);
             }
@@ -135,8 +134,8 @@ namespace Nekres.Mumble_Info
                 ClipboardUtil.WindowsClipboardService.SetTextAsync(
                     string.Format("xpos=\"{0}\" ypos=\"{1}\" zpos=\"{2}\"",
                         Gw2Mumble.PlayerCamera.Position.X.ToString(CultureInfo.InvariantCulture),
-                        (MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? Gw2Mumble.PlayerCamera.Position.Z : Gw2Mumble.PlayerCamera.Position.Y).ToString(CultureInfo.InvariantCulture),
-                        (MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? Gw2Mumble.PlayerCamera.Position.Y : Gw2Mumble.PlayerCamera.Position.Z).ToString(CultureInfo.InvariantCulture)));
+                        (MumbleInfoModule.Instance.SwapYZAxes.Value ? Gw2Mumble.PlayerCamera.Position.Z : Gw2Mumble.PlayerCamera.Position.Y).ToString(CultureInfo.InvariantCulture),
+                        (MumbleInfoModule.Instance.SwapYZAxes.Value ? Gw2Mumble.PlayerCamera.Position.Y : Gw2Mumble.PlayerCamera.Position.Z).ToString(CultureInfo.InvariantCulture)));
 
                 ScreenNotification.ShowNotification(_clipboardMessage);
             }
@@ -369,7 +368,7 @@ namespace Nekres.Mumble_Info
             RectangleExtensions.Union(ref rect, ref infoBounds, out infoBounds);
             calcLeftMargin += width;
 
-            text = $"  {(MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? playerPos.Z : playerPos.Y).ToString(_decimalFormat)}";
+            text = $"  {(MumbleInfoModule.Instance.SwapYZAxes.Value ? playerPos.Z : playerPos.Y).ToString(_decimalFormat)}";
             width = (int)_font.MeasureString(text).Width;
             height = Math.Max(height, (int)_font.MeasureString(text).Height);
             rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
@@ -378,7 +377,7 @@ namespace Nekres.Mumble_Info
             RectangleExtensions.Union(ref rect, ref infoBounds, out infoBounds);
             calcLeftMargin += width;
 
-            text = $"  {(MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? playerPos.Y : playerPos.Z).ToString(_decimalFormat)}";
+            text = $"  {(MumbleInfoModule.Instance.SwapYZAxes.Value ? playerPos.Y : playerPos.Z).ToString(_decimalFormat)}";
             width = (int)_font.MeasureString(text).Width;
             height = Math.Max(height, (int)_font.MeasureString(text).Height);
             rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
@@ -420,7 +419,7 @@ namespace Nekres.Mumble_Info
             RectangleExtensions.Union(ref rect, ref infoBounds, out infoBounds);
             calcLeftMargin += width;
 
-            text = $"  {(MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? playerFacing.Z : playerFacing.Y).ToString(_decimalFormat)}";
+            text = $"  {(MumbleInfoModule.Instance.SwapYZAxes.Value ? playerFacing.Z : playerFacing.Y).ToString(_decimalFormat)}";
             width = (int) _font.MeasureString(text).Width;
             height = Math.Max(height, (int) _font.MeasureString(text).Height);
             rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
@@ -429,7 +428,7 @@ namespace Nekres.Mumble_Info
             RectangleExtensions.Union(ref rect, ref infoBounds, out infoBounds);
             calcLeftMargin += width;
 
-            text = $"  {(MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? playerFacing.Y : playerFacing.Z).ToString(_decimalFormat)}";
+            text = $"  {(MumbleInfoModule.Instance.SwapYZAxes.Value ? playerFacing.Y : playerFacing.Z).ToString(_decimalFormat)}";
             width = (int) _font.MeasureString(text).Width;
             height = Math.Max(height, (int) _font.MeasureString(text).Height);
             rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
@@ -666,7 +665,7 @@ namespace Nekres.Mumble_Info
             RectangleExtensions.Union(ref rect, ref infoBounds, out infoBounds);
             calcLeftMargin += width;
 
-            text = $"  {(MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? cameraForward.Z : cameraForward.Y).ToString(_decimalFormat)}";
+            text = $"  {(MumbleInfoModule.Instance.SwapYZAxes.Value ? cameraForward.Z : cameraForward.Y).ToString(_decimalFormat)}";
             width = (int) _font.MeasureString(text).Width;
             height = Math.Max(height, (int) _font.MeasureString(text).Height);
             rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
@@ -675,7 +674,7 @@ namespace Nekres.Mumble_Info
             RectangleExtensions.Union(ref rect, ref infoBounds, out infoBounds);
             calcLeftMargin += width;
 
-            text = $"  {(MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? cameraForward.Y : cameraForward.Z).ToString(_decimalFormat)}";
+            text = $"  {(MumbleInfoModule.Instance.SwapYZAxes.Value ? cameraForward.Y : cameraForward.Z).ToString(_decimalFormat)}";
             width = (int) _font.MeasureString(text).Width;
             height = Math.Max(height, (int) _font.MeasureString(text).Height);
             rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
@@ -725,7 +724,7 @@ namespace Nekres.Mumble_Info
             RectangleExtensions.Union(ref rect, ref infoBounds, out infoBounds);
             calcLeftMargin += width;
 
-            text = $"  {(MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? cameraPosition.Z : cameraPosition.Y).ToString(_decimalFormat)}";
+            text = $"  {(MumbleInfoModule.Instance.SwapYZAxes.Value ? cameraPosition.Z : cameraPosition.Y).ToString(_decimalFormat)}";
             width = (int)_font.MeasureString(text).Width;
             height = Math.Max(height, (int)_font.MeasureString(text).Height);
             rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
@@ -734,7 +733,7 @@ namespace Nekres.Mumble_Info
             RectangleExtensions.Union(ref rect, ref infoBounds, out infoBounds);
             calcLeftMargin += width;
 
-            text = $"  {(MumbleInfoModule.ModuleInstance.SwapYZAxes.Value ? cameraPosition.Y : cameraPosition.Z).ToString(_decimalFormat)}";
+            text = $"  {(MumbleInfoModule.Instance.SwapYZAxes.Value ? cameraPosition.Y : cameraPosition.Z).ToString(_decimalFormat)}";
             width = (int)_font.MeasureString(text).Width;
             height = Math.Max(height, (int)_font.MeasureString(text).Height);
             rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
@@ -888,7 +887,7 @@ namespace Nekres.Mumble_Info
 
             #region Computer
 
-            if (MumbleInfoModule.ModuleInstance.EnablePerformanceCounters.Value) {
+            if (MumbleInfoModule.Instance.EnablePerformanceCounters.Value) {
                 text = $"{_memoryUsage.ToString(_decimalFormat)} MB";
                 width = (int)_font.MeasureString(text).Width;
                 height = (int)_font.MeasureString(text).Height;

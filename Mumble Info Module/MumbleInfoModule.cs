@@ -12,6 +12,8 @@ using Blish_HUD.Settings;
 using Gw2Sharp.WebApi.V2.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Nekres.Mumble_Info.Core.Controls;
+using Nekres.Mumble_Info.Core.Services;
 using static Blish_HUD.GameService;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -21,19 +23,19 @@ namespace Nekres.Mumble_Info
     public class MumbleInfoModule : Module
     {
 
-        private static readonly Logger Logger = Logger.GetLogger(typeof(MumbleInfoModule));
+        internal static readonly Logger Logger = Logger.GetLogger(typeof(MumbleInfoModule));
 
-        internal static MumbleInfoModule ModuleInstance;
+        internal static MumbleInfoModule Instance;
 
         #region Service Managers
-        /*internal SettingsManager SettingsManager => this.ModuleParameters.SettingsManager;
+        internal SettingsManager SettingsManager => this.ModuleParameters.SettingsManager;
         internal ContentsManager ContentsManager => this.ModuleParameters.ContentsManager;
-        internal DirectoriesManager DirectoriesManager => this.ModuleParameters.DirectoriesManager;*/
+        internal DirectoriesManager DirectoriesManager => this.ModuleParameters.DirectoriesManager;
         internal Gw2ApiManager Gw2ApiManager => this.ModuleParameters.Gw2ApiManager;
         #endregion
 
         [ImportingConstructor]
-        public MumbleInfoModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { ModuleInstance = this; }
+        public MumbleInfoModule([Import("ModuleParameters")] ModuleParameters moduleParameters) : base(moduleParameters) { Instance = this; }
 
         #region Settings
 
@@ -56,6 +58,8 @@ namespace Nekres.Mumble_Info
         private PerformanceCounter _cpuCounter;
         private DateTime           _timeOutPc;
 
+        private MockService _mockService;
+
         protected override void DefineSettings(SettingCollection settings) {
             _toggleInfoBinding = settings.DefineSetting("ToggleInfoBinding", new KeyBinding(Keys.OemPlus),
                 () => "Toggle display", 
@@ -77,6 +81,7 @@ namespace Nekres.Mumble_Info
         protected override void Initialize() {
             _timeOutPc = DateTime.UtcNow;
             CpuName    = string.Empty;
+            _mockService = new MockService();
         }
 
         protected override async Task LoadAsync()
@@ -89,6 +94,7 @@ namespace Nekres.Mumble_Info
         protected override void Update(GameTime gameTime) {
             UpdateCounter();
             UpdateCursorPos();
+            _mockService.Update();
         }
 
         protected override void OnModuleLoaded(EventArgs e) {
@@ -274,6 +280,7 @@ namespace Nekres.Mumble_Info
 
         /// <inheritdoc />
         protected override void Unload() {
+            _mockService?.Dispose();
             _dataPanel?.Dispose();
             _cursorPos?.Dispose();
             _ramCounter?.Dispose();
@@ -284,7 +291,7 @@ namespace Nekres.Mumble_Info
             GameIntegration.Gw2Instance.Gw2Closed -= OnGw2Closed;
             GameIntegration.Gw2Instance.Gw2Started -= OnGw2Started;
             // All static members must be manually unset
-            ModuleInstance = null;
+            Instance = null;
         }
     }
 }
