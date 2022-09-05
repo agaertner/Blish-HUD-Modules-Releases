@@ -1,3 +1,3 @@
 [submodule "submodules/bhud-extended"]
 	path = submodules/bhud-extended
-	url = git@github.com:agaertner/Blish-HUD-Extended.git
+	url = ../Blish-HUD-Extended.git
