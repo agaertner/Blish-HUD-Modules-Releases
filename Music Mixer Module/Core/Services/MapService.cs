@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Gw2Sharp.WebApi.V2.Models;
 
 namespace Nekres.Music_Mixer.Core.Services
 {
@@ -97,7 +98,7 @@ namespace Nekres.Music_Mixer.Core.Services
             {
 
 #if DEBUG
-                var notFound = new List<string>();
+                var notFound = new List<(int, ContinentFloorRegionMap)>();
 #endif
 
                 var continentIds = await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Continents.IdsAsync();
@@ -139,7 +140,7 @@ namespace Nekres.Music_Mixer.Core.Services
                                 // Helping out Discord RPC (https://github.com/OpNop/GW2-RPC-Resources) to gather unresolved maps..
                                 notFound.AddRange(region.Value
                                                     .Where(x => !mapsLookUp.ContainsKey(MapUtil.GetSHA1(continentId, x.ContinentRect)))
-                                                    .Select(x => $"{MapUtil.GetSHA1(continentId, x.ContinentRect)} | '{x.Name} ({x.Id})' | Floor: {floorId} | Region: '{regionName} ({region.Key})' | {continentId}"));
+                                                    .Select(x => (continentId, x)));
 #endif
 
                                 var publicMapIds = region.Value.Select(x => MapUtil.GetSHA1(continentId, x.ContinentRect)).Where(x => mapsLookUp.ContainsKey(x)).Select(x => mapsLookUp[x]).Distinct();
@@ -170,7 +171,9 @@ namespace Nekres.Music_Mixer.Core.Services
                 _regionNames = allRegionNames;
                 _mapNames = allMapNames;
 #if DEBUG
-                System.IO.File.WriteAllLines(System.IO.Path.Combine(MusicMixer.Instance.ModuleDirectory, "unresolved_maps.txt"), notFound);
+                System.IO.File.WriteAllLines(System.IO.Path.Combine(MusicMixer.Instance.ModuleDirectory, "unresolved_maps.txt"), 
+                    notFound.DistinctBy(x => MapUtil.GetSHA1(x.Item1, x.Item2.ContinentRect))
+                        .Select(x => $"\"{MapUtil.GetSHA1(x.Item1, x.Item2.ContinentRect)}\": {x.Item2.Id}, // {x.Item2.Name} ({x.Item2.Id})"));
 #endif
             }
             catch (RequestException e)
