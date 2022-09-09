@@ -317,7 +317,7 @@ namespace Nekres.Mumble_Info.Core.Controls
                 
                 calcLeftMargin += width;
 
-                text = $"  ({_currentSpec.Id})";
+                text = $" ({_currentSpec.Id})";
                 width = (int)_font.MeasureString(text).Width;
                 height = Math.Max(height, (int)_font.MeasureString(text).Height);
                 rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);

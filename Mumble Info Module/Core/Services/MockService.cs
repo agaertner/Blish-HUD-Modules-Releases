@@ -53,7 +53,7 @@ namespace Nekres.Mumble_Info.Core.Services
                 fAvatarPosition = GameService.Gw2Mumble.RawClient.AvatarPosition.ToVector3().ToArray(),
                 fAvatarFront = GameService.Gw2Mumble.RawClient.AvatarFront.ToVector3().ToArray(),
                 fAvatarTop = Vector3.Zero.ToArray(),
-                name = GameService.Gw2Mumble.RawClient.CharacterName,
+                name = "Guild Wars 2",
                 fCameraPosition = GameService.Gw2Mumble.RawClient.CameraPosition.ToVector3().ToArray(),
                 fCameraFront = GameService.Gw2Mumble.RawClient.CameraFront.ToVector3().ToArray(),
                 fCameraTop = Vector3.Zero.ToArray(),
