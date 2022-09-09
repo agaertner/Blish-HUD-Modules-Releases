@@ -22,7 +22,7 @@ namespace Nekres.Music_Mixer.Core.Player
         private FadeInOutSampleProvider _fadeInOut;
         private BiQuadFilterSource _lowPassFilter;
         private Equalizer _equalizer;
-
+        private bool _initialized;
 
         private float _volume;
         public float Volume
@@ -36,10 +36,29 @@ namespace Nekres.Music_Mixer.Core.Player
             }
         }
 
-        public string SourceUri;
+        private bool _muted;
+        public bool Muted
+        {
+            get => _muted;
+            set
+            {
+                if (value == _muted) return;
+                _muted = value;
+                if (_muted)
+                {
+                    this.Volume = 0;
+                }
+                else
+                {
+                    this.Volume = MusicMixer.Instance.MasterVolume;
+                }
+            }
+        }
+
+        public readonly string SourceUri;
         public TimeSpan CurrentTime => _mediaProvider.CurrentTime;
         public TimeSpan TotalTime => _mediaProvider.TotalTime;
-        public bool IsMuted => _volumeProvider.Volume == 0;
+        public bool IsBuffering => _endOfStream.IsBuffering;
 
         private Soundtrack(string url, float volume)
         {
@@ -47,6 +66,23 @@ namespace Nekres.Music_Mixer.Core.Player
             _outputDevice = new WasapiOut(GameService.GameIntegration.Audio.AudioDevice, AudioClientShareMode.Shared, false, 100);
             _mediaProvider = new MediaFoundationReader(url);
             this.SourceUri = url;
+
+            _endOfStream = new EndOfStreamProvider(_mediaProvider);
+            _endOfStream.Ended += OnEndOfStreamReached;
+
+            _volumeProvider = new VolumeSampleProvider(_endOfStream)
+            {
+                Volume = this.Volume
+            };
+
+            _fadeInOut = new FadeInOutSampleProvider(_volumeProvider);
+
+            // Filter is toggled when submerged.
+            _lowPassFilter = new BiQuadFilterSource(_fadeInOut)
+            {
+                Filter = new LowPassFilter(_fadeInOut.WaveFormat.SampleRate, 400)
+            };
+            _equalizer = Equalizer.Create10BandEqualizer(_lowPassFilter);
         }
 
         public static bool TryGetStream(string url, float volume, out Soundtrack soundTrack)
@@ -71,36 +107,17 @@ namespace Nekres.Music_Mixer.Core.Player
             return false;
         }
 
-        private void Play(int fadeInDuration = 500)
+        public void Play(int fadeInDuration = 500)
         {
-            if (_outputDevice.PlaybackState == PlaybackState.Paused) {
-                _outputDevice.Play();
-                return;
-            }
-
-            _endOfStream = new EndOfStreamProvider(_mediaProvider.ToSampleProvider());
-            _endOfStream.Ended += OnEndOfStreamReached;
-
-            _volumeProvider = new VolumeSampleProvider(_endOfStream)
-            {
-                Volume = this.Volume
-            };
-
-            _fadeInOut = new FadeInOutSampleProvider(_volumeProvider);
-
-            // Filter is toggled when submerged.
-            _lowPassFilter = new BiQuadFilterSource(_fadeInOut)
-            {
-                Filter = new LowPassFilter(_fadeInOut.WaveFormat.SampleRate, 400)
-            };
-            _equalizer = Equalizer.Create10BandEqualizer(_lowPassFilter);
-
             var timeout = DateTime.UtcNow.AddMilliseconds(500);
             while (DateTime.UtcNow < timeout)
             {
                 try
                 {
-                    _outputDevice.Init(_equalizer);
+                    if (!_initialized) {
+                        _initialized = true;
+                        _outputDevice.Init(_equalizer);
+                    }
                     _outputDevice.Play();
                     _fadeInOut.BeginFadeIn(fadeInDuration);
                     this.ToggleSubmergedFx(MusicMixer.Instance.Gw2State.IsSubmerged);
@@ -130,16 +147,10 @@ namespace Nekres.Music_Mixer.Core.Player
             _outputDevice.Pause();
         }
 
-        public void ToggleMuted()
+        public void Resume()
         {
-            if (this.IsMuted)
-            {
-                this.Volume = MusicMixer.Instance.MasterVolume;
-            }
-            else
-            {
-                this.Volume = 0;
-            }
+            if (_outputDevice == null || _outputDevice.PlaybackState != PlaybackState.Paused) return;
+            _outputDevice.Play();
         }
 
         private void OnEndOfStreamReached(object o, EventArgs e)
@@ -156,20 +167,9 @@ namespace Nekres.Music_Mixer.Core.Player
             _equalizer.SampleFilters[9].AverageGainDB = enable ? 13.4f : 0; // Treble
         }
 
-        public void FadeIn(int durationMs = 500)
-        {
-            this.Play(durationMs);
-        }
-
-        public async Task FadeOut(int durationMs = 500)
-        {
-            _endOfStream.Ended -= OnEndOfStreamReached;
-            _fadeInOut.BeginFadeOut(durationMs);
-            await Task.Delay(durationMs).ContinueWith(_ => this.Dispose());
-        }
-
         public void Dispose()
         {
+            _endOfStream.Ended -= OnEndOfStreamReached;
             try
             {
                 _outputDevice?.Dispose();

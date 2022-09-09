@@ -187,9 +187,11 @@ namespace Nekres.Music_Mixer
             _moduleWindow.Tabs.Add(new Tab(_battleTabIcon, () => new MainView(_tabModels[Gw2StateService.State.Battle]), "Battle"));
             _cornerIcon = new CornerIcon
             {
-                Icon = _cornerTexture
+                Icon = _cornerTexture,
+                BasicTooltipText = $"{this.Name}\nRight-Click: Toggle Media Widget"
             };
-            _cornerIcon.Click += OnModuleIconClick;
+            _cornerIcon.LeftMouseButtonReleased += OnModuleIconClick;
+            _cornerIcon.RightMouseButtonReleased += OnModuleIconRightMouseButtonReleased;
 
             ToggleDebugHelper.SettingChanged += OnToggleDebugHelperChanged;
             MasterVolumeSetting.SettingChanged += MasterVolumeSettingChanged;
@@ -227,6 +229,11 @@ namespace Nekres.Music_Mixer
         {
             if (this.MapService.IsLoading) return;
             _moduleWindow?.ToggleWindow();
+        }
+
+        public void OnModuleIconRightMouseButtonReleased(object o, MouseEventArgs e)
+        {
+            this.AudioEngine.ToggleMediaWidget();
         }
 
         private async void OnStateChanged(object o, ValueChangedEventArgs<Gw2StateService.State> e)
@@ -298,7 +305,12 @@ namespace Nekres.Music_Mixer
             Gw2State.StateChanged -= OnStateChanged;
             ToggleDebugHelper.SettingChanged -= OnToggleDebugHelperChanged;
             _moduleWindow?.Dispose();
-            _cornerIcon?.Dispose();
+            if (_cornerIcon != null)
+            {
+                _cornerIcon.LeftMouseButtonReleased -= OnModuleIconClick;
+                _cornerIcon.RightMouseButtonReleased -= OnModuleIconRightMouseButtonReleased;
+                _cornerIcon.Dispose();
+            }
             AudioEngine?.Dispose();
             _debugPanel?.Dispose();
             this.Gw2State?.Dispose();

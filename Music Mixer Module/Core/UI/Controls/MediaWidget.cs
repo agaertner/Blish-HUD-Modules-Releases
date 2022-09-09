@@ -18,9 +18,11 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
         private Texture2D _texNextPrev = MusicMixer.Instance.ContentsManager.GetTexture("media_seek.png");
         private Texture2D _texAudioBtn = GameService.Content.GetTexture("156738");
         private Texture2D _texAudioMuted = GameService.Content.GetTexture("common/154982");
+        private Texture2D _texClose = GameService.Content.GetTexture("button-exit");
+        private Texture2D _texCloseActive = GameService.Content.GetTexture("button-exit-active");
+        private Texture2D _boxSprite = GameService.Content.GetTexture("controls/detailsbutton/605003");
 
-        private static Texture2D _boxSprite = GameService.Content.GetTexture("controls/detailsbutton/605003");
-
+        /*
         private bool _mouseOverNext;
         private Rectangle _btnNextBounds;
 
@@ -29,15 +31,19 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 
         private bool _mouseOverPause;
         private Rectangle _btnPauseBounds;
+        */
 
-        private bool _mouseOverDragBar;
-        private Rectangle _dragBounds;
+        private bool _mouseOverCloseBtn;
+        private Rectangle _closeBounds;
 
         private bool _mouseOverAudioBtn;
         private Rectangle _audioBtnBounds;
 
         private bool _mouseOverTitle;
         private Rectangle _titleBounds;
+
+        private bool _mouseOverDragBar;
+        private Rectangle _dragBounds;
 
         private bool _isDragging;
         private Point _dragPos;
@@ -78,6 +84,13 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             _seekTrackBar.DraggingStopped += OnDraggingStopped;
         }
 
+        public void Change(MusicContextModel model, Soundtrack track)
+        {
+            this.Model = model;
+            this.Soundtrack = track;
+            MusicMixer.Instance.DataService.GetThumbnail(model);
+        }
+
         private void OnDraggingStopped(object o, ValueEventArgs<float> e)
         {
             _soundtrack?.Seek(e.Value);
@@ -87,18 +100,24 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
         {
             _volumeWidget?.Dispose();
             _seekTrackBar?.Dispose();
+            _texBg?.Dispose();
+            _texPause?.Dispose();
+            _texNextPrev?.Dispose();
+            _texAudioBtn?.Dispose();
+            _texAudioMuted?.Dispose();
+            _texClose?.Dispose();
+            _texCloseActive?.Dispose();
+            _boxSprite?.Dispose();
             base.DisposeControl();
         }
 
         protected override void OnMouseMoved(MouseEventArgs e)
         {
             var relPos = RelativeMousePosition;
-            _mouseOverNext = _btnNextBounds.Contains(relPos);
-            _mouseOverPause = _btnPauseBounds.Contains(relPos);
-            _mouseOverPrev = _btnPrevBounds.Contains(relPos);
             _mouseOverDragBar = _dragBounds.Contains(relPos);
             _mouseOverAudioBtn = _audioBtnBounds.Contains(relPos);
             _mouseOverTitle = _titleBounds.Contains(relPos);
+            _mouseOverCloseBtn = _closeBounds.Contains(relPos);
 
             if (_mouseOverAudioBtn)
             {
@@ -107,6 +126,10 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             else if (_mouseOverTitle)
             {
                 this.BasicTooltipText = this.Model.Title;
+            }
+            else if (_mouseOverCloseBtn)
+            {
+                this.BasicTooltipText = "Hide (Right-Click module icon to show.)";
             }
             else
             {
@@ -138,19 +161,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
 
         protected override void OnClick(MouseEventArgs e)
         {
-            if (_mouseOverNext)
-            {
-
-            } 
-            else if (_mouseOverPause)
-            {
-
-            } 
-            else if (_mouseOverPrev)
-            {
-
-            } 
-            else if (_mouseOverAudioBtn)
+            if (_mouseOverAudioBtn)
             {
                 _volumeWidget?.Dispose();
                 _volumeWidget = null;
@@ -159,6 +170,10 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
                     Parent = GameService.Graphics.SpriteScreen,
                     Location = new Point(this.Right, this.Top)
                 };
+            } 
+            else if (_mouseOverCloseBtn)
+            {
+                this.Hide();
             }
             base.OnClick(e);
         }
@@ -174,6 +189,10 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
                 _dragPos = Input.Mouse.Position;
             }
             _dragBounds = new Rectangle(0, 0, bounds.Width, 20);
+
+            // Draw close button
+            _closeBounds = new Rectangle(bounds.Width - _texClose.Width - 2, 1, _texClose.Width, _texClose.Height);
+            spriteBatch.DrawOnCtrl(this, _mouseOverCloseBtn ? _texCloseActive : _texClose, _closeBounds);
 
             // Draw thumbnail
             var thumbnailBounds = new Rectangle(MARGIN, (bounds.Height - 36) / 2, 64, 36);
@@ -202,14 +221,21 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             spriteBatch.DrawOnCtrl(this, _texAudioBtn, _audioBtnBounds, _texAudioBtn.Bounds, Color.White);
             if (this.Soundtrack != null)
             {
-                if (this.Soundtrack.IsMuted) spriteBatch.DrawOnCtrl(this, _texAudioMuted, _audioBtnBounds, _texAudioMuted.Bounds, Color.White * 0.5f);
+                if (this.Soundtrack.Muted) spriteBatch.DrawOnCtrl(this, _texAudioMuted, _audioBtnBounds, _texAudioMuted.Bounds, Color.White * 0.5f);
                 if (!_seekTrackBar.Dragging) _seekTrackBar.Value = (float)_soundtrack.CurrentTime.TotalSeconds;
-                
+
                 // Draw duration
                 var durationBounds = new Rectangle(_seekTrackBar.Right - 100, _seekTrackBar.Top - 16, 100, bounds.Height);
                 var text = $"{this.Soundtrack.CurrentTime.ToShortForm()} / {this.Soundtrack.TotalTime.ToShortForm()}";
                 spriteBatch.DrawStringOnCtrl(this, text, Content.DefaultFont12, durationBounds, Color.LightGray, false, false, 0, HorizontalAlignment.Right, VerticalAlignment.Top);
             }
+
+            if (MusicMixer.Instance.AudioEngine.Loading || MusicMixer.Instance.AudioEngine.IsBuffering)
+            {
+                var spinnerBounds = new Rectangle((bounds.Width - 64) / 2, (bounds.Height - 64) / 2, 64, 64);
+                LoadingSpinnerUtil.DrawLoadingSpinner(this, spriteBatch, spinnerBounds);
+            }
+
             base.PaintBeforeChildren(spriteBatch, bounds);
         }
     }

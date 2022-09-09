@@ -5,23 +5,31 @@ namespace Nekres.Music_Mixer.Core.Player.Source
 {
     internal class EndOfStreamProvider : ISampleProvider
     {
-        private ISampleProvider _sourceProvider;
-
         public event EventHandler<EventArgs> Ended;
         
         public WaveFormat WaveFormat => _sourceProvider.WaveFormat;
 
+        public bool IsBuffering { get; private set; }
+
         private bool _ended;
 
-        public EndOfStreamProvider(ISampleProvider source)
+        private MediaFoundationReader _mediaProvider;
+
+        private ISampleProvider _sourceProvider;
+
+        public EndOfStreamProvider(MediaFoundationReader mediaProvider)
         {
-            _sourceProvider = source;
+            _mediaProvider = mediaProvider;
+            _sourceProvider = mediaProvider.ToSampleProvider();
         }
 
         public int Read(float[] buffer, int offset, int count)
         {
             int read = _sourceProvider.Read(buffer, offset, count);
-            if (read <= 0 && !_ended)
+
+            this.IsBuffering = read <= 0;
+            
+            if (_mediaProvider.CurrentTime >= _mediaProvider.TotalTime && !_ended)
             {
                 _ended = true;
                 Ended?.Invoke(this, EventArgs.Empty);

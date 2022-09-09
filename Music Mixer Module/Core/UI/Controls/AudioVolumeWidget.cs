@@ -80,7 +80,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
         {
             if (_mouseOverAudioBtn)
             {
-                this.Soundtrack?.ToggleMuted();
+                MusicMixer.Instance.AudioEngine.Muted = !MusicMixer.Instance.AudioEngine.Muted;
             }
             base.OnClick(e);
         }
@@ -106,7 +106,7 @@ namespace Nekres.Music_Mixer.Core.UI.Controls
             // Draw audio button
             _audioBtnBounds = new Rectangle(MARGIN, (bounds.Height - _texAudioBtn.Height) / 2, _texAudioBtn.Width, _texAudioBtn.Height);
             spriteBatch.DrawOnCtrl(this, _texAudioBtn, _audioBtnBounds, _texAudioBtn.Bounds, Color.White);
-            if (this.Soundtrack.IsMuted)
+            if (this.Soundtrack.Muted)
                 spriteBatch.DrawOnCtrl(this, _texAudioMuted, _audioBtnBounds, _texAudioMuted.Bounds, Color.White * 0.5f);
 
             var volumeBounds = new Rectangle(_volumeTrackBar.Right, 0, 50, bounds.Height);

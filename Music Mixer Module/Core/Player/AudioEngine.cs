@@ -11,6 +11,19 @@ namespace Nekres.Music_Mixer.Core.Player
 {
     internal class AudioEngine : IDisposable
     {
+        private bool _muted;
+        public bool Muted
+        {
+            get => _muted;
+            set
+            {
+                if (value == _muted) return;
+                _muted = value;
+                if (_soundtrack == null) return;
+                _soundtrack.Muted = value;
+            }
+        }
+
         private MediaWidget _mediaWidget;
 
         private Soundtrack _soundtrack;
@@ -20,6 +33,8 @@ namespace Nekres.Music_Mixer.Core.Player
         private TimeSpan _prevTime;
 
         private MusicContextModel _prevMusicModel;
+
+        public bool IsBuffering => _soundtrack?.IsBuffering ?? true;
 
         public bool Loading { get; private set; }
 
@@ -73,11 +88,10 @@ namespace Nekres.Music_Mixer.Core.Player
                 MusicMixer.Instance.DataService.Upsert(model);
                 if (!await TryPlay(model.AudioUrl, GetNormalizedVolume(_model.Volume))) return;
                 Notify(model);
-                
             }
             catch (Exception e) when (e is NullReferenceException or ObjectDisposedException)
             {
-                /* NOOP - Module was being unloaded while youtube-dl exited and invoked this callback. */
+                /* NOOP - Module was being unloaded. */
             }
         }
 
@@ -86,42 +100,58 @@ namespace Nekres.Music_Mixer.Core.Player
             // Making sure WasApiOut is initialized in main synchronization context. Otherwise it will fail.
             // https://github.com/naudio/NAudio/issues/425
             return await Task.Factory.StartNew(() => {
-
-                    this.Stop();
-
-                    if (!Soundtrack.TryGetStream(audioUri, volume, out _soundtrack))
-                    {
-                        this.Loading = false;
-                        return false;
-                    }
-
-                    _soundtrack.Finished += OnSoundtrackFinished;
-                    _soundtrack.FadeIn();
-
+                if (!Soundtrack.TryGetStream(audioUri, volume, out var newTrack))
+                {
                     this.Loading = false;
-                    return true;
+                    return false;
+                }
+
+                if (_soundtrack != null)
+                {
+                    _soundtrack.Finished -= OnSoundtrackFinished;
+                    _soundtrack.Dispose();
+                }
+
+                _soundtrack = newTrack;
+                _soundtrack.Muted = this.Muted;
+                _soundtrack.Finished += OnSoundtrackFinished;
+                _soundtrack.Play();
+
+                this.Loading = false;
+                return true;
             }, CancellationToken.None, TaskCreationOptions.None, _scheduler);
         }
 
         private void Notify(MusicContextModel model)
         {
+            if (model == null) return;
             _mediaWidget ??= new MediaWidget
             {
                 Parent = GameService.Graphics.SpriteScreen,
                 Location = MusicMixer.Instance.MediaWidgetLocation.Value,
-                Visible = false
+                Visible = true
             };
-            _mediaWidget.Model = model;
-            _mediaWidget.Soundtrack = _soundtrack;
-            _mediaWidget.Show();
-            MusicMixer.Instance.DataService.GetThumbnail(model);
+            _mediaWidget.Change(model, _soundtrack);
+        }
+
+        public void ToggleMediaWidget()
+        {
+            if (_mediaWidget == null) return;
+            if (_mediaWidget.Visible)
+            {
+                _mediaWidget.Hide();
+            }
+            else
+            {
+                _mediaWidget?.Show();
+            }
         }
 
         public void ToggleSubmerged(bool enable) => _soundtrack?.ToggleSubmergedFx(enable);
 
         public void Update()
         {
-            if (_soundtrack == null || _model == null) return;
+            if (_soundtrack == null || _model == null || _soundtrack.Muted) return;
             _soundtrack.Volume = MathHelper.Clamp(Map(GameService.Gw2Mumble.PlayerCamera.Position.Z, -130, 
                     GetNormalizedVolume(0.1f), 0, GetNormalizedVolume(_model.Volume)),0f,0.1f);
         }
@@ -133,14 +163,12 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public void Stop()
         {
-            _mediaWidget?.Hide();
-            _soundtrack?.FadeOut();
+            _soundtrack?.Dispose();
         }
 
         private async void OnSoundtrackFinished(object o, EventArgs e)
         {
-            _soundtrack.Finished -= OnSoundtrackFinished;
-            _mediaWidget?.Hide();
+            _model = null;
             if (this.Loading) return;
             await this.Play(MusicMixer.Instance.DataService.GetRandom()?.ToModel());
         }
@@ -152,7 +180,7 @@ namespace Nekres.Music_Mixer.Core.Player
 
         public void Resume()
         {
-            _soundtrack?.FadeIn();
+            _soundtrack?.Resume();
         }
 
         public void Save()
