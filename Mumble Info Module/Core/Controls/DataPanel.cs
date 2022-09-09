@@ -2,6 +2,7 @@
 using System.Globalization;
 using Blish_HUD;
 using Blish_HUD.Controls;
+using Blish_HUD.Extended;
 using Blish_HUD.Input;
 using Gw2Sharp.Models;
 using Gw2Sharp.WebApi.V2.Models;
@@ -67,6 +68,9 @@ namespace Nekres.Mumble_Info.Core.Controls
         private Rectangle _cameraPositionBounds;
         private bool _mouseOverCameraPosition;
 
+        private Rectangle _mapHashBounds;
+        private bool _mouseOverMapHashBounds;
+
         #endregion
 
         public DataPanel() {
@@ -85,15 +89,12 @@ namespace Nekres.Mumble_Info.Core.Controls
         protected override void OnMouseMoved(MouseEventArgs e)
         {
             var relPos = RelativeMousePosition;
-
             _mouseOverAvatarFacing = _avatarFacingBounds.Contains(relPos);
             _mouseOverAvatarPosition = _avatarPositionBounds.Contains(relPos);
-            
             _mouseOverMapCoordinates = _mapCoordinatesBounds.Contains(relPos);
-
             _mouseOverCameraDirection = _cameraDirectionBounds.Contains(relPos);
             _mouseOverCameraPosition = _cameraPositionBounds.Contains(relPos);
-
+            _mouseOverMapHashBounds = _mapHashBounds.Contains(relPos);
             base.OnMouseMoved(e);
         }
 
@@ -139,6 +140,11 @@ namespace Nekres.Mumble_Info.Core.Controls
 
                 ScreenNotification.ShowNotification(_clipboardMessage);
             }
+            else if (_mouseOverMapHashBounds)
+            {
+                ClipboardUtil.WindowsClipboardService.SetTextAsync($"\"{_currentMap.GetHash()}\": {_currentMap.Id}, // {_currentMap.Name} ({_currentMap.Id})");
+                ScreenNotification.ShowNotification(_clipboardMessage);
+            } 
             base.OnLeftMouseButtonReleased(e);
         }
 
@@ -251,7 +257,7 @@ namespace Nekres.Mumble_Info.Core.Controls
 
             calcLeftMargin += width;
 
-            text = $"  ({Gw2Mumble.PlayerCharacter.TeamColorId})";
+            text = $" ({Gw2Mumble.PlayerCharacter.TeamColorId})";
             width = (int)_font.MeasureString(text).Width;
             height = Math.Max(height, (int)_font.MeasureString(text).Height);
             rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
@@ -468,7 +474,15 @@ namespace Nekres.Mumble_Info.Core.Controls
                 height = Math.Max(height, (int)_font.MeasureString(text).Height);
                 rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
                 spriteBatch.DrawStringOnCtrl(this, text, _font, rect, _cyan, false, true);
-                
+
+                calcLeftMargin += width;
+
+                text = $" ({Gw2Mumble.CurrentMap.Id})";
+                width = (int)_font.MeasureString(text).Width;
+                height = (int)_font.MeasureString(text).Height;
+                rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
+                spriteBatch.DrawStringOnCtrl(this, text, _font, rect, _yellow, false, true);
+
                 calcTopMargin += height;
                 calcLeftMargin = _leftMargin * 3;
 
@@ -518,32 +532,37 @@ namespace Nekres.Mumble_Info.Core.Controls
                 height = Math.Max(height, (int)_font.MeasureString(text).Height);
                 rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
                 spriteBatch.DrawStringOnCtrl(this, text, _font, rect, _cyan, false, true);
+
+                calcTopMargin += height;
+                calcLeftMargin = _leftMargin * 3;
+
+                text = "Hash";
+                width = (int)_font.MeasureString(text).Width;
+                height = (int)_font.MeasureString(text).Height;
+                rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
+                spriteBatch.DrawStringOnCtrl(this, text, _font, rect, _blue, false, true);
+
+                infoBounds = rect;
+                calcLeftMargin += width;
+
+                text = ":  ";
+                width = (int)_font.MeasureString(text).Width;
+                height = Math.Max(height, (int)_font.MeasureString(text).Height);
+                rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
+                spriteBatch.DrawStringOnCtrl(this, text, _font, rect, Color.LightGray, false, true);
+
+                RectangleExtensions.Union(ref rect, ref infoBounds, out infoBounds);
+                calcLeftMargin += width;
+
+                text = $"{_currentMap.GetHash()}";
+                width = (int)_font.MeasureString(text).Width;
+                height = Math.Max(height, (int)_font.MeasureString(text).Height);
+                rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
+                spriteBatch.DrawStringOnCtrl(this, text, _font, rect, _cyan, false, true);
+
+                RectangleExtensions.Union(ref rect, ref infoBounds, out _mapHashBounds);
+                if (_mouseOverMapHashBounds) DrawBorder(spriteBatch, _mapHashBounds);
             }
-
-            calcTopMargin += height;
-            calcLeftMargin = _leftMargin * 3;
-
-            text = "Id";
-            width = (int)_font.MeasureString(text).Width;
-            height = (int)_font.MeasureString(text).Height;
-            rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
-            spriteBatch.DrawStringOnCtrl(this, text, _font, rect, _blue, false, true);
-
-            calcLeftMargin += width;
-
-            text = ":  ";
-            width = (int)_font.MeasureString(text).Width;
-            height = Math.Max(height, (int)_font.MeasureString(text).Height);
-            rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
-            spriteBatch.DrawStringOnCtrl(this, text, _font, rect, Color.LightGray, false, true);
-
-            calcLeftMargin += width;
-
-            text = $"{Gw2Mumble.CurrentMap.Id}";
-            width = (int)_font.MeasureString(text).Width;
-            height = (int)_font.MeasureString(text).Height;
-            rect = new Rectangle(calcLeftMargin, calcTopMargin, width, height);
-            spriteBatch.DrawStringOnCtrl(this, text, _font, rect, _yellow, false, true);
 
             calcTopMargin += height;
             calcLeftMargin = _leftMargin * 3;

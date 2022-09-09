@@ -8,6 +8,7 @@ namespace Nekres.Mumble_Info
         public static bool GetBytes<T>(this T structure, out byte[] bytes) where T : struct
         {
             bytes = null;
+
             int size = Marshal.SizeOf(structure);
             byte[] arr = new byte[size];
 
@@ -15,7 +16,7 @@ namespace Nekres.Mumble_Info
             try
             {
                 ptr = Marshal.AllocHGlobal(size);
-                Marshal.StructureToPtr(structure, ptr, true);
+                Marshal.StructureToPtr(structure, ptr, false);
                 Marshal.Copy(ptr, arr, 0, size);
             }
             catch (SystemException e)

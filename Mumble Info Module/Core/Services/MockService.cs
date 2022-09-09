@@ -1,7 +1,6 @@
 ﻿using Blish_HUD;
 using System;
 using System.IO;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Vector3 = System.Numerics.Vector3;
@@ -14,17 +13,14 @@ namespace Nekres.Mumble_Info.Core.Services
         private int _sizeContext;
         private int _sizeDiscarded;
         private int _memFileLen;
-        private string _mapName;
-        private MemoryMappedFile _memfile;
         private string _filePath;
 
         private DateTime _lastAutoSave;
         private int _autoSaveMins;
-        public MockService(string mapName = "MumbleLink")
+        public MockService()
         {
             _autoSaveMins = 30;
             _lastAutoSave = DateTime.UtcNow.Subtract(new TimeSpan(_autoSaveMins, 0,0));
-            _mapName = mapName;
             _sizeLink = Marshal.SizeOf(typeof(Link));
             _sizeContext = Marshal.SizeOf(typeof(Context));
             _sizeDiscarded = 256 - _sizeContext + 4096; // Empty areas of context and description.
@@ -102,13 +98,6 @@ namespace Nekres.Mumble_Info.Core.Services
             return true;
         }
 
-        public void CreateMemFile(byte[] data)
-        {
-            _memfile ??= MemoryMappedFile.CreateNew(_mapName, _memFileLen, MemoryMappedFileAccess.ReadWrite);
-            using var accessor = _memfile.CreateViewAccessor();
-            accessor.WriteArray(0, data, 0, data.Length);
-        }
-
         public void SaveFile(byte[] data)
         {
             try
@@ -123,7 +112,6 @@ namespace Nekres.Mumble_Info.Core.Services
 
         public void Dispose()
         {
-            _memfile?.Dispose();
         }
     }
 
@@ -134,10 +122,12 @@ namespace Nekres.Mumble_Info.Core.Services
         public float[] fAvatarPosition;
         public float[] fAvatarFront;
         public float[] fAvatarTop;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
         public string name; // char[256]
         public float[] fCameraPosition;
         public float[] fCameraFront;
         public float[] fCameraTop;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
         public string identity; // char[256]
         public uint context_len;
         // ("context", ctypes.c_ubyte * 256),      # 256 bytes, see below
@@ -146,7 +136,7 @@ namespace Nekres.Mumble_Info.Core.Services
 
     public struct Padding
     {
-        public char[] description;
+        public char[] description; // always empty
     }
 
     public struct Context
